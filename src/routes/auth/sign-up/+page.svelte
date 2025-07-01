@@ -1,38 +1,44 @@
 <script lang="ts">
-    import AuthForm from "$lib/components/auth-form.svelte";
-    import { authClient } from "$lib/auth-client";
-    import { toast } from "svelte-sonner";
+  import AuthForm from '$lib/components/auth-form.svelte';
+  import { authClient } from '$lib/auth-client';
+  import { toast } from 'svelte-sonner';
 
-    let name = $state("devtor");
-    let email = $state("vangerwua@outlook.com");
-    let password = $state("johnpaul");
+  let email = $state('');
+  let password = $state('');
+  let name = $state('');
+  let confirmPassword = $state('');
 
-    let session = authClient.useSession();
+  let signing_up = $state(false);
 
-    function signupHandler() {
-        authClient.signUp.email(
-            {
-                email,
-                name,
-                password,
-                callbackURL: '/auth/sign-in'
-            },
-            {
-                onError: () => {
-                    toast.error("an error occurred!");
-                },
-                onSuccess: () => {
-                    toast.success("Successful sign-up!");
-                },
-            },
-        );
-    }
+  function signupHandler() {
+    signing_up = true;
+    authClient.signUp.email(
+      {
+        email,
+        password,
+        name,
+        callbackURL: '/dashboard'
+      },
+      {
+        onError: (error_ctx) => {
+          signing_up = false;
+          toast.error(error_ctx?.error.message || 'An error occurred during sign up');
+        },
+        onSuccess: () => {
+          signing_up = false;
+          toast.success('Successfully signed up! Please check your email to verify your account.');
+        }
+      }
+    );
+  }
 </script>
 
 <AuthForm
-    authType="sign-up"
-    bind:name
-    bind:email
-    bind:password
-    onSubmit={signupHandler}
+  authType="sign-up"
+  bind:email
+  bind:password
+  bind:name
+  bind:confirmPassword
+  bind:processing={signing_up}
+  onSubmit={signupHandler}
 />
