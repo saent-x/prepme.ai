@@ -1,4 +1,5 @@
 <script lang="ts">
+  import '@fontsource-variable/inter';
 </script>
 
 <div class="text-center p-10">
