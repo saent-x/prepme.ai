@@ -18,6 +18,7 @@
 		"@internationalized/date": "^3.8.1",
 		"@lucide/svelte": "^0.515.0",
 		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/enhanced-img": "^0.6.1",
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
@@ -49,6 +50,8 @@
 	},
 	"dependencies": {
 		"@biomejs/biome": "2.0.6",
+		"@dicebear/collection": "^9.2.3",
+		"@dicebear/core": "^9.2.3",
 		"@neondatabase/serverless": "^0.10.4",
 		"better-auth": "^1.2.12",
 		"drizzle-orm": "^0.40.0"
