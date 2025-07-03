@@ -2,11 +2,12 @@
   import AuthForm from '$lib/components/auth-form.svelte';
   import { authClient } from '$lib/auth-client';
   import { toast } from 'svelte-sonner';
+    import { goto } from '$app/navigation';
 
-  let email = $state('');
-  let password = $state('');
-  let name = $state('');
-  let confirmPassword = $state('');
+  let name = $state('devtor');
+  let email = $state('devtor@mail.com');
+  let password = $state('johnpaul@UL1');
+  let confirmPassword = $state('johnpaul@UL1');
 
   let signing_up = $state(false);
 
@@ -25,6 +26,7 @@
           toast.error(error_ctx?.error.message || 'An error occurred during sign up');
         },
         onSuccess: () => {
+          goto('/dashboard');
           signing_up = false;
           toast.success('Successfully signed up! Please check your email to verify your account.');
         }
