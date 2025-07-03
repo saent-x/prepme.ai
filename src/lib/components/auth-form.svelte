@@ -211,8 +211,8 @@
         </div>
       </form>
       <div class="bg-muted relative hidden md:block">
-        <img
-          src="/auth-image-min.png"
+        <enhanced:img
+          src="/static/auth-image-min.png"
           alt="placeholder"
           class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
         />
