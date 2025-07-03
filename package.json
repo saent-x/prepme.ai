@@ -54,7 +54,13 @@
 		"@dicebear/core": "^9.2.3",
 		"@fontsource-variable/inter": "^5.2.6",
 		"@neondatabase/serverless": "^0.10.4",
+		"@orpc/client": "^1.6.4",
+		"@orpc/server": "^1.6.4",
+		"@orpc/tanstack-query": "^1.6.4",
+		"@orpc/zod": "^1.6.4",
+		"@tanstack/svelte-query": "^5.81.5",
 		"better-auth": "^1.2.12",
-		"drizzle-orm": "^0.40.0"
+		"drizzle-orm": "^0.40.0",
+		"zod": "^3.25.67"
 	}
 }
