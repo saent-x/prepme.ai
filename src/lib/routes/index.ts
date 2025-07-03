@@ -1,6 +1,7 @@
 import type { IncomingHttpHeaders } from 'node:http';
 import { ORPCError, os } from '@orpc/server';
 import { z } from 'zod/v4';
+import { parseJWT } from '$lib/utils';
 
 const PlanetSchema = z.object({
   id: z.number().int().min(1),
@@ -49,4 +50,3 @@ export const router = {
     create: createPlanet
   }
 };
-declare function parseJWT(token: string | undefined): { userId: number } | null; // to be reviewed
