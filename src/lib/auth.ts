@@ -1,12 +1,30 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './server/db';
+import { env } from '$env/dynamic/private';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "pg"
+    provider: 'pg'
   }),
   emailAndPassword: {
     enabled: true
+  },
+  socialProviders: {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID as string,
+      clientSecret: env.GITHUB_CLIENT_SECRET as string
+    },
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID as string,
+      clientSecret: env.GOOGLE_CLIENT_SECRET as string
+    },
+    microsoft: {
+      clientId: env.MICROSOFT_CLIENT_ID as string,
+      clientSecret: env.MICROSOFT_CLIENT_SECRET as string,
+
+      tenantId: 'common',
+      prompt: 'select_account'
+    }
   }
-})
+});

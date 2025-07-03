@@ -3,8 +3,9 @@
   import { authClient } from '$lib/auth-client';
   import { toast } from 'svelte-sonner';
 
-  let email = $state('');
-  let password = $state('');
+  let email = $state('vangerwua@outlook.com');
+  let password = $state('johnpaul');
+
   let signing_in = $state(false);
 
   function signinHandler() {
