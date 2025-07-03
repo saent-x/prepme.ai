@@ -2,7 +2,7 @@
   import AuthForm from '$lib/components/auth-form.svelte';
   import { authClient } from '$lib/auth-client';
   import { toast } from 'svelte-sonner';
-    import { goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
 
   let name = $state('devtor');
   let email = $state('devtor@mail.com');
