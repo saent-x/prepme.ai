@@ -10,8 +10,6 @@ export const load: PageServerLoad = async ({ request, url }) => {
   if (!session) {
     throw redirect(307, `/auth/sign-in?redirect=${url.pathname}`);
   }
-
-  return {
-    session
-  };
+  
+  return {}
 };
