@@ -20,7 +20,7 @@
   <DashboardCommand bind:open={openCommand} />
   <Sidebar.Trigger class="size-9" variant="outline" />
   <Button
-    class="text-muted-foreground hover:text-muted-forground h-9 w-[240px] justify-start font-normal"
+    class="text-muted-foreground hover:text-muted-foreground h-9 w-[240px] justify-start font-normal"
     variant="outline"
     size="sm"
     onclick={() => (openCommand = !openCommand)}
