@@ -2,10 +2,12 @@ import type { RouterClient } from '@orpc/server';
 import { createORPCClient } from '@orpc/client';
 import { RPCLink } from '@orpc/client/fetch';
 import { router } from '$lib/routes/index';
+import { browser } from '$app/environment';
+import { PUBLIC_RPC_URL } from '$env/static/public';
 import { createTanstackQueryUtils, type ProcedureUtils, type RouterUtils } from '@orpc/tanstack-query';
 
 const link = new RPCLink({
-  url: 'http://localhost:5173/rpc',
+  url: browser ? `${window.location.origin}/rpc` : PUBLIC_RPC_URL || 'http://localhost:5173/rpc',
   headers: { Authorization: 'Bearer token' }
 });
 
