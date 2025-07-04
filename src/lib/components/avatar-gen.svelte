@@ -2,26 +2,35 @@
   import { createAvatar } from '@dicebear/core';
   import { botttsNeutral, funEmoji } from '@dicebear/collection';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-    import { cn } from '$lib/utils';
+  import { cn } from '$lib/utils';
 
   type Props = {
-    class?: string,
+    class?: string;
     variant?: string;
     name: string;
   };
 
-  let { class: className, variant, name = "" }: Props = $props();
+  let { class: className, variant, name }: Props = $props();
   let avatar = $state('');
 
-  if (variant === 'bot') {
-    avatar = createAvatar(botttsNeutral, {
-      size: 128
-    }).toDataUri();
-  } else {
-    avatar = createAvatar(funEmoji, {
-      size: 128
-    }).toDataUri();
-  }
+  $effect(() => {
+    try {
+      if (variant === 'bot') {
+        avatar = createAvatar(botttsNeutral, {
+          size: 128,
+          seed: name || 'User'
+        }).toDataUri();
+      } else {
+        avatar = createAvatar(funEmoji, {
+          size: 128,
+          seed: name || 'User'
+        }).toDataUri();
+      }
+    } catch (error) {
+      console.error('Avatar generation failed:', error);
+      avatar = '';
+    }
+  });
 </script>
 
 <Avatar.Root class={cn(className)}>

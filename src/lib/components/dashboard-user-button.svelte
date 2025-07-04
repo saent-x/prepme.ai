@@ -26,11 +26,11 @@
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border-border/10 flex w-full items-center justify-between overflow-hidden rounded-md border bg-white/5 p-3 hover:bg-white/10"
           >
             {#if $session.data?.user.image}
-                <Avatar.Root class="size-8 rounded-lg">
-                  <Avatar.Image src={$session.data?.user.image} alt={$session.data?.user.name} />
-                </Avatar.Root>
+              <Avatar.Root class="size-8 rounded-lg">
+                <Avatar.Image src={$session.data?.user.image} alt={$session.data?.user.name} />
+              </Avatar.Root>
             {:else}
-                <GenAvatar name={$session.data?.user.name!} />
+              <GenAvatar name={$session.data?.user.name ?? ''} />
             {/if}
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium">{$session.data?.user.name}</span>
@@ -52,7 +52,9 @@
           <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar.Root class="size-8 rounded-lg">
               <Avatar.Image src={$session.data?.user.image} alt={$session.data?.user.name} />
-              <Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
+              <Avatar.Fallback class="rounded-lg">
+                {$session.data?.user.name?.charAt(0)?.toUpperCase() ?? 'U'}
+              </Avatar.Fallback>
             </Avatar.Root>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate font-medium">{$session.data?.user.name}</span>
@@ -78,11 +80,14 @@
           </DropdownMenu.Item>
         </DropdownMenu.Group>
         <DropdownMenu.Separator />
-        <DropdownMenu.Item onclick={() => authClient.signOut({
-          fetchOptions: {
-            onSuccess: () => goto('/auth/sign-in')
-          }
-        })}>
+        <DropdownMenu.Item
+          onclick={() =>
+            authClient.signOut({
+              fetchOptions: {
+                onSuccess: () => goto('/auth/sign-in')
+              }
+            })}
+        >
           <LogoutIcon />
           Log out
         </DropdownMenu.Item>
