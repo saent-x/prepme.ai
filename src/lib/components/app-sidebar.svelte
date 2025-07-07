@@ -13,12 +13,12 @@
   const firstGroup = [
     {
       title: 'Interviews',
-      url: '/interviews',
+      url: '/dashboard/interviews',
       icon: VideoIcon
     },
     {
       title: 'Agents',
-      url: '/agents',
+      url: '/dashboard/agents',
       icon: BotIcon
     }
   ];
@@ -26,7 +26,7 @@
   const secondGroup = [
     {
       title: 'Upgrade',
-      url: '/upgrade',
+      url: '/dashboard/upgrade',
       icon: StarIcon
     }
   ];
@@ -81,7 +81,7 @@
                 <Collapsible.Trigger>
                   {#snippet child({ props })}
                     <Sidebar.MenuButton
-                        {...props}
+                      {...props}
                       class={cn(
                         'from-sidebar-accent via-sidebar/50 to-sidebar/50 h-10 border border-transparent from-5% via-30% hover:border-[#5D6B68]/10 hover:bg-linear-to-r/oklch',
                         page.url.pathname === item.url && 'border-[#5D6B68]/10 bg-linear-to-r/oklch'
@@ -108,36 +108,37 @@
     <Sidebar.Group>
       <Sidebar.GroupLabel>Setup</Sidebar.GroupLabel>
       <Sidebar.GroupContent>
-          <Sidebar.Menu>
-            {#each secondGroup as item (item.title)}
-              <Collapsible.Root open={page.url.pathname === item.url} class="group/collapsible">
-                {#snippet child({ props })}
-                  <Sidebar.MenuItem {...props}>
-                    <Collapsible.Trigger>
-                      {#snippet child({ props })}
-                        <Sidebar.MenuButton
-                            {...props}
-                          class={cn(
-                            'from-sidebar-accent via-sidebar/50 to-sidebar/50 h-10 border border-transparent from-5% via-30% hover:border-[#5D6B68]/10 hover:bg-linear-to-r/oklch',
-                            page.url.pathname === item.url && 'border-[#5D6B68]/10 bg-linear-to-r/oklch'
-                          )}
-                          isActive={page.url.pathname === item.url}
-                          tooltipContent={item.title}
-                        >
-                          {#snippet child({ props })}
-                            <a href={item.url} {...props}>
-                              <item.icon />
-                              <span>{item.title}</span>
-                            </a>
-                          {/snippet}
-                        </Sidebar.MenuButton>
-                      {/snippet}
-                    </Collapsible.Trigger>
-                  </Sidebar.MenuItem>
-                {/snippet}
-              </Collapsible.Root>
-            {/each}
-          </Sidebar.Menu>
+        <Sidebar.Menu>
+          {#each secondGroup as item (item.title)}
+            <Collapsible.Root open={page.url.pathname === item.url} class="group/collapsible">
+              {#snippet child({ props })}
+                <Sidebar.MenuItem {...props}>
+                  <Collapsible.Trigger>
+                    {#snippet child({ props })}
+                      <Sidebar.MenuButton
+                        {...props}
+                        class={cn(
+                          'from-sidebar-accent via-sidebar/50 to-sidebar/50 h-10 border border-transparent from-5% via-30% hover:border-[#5D6B68]/10 hover:bg-linear-to-r/oklch',
+                          page.url.pathname === item.url &&
+                            'border-[#5D6B68]/10 bg-linear-to-r/oklch'
+                        )}
+                        isActive={page.url.pathname === item.url}
+                        tooltipContent={item.title}
+                      >
+                        {#snippet child({ props })}
+                          <a href={item.url} {...props}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </a>
+                        {/snippet}
+                      </Sidebar.MenuButton>
+                    {/snippet}
+                  </Collapsible.Trigger>
+                </Sidebar.MenuItem>
+              {/snippet}
+            </Collapsible.Root>
+          {/each}
+        </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
   </Sidebar.Content>

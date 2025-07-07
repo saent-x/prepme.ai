@@ -12,6 +12,7 @@
       openCommand = !openCommand;
     }
   }
+  
 </script>
 
 <svelte:document onkeydown={handleKeydown} />

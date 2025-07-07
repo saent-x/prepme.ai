@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { RPCHandler } from '@orpc/server/fetch';
 import type { RequestHandler } from '@sveltejs/kit';
-import { router } from '$lib/routes/index';
+import { router } from '../../../lib/server/procedures';
 
 const handler = new RPCHandler(router);
 
