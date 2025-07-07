@@ -59,8 +59,11 @@
 		"@orpc/tanstack-query": "^1.6.4",
 		"@orpc/zod": "^1.6.4",
 		"@tanstack/svelte-query": "^5.81.5",
+		"@tanstack/svelte-query-devtools": "^5.81.5",
 		"better-auth": "^1.2.12",
 		"drizzle-orm": "^0.40.0",
+		"drizzle-zod": "^0.8.2",
+		"nanoid": "^5.1.5",
 		"zod": "^3.25.67"
 	}
 }
