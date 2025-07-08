@@ -7,13 +7,13 @@ import { agents } from '$lib/server/db/schema';
 const AgentSchema = z.object({
   id: z.string(),
   name: z.string(),
-  instructions: z.string().optional()
+  instructions: z.string()
 });
 
 export const listAgents = os.handler(async () => {
   const data = await db.select().from(agents);
 
-  // await new Promise((resolve) => setTimeout(resolve, 5000));
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   // throw new ORPCError('BAD_REQUEST');
 
   return data;
