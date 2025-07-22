@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { nanoid } from 'nanoid';
-import { createSelectSchema } from 'drizzle-zod';
+import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -72,3 +72,4 @@ export const agents = pgTable('agents', {
 });
 
 export const AgentsSelectSchema = createSelectSchema(agents); // TODO: where to implement??
+export const AgentInsertSchema = createInsertSchema(agents);

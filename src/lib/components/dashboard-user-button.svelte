@@ -1,6 +1,6 @@
 <script lang="ts">
   import CreditCardIcon from '@lucide/svelte/icons/credit-card';
-  import DotsVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
+  import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
   import LogoutIcon from '@lucide/svelte/icons/log-out';
   import NotificationIcon from '@lucide/svelte/icons/bell';
   import UserCircleIcon from '@lucide/svelte/icons/user-circle';
@@ -39,12 +39,12 @@
                   {$session.data?.user.email}
                 </span>
               </div>
-              <DotsVerticalIcon class="ml-auto size-4" />
+              <ChevronsUpDownIcon class="ml-auto size-4" />
             </Sidebar.MenuButton>
           {/snippet}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content
-          class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
+          class="z-50 w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
           side={sidebar.isMobile ? 'bottom' : 'right'}
           align="end"
           sideOffset={4}

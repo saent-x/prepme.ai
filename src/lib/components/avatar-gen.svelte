@@ -10,7 +10,7 @@
     name: string;
   };
 
-  let { class: className, variant, name }: Props = $props();
+  let { class: className, variant, name = $bindable() }: Props = $props();
   let avatar = $state('');
 
   $effect(() => {
