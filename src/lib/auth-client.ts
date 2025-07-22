@@ -1,10 +1,13 @@
-import { createAuthClient } from "better-auth/svelte";
+import { createAuthClient } from 'better-auth/svelte';
 
 export const authClient = createAuthClient();
 
 type SocialProvider = 'github' | 'google' | 'microsoft';
 
-export const signInSocial = async (provider: SocialProvider, callbackURL: string = '/dashboard') => {
+export const signInSocial = async (
+  provider: SocialProvider,
+  callbackURL: string = '/dashboard'
+) => {
   try {
     const data = await authClient.signIn.social({
       provider,
@@ -19,4 +22,5 @@ export const signInSocial = async (provider: SocialProvider, callbackURL: string
 
 export const signInGithub = async (callbackURL?: string) => signInSocial('github', callbackURL);
 export const signInGoogle = async (callbackURL?: string) => signInSocial('google', callbackURL);
-export const signInMicrosoft = async (callbackURL?: string) => signInSocial('microsoft', callbackURL);
+export const signInMicrosoft = async (callbackURL?: string) =>
+  signInSocial('microsoft', callbackURL);

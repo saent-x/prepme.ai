@@ -40,10 +40,6 @@
 
 <Sidebar.Root {collapsible} {...restProps}>
   <Sidebar.Header class="text-sidebar-accent-foreground">
-    <!-- <a href="/dashboard" class="flex items-center gap-2 px-2 pt-2" aria-label="dashboard-logo">
-      <enhanced:img src="/static/logo.png" class="h-[36px] w-[36px]" alt="prepme.ai" />
-      <p class="text-lg font-semibold">PrepMe</p>
-    </a> -->
     <Sidebar.Menu>
       <Sidebar.MenuItem>
         <Sidebar.MenuButton

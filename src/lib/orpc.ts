@@ -8,7 +8,7 @@ import { createTanstackQueryUtils, type ProcedureUtils, type RouterUtils } from 
 
 const link = new RPCLink({
   url: browser ? `${window.location.origin}/rpc` : PUBLIC_RPC_URL || 'http://localhost:5173/rpc',
-  headers: { Authorization: 'Bearer token' }
+  // headers: { Authorization: 'Bearer token' }
 });
 
 export const client: RouterClient<typeof router> = createORPCClient(link)

@@ -3,19 +3,23 @@
   import type { Snippet } from 'svelte';
   import * as Drawer from '$lib/components/ui/drawer/index';
   import * as Dialog from '$lib/components/ui/dialog/index';
-  import { Button } from '$lib/components/ui/button';
 
   type Props = {
     title: string;
     description: string;
     children: Snippet;
     open: boolean;
-    onOpenChange: (open: boolean) => void;
   };
 
   let isMobile = new IsMobile();
+  
+  console.log(`is mobile -> ${isMobile.current}`)
 
   let { title, description, children, open = $bindable() }: Props = $props();
+  
+  $effect(() => {
+    console.log(`agent dialog open -> ${open}`)
+  })
 </script>
 
 {#if isMobile.current}

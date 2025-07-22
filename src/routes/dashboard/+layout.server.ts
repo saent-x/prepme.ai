@@ -1,8 +1,7 @@
 import { redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
 import { auth } from '$lib/auth';
 
-export const load: PageServerLoad = async ({ request, url }) => {
+export const load = async ({ url, request }) => {
   const session = await auth.api.getSession({
     headers: request.headers
   });
@@ -10,6 +9,6 @@ export const load: PageServerLoad = async ({ request, url }) => {
   if (!session) {
     throw redirect(307, `/auth/sign-in?redirect=${url.pathname}`);
   }
-  
-  return {}
+
+  return {};
 };
