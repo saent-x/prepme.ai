@@ -1,7 +1,3 @@
-<script lang="ts">
-  import '@fontsource-variable/inter';
-</script>
-
 <div class="p-10 text-center">
   <p>Home Page</p>
 
