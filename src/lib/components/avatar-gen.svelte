@@ -18,7 +18,7 @@
       if (variant === 'bot') {
         avatar = createAvatar(botttsNeutral, {
           size: 128,
-          seed: name || 'User'
+          seed: name || 'Bot'
         }).toDataUri();
       } else {
         avatar = createAvatar(funEmoji, {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createAgents } from '../../routes/dashboard/agents/agents.remote';
+  import { createAgents, listAgents } from '../../routes/dashboard/agents/agents.remote';
   import AvatarGen from './avatar-gen.svelte';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
@@ -67,20 +67,3 @@
     <Button disabled={creating} style={creating ? 'bg-gray-800' : ''} type="submit">Create</Button>
   </div>
 </form>
-
-<svelte:boundary>
-  {#await createAgents.result then result}
-    {#if result}
-      <p>{result.name}</p>
-      <p>{result.instructions}</p>
-    {/if}
-  {/await}
-
-  {#snippet failed()}
-    <p>failed</p>
-  {/snippet}
-
-  {#snippet pending()}
-    <p>pending</p>
-  {/snippet}
-</svelte:boundary>

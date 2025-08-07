@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" 
+     viewBox="0 0 220 180" width="220" height="180" 
+     role="img" aria-labelledby="title">
+  <title id="title">No AI agents available</title>
+
+  <!-- Empty table container -->
+  <rect x="30" y="30" width="160" height="80" rx="10" 
+        fill="none" stroke="#A0AEC0" stroke-width="2" stroke-dasharray="4 4"/>
+
+  <!-- Row lines -->
+  <line x1="30" y1="55" x2="190" y2="55" 
+        stroke="#CBD5E0" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="30" y1="80" x2="190" y2="80" 
+        stroke="#CBD5E0" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- Column lines -->
+  <line x1="85" y1="30" x2="85" y2="110" 
+        stroke="#CBD5E0" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="140" y1="30" x2="140" y2="110" 
+        stroke="#CBD5E0" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- Bot face (AI Agent hint) -->
+  <rect x="90" y="125" width="40" height="30" rx="6" fill="#EDF2F7" stroke="#A0AEC0" stroke-width="1.5"/>
+  <circle cx="100" cy="140" r="3" fill="#4A5568"/>
+  <circle cx="120" cy="140" r="3" fill="#4A5568"/>
+  <rect x="97" y="131" width="26" height="4" rx="2" fill="#CBD5E0"/>
+
+  <!-- Antenna -->
+  <line x1="110" y1="125" x2="110" y2="118" stroke="#A0AEC0" stroke-width="2"/>
+  <circle cx="110" cy="116" r="3" fill="#3182CE"/>
+  
+  <circle cx="110" cy="116" r="3" fill="#3182CE">
+    <animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

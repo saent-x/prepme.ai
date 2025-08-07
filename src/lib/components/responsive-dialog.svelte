@@ -12,14 +12,8 @@
   };
 
   let isMobile = new IsMobile();
-  
-  console.log(`is mobile -> ${isMobile.current}`)
 
   let { title, description, children, open = $bindable() }: Props = $props();
-  
-  $effect(() => {
-    console.log(`agent dialog open -> ${open}`)
-  })
 </script>
 
 {#if isMobile.current}
