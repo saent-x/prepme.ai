@@ -59,7 +59,6 @@
       variant="ghost"
       type="button"
       onclick={(e) => {
-        // e.preventDefault();
         onCancel();
       }}>Cancel</Button
     >

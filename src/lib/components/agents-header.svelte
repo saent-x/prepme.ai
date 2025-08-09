@@ -1,9 +1,22 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
-  import { PlusIcon } from '@lucide/svelte';
+  import { PlusIcon, XCircleIcon } from '@lucide/svelte';
   import NewAgentDialog from './new-agent-dialog.svelte';
+  import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
+  import AgentsSearchFilters from './agents-search-filters.svelte';
+  import { DEFAULT_PAGE } from '$lib/constant';
 
+  let filters = useAgentsFilters();
   let open = $state(false);
+
+  let isAnyFilterModified = $derived(!!filters.search.current);
+
+  const onClearFilters = () => {
+    filters.set({
+      search: '',
+      page: DEFAULT_PAGE
+    });
+  };
 </script>
 
 <NewAgentDialog bind:open />
@@ -12,12 +25,20 @@
     <h5 class="text-xl font-medium">My Agents</h5>
     <Button
       onclick={() => {
-        console.log('clicked huh??');
         open = !open;
       }}
     >
       <PlusIcon />
       New Agent
     </Button>
+  </div>
+  <div class="flex items-center gap-x-2 p-1">
+    <AgentsSearchFilters />
+    {#if isAnyFilterModified}
+        <Button variant="outline" size="sm" onclick={onClearFilters}>
+            <XCircleIcon />
+            Clear
+        </Button>
+    {/if}
   </div>
 </div>

@@ -6,8 +6,16 @@
   import DataTable from '$lib/components/data-table.svelte';
   import { columns } from '$lib/components/columns';
   import EmptyState from '$lib/components/empty-state.svelte';
+  import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
+  import DataPagination from '$lib/components/data-pagination.svelte';
 
-  const agentsQuery = listAgents();
+  let filters = useAgentsFilters();
+  const agentsQuery = $derived(
+    listAgents({
+      search: filters.search.current,
+      page: filters.page.current
+    })
+  );
 </script>
 
 <AgentsHeader />
@@ -18,8 +26,13 @@
   <LoadingState title="Retrieving Agents" description="This shouldn't take too long..." />
 {:else}
   <div class="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8">
-    <DataTable data={agentsQuery.current ?? []} {columns} />
-    {#if agentsQuery.current?.length === 0}
+    <DataTable data={agentsQuery.current?.items ?? []} {columns} />
+    <DataPagination
+      page={filters.page.current}
+      totalPages={agentsQuery.current?.totalPages!}
+      onPageChange={(page) => filters.set({ page })}
+    />
+    {#if agentsQuery.current?.items.length === 0}
       <EmptyState
         title="Create your very first agent"
         description="Agents can join your meetings and each agent follows your instructions and can engage with participants during the call"
