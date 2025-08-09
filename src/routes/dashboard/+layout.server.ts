@@ -10,5 +10,7 @@ export const load = async ({ url, request }) => {
     throw redirect(307, `/auth/sign-in?redirect=${url.pathname}`);
   }
 
-  return {};
+  return {
+    session
+  };
 };
