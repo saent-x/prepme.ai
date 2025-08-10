@@ -20,7 +20,7 @@ export const getAgent = query(z.string(), async (id) => {
   let { request } = getRequestEvent();
   await authGuard(request.headers);
 
-  return await getOne(id);
+  return await getOne({ id }, await getContext());
 });
 
 export const listAgents = query(ListAllSchema.or(z.void()), async (schema) => {

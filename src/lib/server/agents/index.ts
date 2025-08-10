@@ -2,18 +2,28 @@ import { DEFAULT_PAGE, MIN_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from '$
 import { db } from '$lib/db/index.server';
 import { agents } from '$lib/db/schema';
 import type { Context } from '$lib/utils';
+import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
 import type { InferInsertModel } from 'drizzle-orm';
 import z from 'zod/v4';
 
-export async function getOne(id: string) {
+export const GetOneSchema = z.object({
+  id: z.string()
+});
+export async function getOne(input: z.infer<typeof GetOneSchema>, ctx: Context) {
   const [selectedAgent] = await db
     .select({
       meetingCount: sql<number>`6`, // TODO: to be changed
       ...getTableColumns(agents)
     })
     .from(agents)
-    .where(eq(agents.id, id));
+    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')));
+
+  if (!selectedAgent) {
+    error(404, {
+      message: 'Agent not found'
+    });
+  }
 
   return selectedAgent;
 }
