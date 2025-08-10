@@ -25,6 +25,7 @@
     <Table.Body>
       {#each table.getRowModel().rows as row (row.id)}
         <Table.Row
+          class="cursor-pointer"
           data-state={row.getIsSelected() && 'selected'}
           onclick={() => onRowClick?.(row.original)}
         >

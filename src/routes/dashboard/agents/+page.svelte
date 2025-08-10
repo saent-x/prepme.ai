@@ -8,6 +8,7 @@
   import EmptyState from '$lib/components/empty-state.svelte';
   import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
   import DataPagination from '$lib/components/data-pagination.svelte';
+  import { goto } from '$app/navigation';
 
   let filters = useAgentsFilters();
   const agentsQuery = $derived(
@@ -26,7 +27,11 @@
   <LoadingState title="Retrieving Agents" description="This shouldn't take too long..." />
 {:else}
   <div class="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8">
-    <DataTable data={agentsQuery.current?.items ?? []} {columns} />
+    <DataTable
+      data={agentsQuery.current?.items ?? []}
+      {columns}
+      onRowClick={(row) => goto(`/dashboard/agents/${row.id}`)}
+    />
     <DataPagination
       page={filters.page.current}
       totalPages={agentsQuery.current?.totalPages!}
