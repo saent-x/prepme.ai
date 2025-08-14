@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { nanoid } from 'nanoid';
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -71,5 +72,6 @@ export const agents = pgTable('agents', {
   updatedAt: timestamp('updated_at').defaultNow()
 });
 
-export const AgentsSelectSchema = createSelectSchema(agents); // TODO: where to implement??
-export const AgentInsertSchema = createInsertSchema(agents);
+export type AgentSelectSchema = InferSelectModel<typeof agents>;
+export type AgentInsertSchema = InferInsertModel<typeof agents>;
+export type AgentUpdateSchema = Omit<AgentSelectSchema, 'createdAt' | 'updatedAt' | 'userId'>;

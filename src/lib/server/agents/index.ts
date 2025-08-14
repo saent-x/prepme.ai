@@ -1,15 +1,56 @@
 import { DEFAULT_PAGE, MIN_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from '$lib/constant';
 import { db } from '$lib/db/index.server';
-import { agents } from '$lib/db/schema';
+import { agents, type AgentInsertSchema } from '$lib/db/schema';
 import type { Context } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
-import type { InferInsertModel } from 'drizzle-orm';
 import z from 'zod/v4';
+
+export const UpdateOneSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, { message: 'Name is required' }),
+  instructions: z.string().min(1, { message: 'Instructions are required' })
+});
+
+export async function updateOne(input: z.infer<typeof UpdateOneSchema>, ctx: Context) {
+  const [updatedAgent] = await db
+    .update(agents)
+    .set(input)
+    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')))
+    .returning();
+
+  if (!updatedAgent) {
+    error(404, {
+      message: 'Agent not found'
+    });
+  }
+
+  return updatedAgent;
+}
+
+export const DeleteOneSchema = z.object({
+  id: z.string()
+});
+
+export async function deleteOne(input: z.infer<typeof DeleteOneSchema>, ctx: Context) {
+  const [deletedAgent] = await db
+    .delete(agents)
+    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')))
+    .returning();
+
+  if (!deletedAgent) {
+    error(404, {
+      message: 'Agent not found'
+    });
+  }
+
+  return deletedAgent;
+}
 
 export const GetOneSchema = z.object({
   id: z.string()
 });
+
 export async function getOne(input: z.infer<typeof GetOneSchema>, ctx: Context) {
   const [selectedAgent] = await db
     .select({
@@ -69,7 +110,7 @@ export async function listAll(input: z.infer<typeof ListAllSchema>, ctx: Context
   };
 }
 
-export async function createOne(new_agent: InferInsertModel<typeof agents>) {
+export async function createOne(new_agent: AgentInsertSchema) {
   const [createdAgent] = await db
     .insert(agents)
     .values({ ...new_agent })

@@ -11,6 +11,7 @@
   import { goto } from '$app/navigation';
 
   let filters = useAgentsFilters();
+
   const agentsQuery = $derived(
     listAgents({
       search: filters.search.current,
