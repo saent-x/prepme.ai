@@ -7,11 +7,11 @@
   type Props = {
     agentId: string;
     agentName: string;
-    onEdit: () => void;
+    onUpdate: () => void;
     onRemove: () => void;
   };
 
-  let { agentId, agentName, onEdit, onRemove }: Props = $props();
+  let { agentId, agentName, onUpdate, onRemove }: Props = $props();
 </script>
 
 <div class="flex items-center justify-between">
@@ -43,8 +43,8 @@
       </Button>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="end">
-      <DropdownMenu.Item onclick={onEdit}>
-        <PencilIcon class="size-4 text-black" /> Edit
+      <DropdownMenu.Item onclick={onUpdate}>
+        <PencilIcon class="size-4 text-black" /> Update
       </DropdownMenu.Item>
       <DropdownMenu.Item onclick={onRemove}>
         <TrashIcon class="size-4 text-black" /> Delete
