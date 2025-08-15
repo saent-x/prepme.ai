@@ -1,5 +1,6 @@
 import { query, form, getRequestEvent } from '$app/server';
 import { auth } from '$lib/auth';
+import type { InterviewStatusEnum } from '$lib/db/schema';
 import {
   listAll,
   createOne,
@@ -7,9 +8,10 @@ import {
   PaginationSchema,
   deleteOne,
   updateOne
-} from '$lib/server/agents';
+} from '$lib/server/interviews';
 import { authGuard } from '$lib/server/utils';
 import type { Session } from '$lib/utils';
+import { error } from '@sveltejs/kit';
 import { z } from 'zod/v4';
 
 let _currentSession: Session;
@@ -23,76 +25,81 @@ const getContext = async () => {
   return { session: _currentSession };
 };
 
-export const updateAgent = form(async (data: FormData) => {
-  const { request } = getRequestEvent();
+export const updateInterview = form(async (data: FormData) => {
+  let { request } = getRequestEvent();
 
   await authGuard(request.headers);
 
-  const name = data.get('name') as string;
-  const instructions = data.get('instructions') as string;
   const id = data.get('id') as string;
-  
+  const name = data.get('name') as string;
+  const status = data.get('status') as InterviewStatusEnum;
+  const transcriptUrl = data.get('transcript_url') as string;
+  const recordingUrl = data.get('recording_url') as string;
+  const summary = data.get('summary') as string;
+
   await updateOne(
     {
       name,
-      instructions,
-      id
+      id,
+
+      status,
+      transcriptUrl,
+      recordingUrl,
+      summary
     },
     await getContext()
   );
 
-  await getAgent(id).refresh();
+  await getInterview(id).refresh();
 
   return {
-    name,
-    instructions
+    name // Not necessary?
   };
 });
 
-export const deleteAgent = query(z.string(), async (id) => {
-  const { request } = getRequestEvent();
+export const deleteInterview = query(z.string(), async (id) => {
+  let { request } = getRequestEvent();
   await authGuard(request.headers);
 
   return await deleteOne({ id }, await getContext());
 });
 
-export const getAgent = query(z.string(), async (id) => {
-  const { request } = getRequestEvent();
+export const getInterview = query(z.string(), async (id) => {
+  let { request } = getRequestEvent();
   await authGuard(request.headers);
 
   return await getOne({ id }, await getContext());
 });
 
-export const listAgents = query(PaginationSchema.or(z.void()), async (schema) => {
-  const reqEvt = getRequestEvent();
+export const listInterviews = query(PaginationSchema.or(z.void()), async (schema) => {
+  let reqEvt = getRequestEvent();
   await authGuard(reqEvt.request.headers);
 
   return listAll(PaginationSchema.parse(schema ?? {}), await getContext()); // since its void would the default values be set??
 });
 
-export const createAgent = form(async (data: FormData) => {
-  const { request } = getRequestEvent();
+export const createInterview = form(async (data: FormData) => {
+  let { request } = getRequestEvent();
 
   await authGuard(request.headers);
 
   const name = data.get('name') as string;
-  const instructions = data.get('instructions') as string;
+  const agentId = data.get('agentId') as string;
 
   await createOne(
     {
       name,
-      instructions
+      agentId
     },
     await getContext()
   );
 
-  await listAgents({
+  await listInterviews({
     search: '', // TODO: this is a temporary workaround
     page: 1
   }).refresh();
 
   return {
-    name,
-    instructions
+    name // Not necessary?
   };
 });

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { nanoid } from 'nanoid';
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
@@ -68,10 +68,54 @@ export const agents = pgTable('agents', {
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   instructions: text('instructions').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow()
 });
 
-export type AgentSelectSchema = InferSelectModel<typeof agents>;
-export type AgentInsertSchema = InferInsertModel<typeof agents>;
-export type AgentUpdateSchema = Omit<AgentSelectSchema, 'createdAt' | 'updatedAt' | 'userId'>;
+export const interviewStatus = pgEnum('interview_status', [
+  'upcoming',
+  'active',
+  'completed',
+  'processing',
+  'cancelled'
+]);
+
+export const interviews = pgTable('interviews', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  name: text('name').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  agentId: text('agent_id')
+    .notNull()
+    .references(() => agents.id, { onDelete: 'cascade' }),
+
+  status: interviewStatus('status').notNull().default('upcoming'),
+
+  transcriptUrl: text('transcript_url'),
+  recordingUrl: text('recording_url'),
+
+  summary: text('summary'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  startedAt: timestamp('started_at'),
+  endedAt: timestamp('ended_at')
+});
+
+export type AgentOneSchema = Pick<InferSelectModel<typeof agents>, 'id' | 'name' | 'instructions'>;
+export type AgentCreateSchema = Pick<InferSelectModel<typeof agents>, 'name' | 'instructions'>;
+export type AgentGetSchema = Pick<InferSelectModel<typeof agents>, 'id'>;
+
+export type InterviewOneSchema = Pick<
+  InferSelectModel<typeof interviews>,
+  'id' | 'name' | 'status' | 'summary' | 'recordingUrl' | 'transcriptUrl'
+>;
+export type InterviewCreateSchema = Pick<
+  InferSelectModel<typeof interviews>,
+  'name' | 'agentId'
+>;
+export type InterviewGetSchema = Pick<InferSelectModel<typeof interviews>, 'id'>;
+export type InterviewStatusEnum = (typeof interviewStatus.enumValues)[number];
