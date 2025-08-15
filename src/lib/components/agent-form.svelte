@@ -7,11 +7,11 @@
   import { Button } from './ui/button';
   import { toast } from 'svelte-sonner';
   import { authClient } from '$lib/auth-client';
-  import type { AgentUpdateSchema } from '$lib/db/schema';
+  import type { AgentOneSchema } from '$lib/db/schema';
 
   type Props = {
     onCancel: () => void;
-    initialValues?: AgentUpdateSchema;
+    initialValues?: AgentOneSchema;
     actionType?: 'update' | 'create';
   };
 

@@ -1,11 +1,11 @@
 <script lang="ts">
   import ResponsiveDialog from '$lib/components/responsive-dialog.svelte';
-  import type { AgentUpdateSchema } from '$lib/db/schema';
+  import type { AgentOneSchema } from '$lib/db/schema';
   import AgentForm from './agent-form.svelte';
 
   type Props = {
     open: boolean;
-    initialValues: AgentUpdateSchema;
+    initialValues: AgentOneSchema;
   };
 
   let { open = $bindable(), initialValues }: Props = $props();

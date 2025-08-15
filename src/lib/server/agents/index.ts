@@ -1,18 +1,18 @@
 import { DEFAULT_PAGE, MIN_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from '$lib/constant';
 import { db } from '$lib/db/index.server';
-import { agents, type AgentInsertSchema } from '$lib/db/schema';
+import {
+  agents,
+  type AgentCreateSchema,
+  type AgentGetSchema,
+  type AgentOneSchema
+} from '$lib/db/schema';
 import type { Context } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
 import z from 'zod/v4';
 
-export const UpdateOneSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, { message: 'Name is required' }),
-  instructions: z.string().min(1, { message: 'Instructions are required' })
-});
 
-export async function updateOne(input: z.infer<typeof UpdateOneSchema>, ctx: Context) {
+export async function updateOne(input: AgentOneSchema, ctx: Context) {
   const [updatedAgent] = await db
     .update(agents)
     .set(input)
@@ -28,11 +28,8 @@ export async function updateOne(input: z.infer<typeof UpdateOneSchema>, ctx: Con
   return updatedAgent;
 }
 
-export const DeleteOneSchema = z.object({
-  id: z.string()
-});
 
-export async function deleteOne(input: z.infer<typeof DeleteOneSchema>, ctx: Context) {
+export async function deleteOne(input: AgentGetSchema, ctx: Context) {
   const [deletedAgent] = await db
     .delete(agents)
     .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')))
@@ -47,11 +44,8 @@ export async function deleteOne(input: z.infer<typeof DeleteOneSchema>, ctx: Con
   return deletedAgent;
 }
 
-export const GetOneSchema = z.object({
-  id: z.string()
-});
 
-export async function getOne(input: z.infer<typeof GetOneSchema>, ctx: Context) {
+export async function getOne(input: AgentGetSchema, ctx: Context) {
   const [selectedAgent] = await db
     .select({
       meetingCount: sql<number>`6`, // TODO: to be changed
@@ -69,13 +63,13 @@ export async function getOne(input: z.infer<typeof GetOneSchema>, ctx: Context) 
   return selectedAgent;
 }
 
-export const ListAllSchema = z.object({
+export const PaginationSchema = z.object({
   page: z.number().default(DEFAULT_PAGE),
   pageSize: z.number().min(MIN_PAGE_SIZE).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE).nullish(),
   search: z.string().nullish()
 });
 
-export async function listAll(input: z.infer<typeof ListAllSchema>, ctx: Context) {
+export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Context) {
   const { search, page, pageSize } = input;
 
   const data = await db
@@ -110,10 +104,10 @@ export async function listAll(input: z.infer<typeof ListAllSchema>, ctx: Context
   };
 }
 
-export async function createOne(new_agent: AgentInsertSchema) {
+export async function createOne(new_agent: AgentCreateSchema, ctx: Context) {
   const [createdAgent] = await db
     .insert(agents)
-    .values({ ...new_agent })
+    .values({ ...new_agent, userId: ctx.session?.user.id ?? '' })
     .returning();
 
   return createdAgent;
