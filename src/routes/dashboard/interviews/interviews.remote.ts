@@ -11,18 +11,14 @@ import {
 } from '$lib/server/interviews';
 import { authGuard } from '$lib/server/utils';
 import type { Session } from '$lib/utils';
-import { error } from '@sveltejs/kit';
 import { z } from 'zod/v4';
 
-let _currentSession: Session;
-const getContext = async () => {
-  if (!_currentSession) {
-    _currentSession = await auth.api.getSession({
-      headers: getRequestEvent().request.headers
-    });
-  }
+const getContext = async (): Promise<{ session: Session }> => {
+  const currentSession = await auth.api.getSession({
+    headers: getRequestEvent().request.headers
+  });
 
-  return { session: _currentSession };
+  return { session: currentSession };
 };
 
 export const updateInterview = form(async (data: FormData) => {
@@ -32,20 +28,13 @@ export const updateInterview = form(async (data: FormData) => {
 
   const id = data.get('id') as string;
   const name = data.get('name') as string;
-  const status = data.get('status') as InterviewStatusEnum;
-  const transcriptUrl = data.get('transcript_url') as string;
-  const recordingUrl = data.get('recording_url') as string;
-  const summary = data.get('summary') as string;
+  const agentId = data.get('agentId') as InterviewStatusEnum;
 
   await updateOne(
     {
       name,
       id,
-
-      status,
-      transcriptUrl,
-      recordingUrl,
-      summary
+      agentId
     },
     await getContext()
   );
@@ -93,11 +82,6 @@ export const createInterview = form(async (data: FormData) => {
     },
     await getContext()
   );
-
-  await listInterviews({
-    search: '', // TODO: this is a temporary workaround
-    page: 1
-  }).refresh();
 
   return {
     name // Not necessary?

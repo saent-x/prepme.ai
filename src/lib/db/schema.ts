@@ -111,11 +111,8 @@ export type AgentGetSchema = Pick<InferSelectModel<typeof agents>, 'id'>;
 
 export type InterviewOneSchema = Pick<
   InferSelectModel<typeof interviews>,
-  'id' | 'name' | 'status' | 'summary' | 'recordingUrl' | 'transcriptUrl'
+  'id' | 'name' | 'agentId'
 >;
-export type InterviewCreateSchema = Pick<
-  InferSelectModel<typeof interviews>,
-  'name' | 'agentId'
->;
+export type InterviewCreateSchema = Pick<InferSelectModel<typeof interviews>, 'name' | 'agentId'>;
 export type InterviewGetSchema = Pick<InferSelectModel<typeof interviews>, 'id'>;
 export type InterviewStatusEnum = (typeof interviewStatus.enumValues)[number];

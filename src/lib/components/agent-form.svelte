@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { createAgent, updateAgent } from '../../routes/dashboard/agents/agents.remote';
+  import {
+    createAgent,
+    listAgents,
+    updateAgent
+  } from '../../routes/dashboard/agents/agents.remote';
   import AvatarGen from './avatar-gen.svelte';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
@@ -11,11 +15,12 @@
 
   type Props = {
     onCancel: () => void;
+    onAction?: () => void;
     initialValues?: AgentOneSchema;
     actionType?: 'update' | 'create';
   };
 
-  let { onCancel, initialValues, actionType = 'create' }: Props = $props();
+  let { onCancel, onAction, initialValues, actionType = 'create' }: Props = $props();
   let name = $state<string>(actionType === 'update' ? initialValues!.name : '');
   let instructions = $state<string>(actionType === 'update' ? initialValues!.instructions : '');
   let pending = $state<boolean>(false);
@@ -24,11 +29,22 @@
   let formEnhance = async ({ submit }: { submit: any }) => {
     try {
       pending = true;
-      await submit();
-      console.log('submitted...');
+      await submit().updates(
+        listAgents({
+          search: '',
+          page: 1
+        }),
+        listAgents({
+          search: '',
+          page: 100
+        })
+      );
+
       toast.success(
         actionType === 'update' ? 'Agent updated successfully!' : 'Agent created successfully!'
       );
+
+      onAction?.();
       onCancel();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An error occurred');

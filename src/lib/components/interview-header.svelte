@@ -1,0 +1,37 @@
+<script lang="ts">
+  import Button from '$lib/components/ui/button/button.svelte';
+  import { PlusIcon, XCircleIcon } from '@lucide/svelte';
+  import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
+  import { DEFAULT_PAGE } from '$lib/constant';
+  import NewInterviewDialog from './new-interview-dialog.svelte';
+
+  let open = $state(false);
+
+  // let isAnyFilterModified = $derived(!!filters.search.current);
+
+  const onClearFilters = () => {};
+</script>
+
+<NewInterviewDialog bind:open />
+<div class="flex flex-col gap-y-4 px-4 py-4 md:px-8">
+  <div class="flex items-center justify-between">
+    <h5 class="text-xl font-medium">My Interviews</h5>
+    <Button
+      onclick={() => {
+        open = !open;
+      }}
+    >
+      <PlusIcon />
+      New Interview
+    </Button>
+  </div>
+  <div class="flex items-center gap-x-2 p-1">
+    <!-- <AgentsSearchFilters />
+    {#if isAnyFilterModified}
+        <Button variant="outline" size="sm" onclick={onClearFilters}>
+            <XCircleIcon />
+            Clear
+        </Button>
+    {/if} -->
+  </div>
+</div>
