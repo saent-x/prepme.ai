@@ -12,15 +12,12 @@ import { authGuard } from '$lib/server/utils';
 import type { Session } from '$lib/utils';
 import { z } from 'zod/v4';
 
-let _currentSession: Session;
-const getContext = async () => {
-  if (!_currentSession) {
-    _currentSession = await auth.api.getSession({
-      headers: getRequestEvent().request.headers
-    });
-  }
+const getContext = async (): Promise<{ session: Session }> => {
+  const currentSession = await auth.api.getSession({
+    headers: getRequestEvent().request.headers
+  });
 
-  return { session: _currentSession };
+  return { session: currentSession };
 };
 
 export const updateAgent = form(async (data: FormData) => {
@@ -31,7 +28,7 @@ export const updateAgent = form(async (data: FormData) => {
   const name = data.get('name') as string;
   const instructions = data.get('instructions') as string;
   const id = data.get('id') as string;
-  
+
   await updateOne(
     {
       name,
@@ -66,6 +63,7 @@ export const getAgent = query(z.string(), async (id) => {
 export const listAgents = query(PaginationSchema.or(z.void()), async (schema) => {
   const reqEvt = getRequestEvent();
   await authGuard(reqEvt.request.headers);
+  
 
   return listAll(PaginationSchema.parse(schema ?? {}), await getContext()); // since its void would the default values be set??
 });
@@ -85,11 +83,6 @@ export const createAgent = form(async (data: FormData) => {
     },
     await getContext()
   );
-
-  await listAgents({
-    search: '', // TODO: this is a temporary workaround
-    page: 1
-  }).refresh();
 
   return {
     name,

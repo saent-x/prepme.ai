@@ -23,7 +23,9 @@
         <Drawer.Title>{title}</Drawer.Title>
         <Drawer.Description>{description}</Drawer.Description>
       </Drawer.Header>
-      {@render children()}
+      <div class="p-4">
+        {@render children()}
+      </div>
     </Drawer.Content>
   </Drawer.Root>
 {:else}

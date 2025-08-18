@@ -2,8 +2,6 @@
   import { IsMobile } from '$lib/hooks/is-mobile.svelte';
   import type { Snippet } from 'svelte';
   import * as Drawer from '$lib/components/ui/drawer/index';
-  import * as Dialog from '$lib/components/ui/dialog/index';
-  import { Button } from '$lib/components/ui/button';
   import * as Command from '$lib/components/ui/command/index';
 
   type Props = {
@@ -11,11 +9,12 @@
     description?: string;
     children: Snippet;
     open: boolean;
+    shouldFilter?: boolean;
   };
 
   let isMobile = new IsMobile();
 
-  let { title, description, children, open = $bindable() }: Props = $props();
+  let { title, description, children, open = $bindable(), shouldFilter }: Props = $props();
 </script>
 
 {#if isMobile.current}
@@ -25,13 +24,13 @@
         <Drawer.Title>{title ?? ''}</Drawer.Title>
         <Drawer.Description>{description ?? ''}</Drawer.Description>
       </Drawer.Header>
-      <Command.Root>
+      <Command.Root shouldFilter={shouldFilter ?? false}>
         {@render children()}
       </Command.Root>
     </Drawer.Content>
   </Drawer.Root>
 {:else}
-  <Command.Dialog bind:open>
+  <Command.Dialog bind:open shouldFilter={shouldFilter ?? false}>
     {@render children()}
   </Command.Dialog>
 {/if}

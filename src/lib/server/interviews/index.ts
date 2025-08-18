@@ -108,6 +108,8 @@ export async function createOne(new_interview: InterviewCreateSchema, ctx: Conte
     .insert(interviews)
     .values({ ...new_interview, userId: ctx.session?.user.id ?? '' })
     .returning();
+  
+  // TODO: Create Stream Call, Upsert Stream Users
 
   return createdInterview;
 }
