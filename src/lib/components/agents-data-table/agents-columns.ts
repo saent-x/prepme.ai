@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/table-core';
-import { renderComponent } from './ui/data-table';
+import { renderComponent } from '../ui/data-table';
 import DataTableCell from './data-table-cell.svelte';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { agents } from '$lib/db/schema';

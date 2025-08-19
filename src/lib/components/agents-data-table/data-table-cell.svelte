@@ -1,6 +1,6 @@
 <script lang="ts">
   import { CornerDownRightIcon } from '@lucide/svelte';
-  import AvatarGen from './avatar-gen.svelte';
+  import AvatarGen from '../avatar-gen.svelte';
 
   type Props = {
     name: string;

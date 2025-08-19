@@ -4,7 +4,7 @@
   import AgentsHeader from '$lib/components/agents-header.svelte';
   import { listAgents } from './agents.remote';
   import DataTable from '$lib/components/data-table.svelte';
-  import { columns } from '$lib/components/columns';
+  import { columns } from '$lib/components/agents-data-table/agents-columns';
   import EmptyState from '$lib/components/empty-state.svelte';
   import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
   import DataPagination from '$lib/components/data-pagination.svelte';
@@ -27,7 +27,7 @@
 {:else if agentsQuery.loading}
   <LoadingState title="Retrieving Agents" description="This shouldn't take too long..." />
 {:else}
-  <div class="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8">
+  <div class="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8 overflow-auto">
     <DataTable
       data={agentsQuery.current?.items ?? []}
       {columns}

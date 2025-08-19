@@ -63,7 +63,6 @@ export const getAgent = query(z.string(), async (id) => {
 export const listAgents = query(PaginationSchema.or(z.void()), async (schema) => {
   const reqEvt = getRequestEvent();
   await authGuard(reqEvt.request.headers);
-  
 
   return listAll(PaginationSchema.parse(schema ?? {}), await getContext()); // since its void would the default values be set??
 });

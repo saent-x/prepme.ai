@@ -1,6 +1,6 @@
 <script lang="ts">
   import { VideoIcon } from '@lucide/svelte';
-  import Badge from './ui/badge/badge.svelte';
+  import Badge from '../ui/badge/badge.svelte';
 
   type Props = {
     meetingCount: number;

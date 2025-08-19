@@ -1,6 +1,7 @@
 import { DEFAULT_PAGE, MIN_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from '$lib/constant';
 import { db } from '$lib/db/index.server';
 import {
+  agents,
   interviews,
   type InterviewCreateSchema,
   type InterviewGetSchema,
@@ -8,9 +9,8 @@ import {
 } from '$lib/db/schema';
 import type { Context } from '$lib/utils';
 import { error } from '@sveltejs/kit';
-import { and, count, desc, eq, getTableColumns, ilike } from 'drizzle-orm';
+import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
 import z from 'zod/v4';
-
 
 export async function updateOne(input: InterviewOneSchema, ctx: Context) {
   const [updatedInterview] = await db
@@ -28,7 +28,6 @@ export async function updateOne(input: InterviewOneSchema, ctx: Context) {
   return updatedInterview;
 }
 
-
 export async function deleteOne(input: InterviewGetSchema, ctx: Context) {
   const [deletedInterview] = await db
     .delete(interviews)
@@ -43,7 +42,6 @@ export async function deleteOne(input: InterviewGetSchema, ctx: Context) {
 
   return deletedInterview;
 }
-
 
 export async function getOne(input: InterviewGetSchema, ctx: Context) {
   const [selectedInterview] = await db
@@ -72,8 +70,13 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
   const { search, page, pageSize } = input;
 
   const data = await db
-    .select()
+    .select({
+      ...getTableColumns(interviews),
+      agent: agents,
+      duration: sql<number>`EXTRACT(EPOCH FROM (ended_at - started_at))`.as('duration')
+    })
     .from(interviews)
+    .innerJoin(agents, eq(interviews.agentId, agents.id))
     .where(
       and(
         eq(interviews.userId, ctx.session?.user.id ?? ''),
@@ -87,6 +90,7 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
   const [total] = await db
     .select({ count: count() })
     .from(interviews)
+    .innerJoin(agents, eq(interviews.agentId, agents.id))
     .where(
       and(
         eq(interviews.userId, ctx.session?.user.id ?? ''),
@@ -108,7 +112,7 @@ export async function createOne(new_interview: InterviewCreateSchema, ctx: Conte
     .insert(interviews)
     .values({ ...new_interview, userId: ctx.session?.user.id ?? '' })
     .returning();
-  
+
   // TODO: Create Stream Call, Upsert Stream Users
 
   return createdInterview;

@@ -111,7 +111,7 @@ export type AgentGetSchema = Pick<InferSelectModel<typeof agents>, 'id'>;
 
 export type InterviewOneSchema = Pick<
   InferSelectModel<typeof interviews>,
-  'id' | 'name' | 'agentId'
+  'id' | 'name' | 'agentId' | 'startedAt' | 'endedAt' | 'status'
 >;
 export type InterviewCreateSchema = Pick<InferSelectModel<typeof interviews>, 'name' | 'agentId'>;
 export type InterviewGetSchema = Pick<InferSelectModel<typeof interviews>, 'id'>;
