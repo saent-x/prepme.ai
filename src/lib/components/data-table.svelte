@@ -20,7 +20,7 @@
   });
 </script>
 
-<div class="bg-background overflow-hidden rounded-lg border">
+<div class="bg-background overflow-scroll rounded-lg border">
   <Table.Root>
     <Table.Body>
       {#each table.getRowModel().rows as row (row.id)}

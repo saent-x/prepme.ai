@@ -28,7 +28,7 @@ export const updateInterview = form(async (data: FormData) => {
 
   const id = data.get('id') as string;
   const name = data.get('name') as string;
-  const agentId = data.get('agentId') as InterviewStatusEnum;
+  const agentId = data.get('agentId') as string;
 
   await updateOne(
     {

@@ -1,0 +1,20 @@
+<svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Empty Interviews Table</title>
+  <desc id="desc">Icon showing a calendar and chat bubble indicating there are no interviews scheduled.</desc>
+
+  <!-- table backdrop -->
+  <rect x="12" y="20" width="126" height="105" rx="12" stroke="currentColor" stroke-opacity="0.25" fill="none"/>
+
+  <!-- header -->
+  <rect x="20" y="30" width="110" height="14" rx="4" fill="currentColor" fill-opacity="0.08"/>
+  <circle cx="30" cy="37" r="3" fill="currentColor" fill-opacity="0.25"/>
+  <rect x="40" y="34" width="28" height="6" rx="3" fill="currentColor" fill-opacity="0.18"/>
+  <rect x="74" y="34" width="28" height="6" rx="3" fill="currentColor" fill-opacity="0.12"/>
+
+  <!-- ghost rows -->
+  <rect x="20" y="52" width="110" height="10" rx="3" fill="currentColor" fill-opacity="0.06"/>
+  <rect x="20" y="66" width="110" height="10" rx="3" fill="currentColor" fill-opacity="0.06"/>
+  <rect x="20" y="80" width="110" height="10" rx="3" fill="currentColor" fill-opacity="0.06"/>
+  <rect x="20" y="94" width="110" height="10" rx="3" fill="currentColor" fill-opacity="0.06"/>
+  <rect x="20" y="108" width="110" height="10" rx="3" fill="currentColor" fill-opacity="0.06"/>
+</svg>
