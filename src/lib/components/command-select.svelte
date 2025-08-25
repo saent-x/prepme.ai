@@ -7,30 +7,26 @@
   import * as Command from '$lib/components/ui/command/index';
 
   type Props = {
-    itemSnippet: Snippet<[name: string]>;
+    itemSnippet: Snippet<[value: string]>;
     options: Array<{
       id: string;
       value: string;
-      name: string;
+      name?: string;
     }>;
     onSelect: (value: string) => void;
-    onSearch?: (value: string) => void;
     value: string;
     placeholder?: string;
-    isSearchable?: boolean;
     className?: string;
-    agentSearch: string;
+    search?: string;
     queryLoading: boolean;
   };
 
   let {
     options = $bindable(),
     onSelect,
-    onSearch,
     value = $bindable(),
-    agentSearch = $bindable(),
+    search = $bindable(),
     placeholder,
-    isSearchable,
     className,
     itemSnippet,
     queryLoading = $bindable()
@@ -51,8 +47,8 @@
   )}
 >
   <div>
-    {#if selectedOption?.name}
-      {@render itemSnippet(selectedOption.name)}
+    {#if selectedOption?.name || selectedOption?.value}
+      {@render itemSnippet(selectedOption.name ?? selectedOption.value)}
     {:else}
       {placeholder}
     {/if}
@@ -60,8 +56,21 @@
   <ChevronsUpDownIcon />
 </Button>
 
-<ResponsiveCommand bind:open shouldFilter={false}>
-  <Command.Input placeholder="Search..." bind:value={agentSearch} />
+<ResponsiveCommand
+  bind:open={
+    () => open,
+    (v) => {
+      search = '';
+      open = v;
+    }
+  }
+  shouldFilter={!search}
+>
+  {#if search}
+    <Command.Input placeholder="Search..." bind:value={search} />
+  {:else}
+    <Command.Input placeholder="Search..." />
+  {/if}
   <Command.List class="List">
     {#if queryLoading}
       <p class="p-4 text-sm">searching...</p>
@@ -72,7 +81,7 @@
             onSelect(option.value);
             open = false;
           }}
-          >{@render itemSnippet(option.name)}
+          >{@render itemSnippet(option.name ?? option.value)}
         </Command.Item>
       {/each}
     {/if}

@@ -36,7 +36,7 @@
     <DataPagination
       page={filters.page.current}
       totalPages={agentsQuery.current?.totalPages!}
-      onPageChange={(page) => filters.set({ page })}
+      onPageChange={(page) => (filters.page.current = page)}
     />
     {#if agentsQuery.current?.items.length === 0}
       <EmptyState

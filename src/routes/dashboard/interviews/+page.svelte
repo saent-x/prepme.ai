@@ -7,8 +7,18 @@
   import { columns } from '$lib/components/interviews-data-table/interviews-columns';
   import { goto } from '$app/navigation';
   import EmptyState from '$lib/components/empty-state.svelte';
+  import { useInterviewsFilters } from '$lib/hooks/use-interviews-filters';
+  import DataPagination from '$lib/components/data-pagination.svelte';
 
-  const interviewsQuery = listInterviews();
+  const filters = useInterviewsFilters();
+  const interviewsQuery = $derived(
+    listInterviews({
+      search: filters.search.current,
+      page: filters.page.current,
+      agentId: filters.agentId.current,
+      status: filters.status.current
+    })
+  );
 </script>
 
 <InterviewHeader />
@@ -23,6 +33,12 @@
       data={interviewsQuery.current?.items ?? []}
       {columns}
       onRowClick={(row) => goto(`/dashboard/interviews/${row.id}`)}
+    />
+
+    <DataPagination
+      page={filters.page.current}
+      totalPages={interviewsQuery.current?.totalPages!}
+      onPageChange={(page) => filters.set({ page })}
     />
 
     {#if interviewsQuery.current?.items.length === 0}

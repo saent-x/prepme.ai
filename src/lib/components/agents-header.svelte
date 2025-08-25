@@ -5,6 +5,7 @@
   import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
   import AgentsSearchFilters from './agents-search-filters.svelte';
   import { DEFAULT_PAGE } from '$lib/constant';
+  import { ScrollArea, Scrollbar } from './ui/scroll-area';
 
   let filters = useAgentsFilters();
   let open = $state(false);
@@ -32,13 +33,16 @@
       New Agent
     </Button>
   </div>
-  <div class="flex items-center gap-x-2 p-1">
-    <AgentsSearchFilters />
-    {#if isAnyFilterModified}
+  <ScrollArea>
+    <div class="flex items-center gap-x-2 p-1">
+      <AgentsSearchFilters />
+      {#if isAnyFilterModified}
         <Button variant="outline" size="sm" onclick={onClearFilters}>
-            <XCircleIcon />
-            Clear
+          <XCircleIcon />
+          Clear
         </Button>
-    {/if}
-  </div>
+      {/if}
+    </div>
+    <Scrollbar orientation="horizontal" />
+  </ScrollArea>
 </div>
