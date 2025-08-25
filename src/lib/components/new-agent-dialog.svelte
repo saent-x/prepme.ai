@@ -4,7 +4,7 @@
 
   type Props = {
     open: boolean;
-    onAction: () => void;
+    onAction?: () => void;
   };
 
   let { open = $bindable(), onAction }: Props = $props();

@@ -1,15 +1,28 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
   import { PlusIcon, XCircleIcon } from '@lucide/svelte';
-  import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
   import { DEFAULT_PAGE } from '$lib/constant';
   import NewInterviewDialog from './new-interview-dialog.svelte';
+  import InterviewsSearchFilters from './interviews-search-filters.svelte';
+  import { useInterviewsFilters } from '$lib/hooks/use-interviews-filters';
+  import StatusFilter from './status-filter.svelte';
+  import AgentsIdFilter from './agentsId-filter.svelte';
+  import { ScrollArea, Scrollbar } from './ui/scroll-area';
 
   let open = $state(false);
+  let filters = useInterviewsFilters();
+  let isAnyFilterModified = $derived(
+    !!filters.search.current || !!filters.status.current || !!filters.agentId.current
+  );
 
-  // let isAnyFilterModified = $derived(!!filters.search.current);
-
-  const onClearFilters = () => {};
+  const onClearFilters = () => {
+    filters.set({
+      search: '',
+      status: null,
+      agentId: '',
+      page: 1
+    });
+  };
 </script>
 
 <NewInterviewDialog bind:open />
@@ -25,13 +38,18 @@
       New Interview
     </Button>
   </div>
-  <div class="flex items-center gap-x-2 p-1">
-    <!-- <AgentsSearchFilters />
-    {#if isAnyFilterModified}
+  <ScrollArea>
+    <div class="flex items-center gap-x-2 p-1">
+      <InterviewsSearchFilters />
+      <StatusFilter />
+      <AgentsIdFilter />
+      {#if isAnyFilterModified}
         <Button variant="outline" size="sm" onclick={onClearFilters}>
-            <XCircleIcon />
-            Clear
+          <XCircleIcon />
+          Clear
         </Button>
-    {/if} -->
-  </div>
+      {/if}
+    </div>
+    <Scrollbar orientation="horizontal" />
+  </ScrollArea>
 </div>

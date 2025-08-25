@@ -17,7 +17,12 @@
   </Sidebar.Provider>
 
   {#snippet failed(error, reset)}
-    <button onclick={reset}>oops! try again</button>
+    <div class="p-4">
+      <button onclick={reset}>oops! try again</button>
+      <p class="text-red-700 mt-5">
+        {error}
+      </p>
+    </div>
   {/snippet}
 
   {#snippet pending()}

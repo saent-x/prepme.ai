@@ -115,4 +115,11 @@ export type InterviewOneSchema = Pick<
 >;
 export type InterviewCreateSchema = Pick<InferSelectModel<typeof interviews>, 'name' | 'agentId'>;
 export type InterviewGetSchema = Pick<InferSelectModel<typeof interviews>, 'id'>;
+export const InterviewStatus = {
+  Upcoming: 'upcoming',
+  Active: 'active',
+  Completed: 'completed',
+  Processing: 'processing',
+  Cancelled: 'cancelled'
+} as const;
 export type InterviewStatusEnum = (typeof interviewStatus.enumValues)[number];

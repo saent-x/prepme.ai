@@ -3,6 +3,7 @@ import { db } from '$lib/db/index.server';
 import {
   agents,
   interviews,
+  InterviewStatus,
   type InterviewCreateSchema,
   type InterviewGetSchema,
   type InterviewOneSchema
@@ -63,11 +64,13 @@ export async function getOne(input: InterviewGetSchema, ctx: Context) {
 export const PaginationSchema = z.object({
   page: z.number().default(DEFAULT_PAGE),
   pageSize: z.number().min(MIN_PAGE_SIZE).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE).nullish(),
-  search: z.string().nullish()
+  search: z.string().nullish(),
+  agentId: z.string().nullish(),
+  status: z.enum(InterviewStatus).nullish()
 });
 
 export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Context) {
-  const { search, page, pageSize } = input;
+  const { search, page, pageSize, status, agentId } = input;
 
   const data = await db
     .select({
@@ -80,7 +83,9 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
     .where(
       and(
         eq(interviews.userId, ctx.session?.user.id ?? ''),
-        search ? ilike(interviews.name, `%${search}%`) : undefined
+        search ? ilike(interviews.name, `%${search}%`) : undefined,
+        status ? eq(interviews.status, status) : undefined,
+        agentId ? eq(interviews.agentId, agentId) : undefined
       )
     )
     .orderBy(desc(interviews.createdAt), desc(interviews.id))
@@ -94,7 +99,9 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
     .where(
       and(
         eq(interviews.userId, ctx.session?.user.id ?? ''),
-        search ? ilike(interviews.name, `%${search}%`) : undefined
+        search ? ilike(interviews.name, `%${search}%`) : undefined,
+        status ? eq(interviews.status, status) : undefined,
+        agentId ? eq(interviews.agentId, agentId) : undefined
       )
     );
 

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import Textarea from './ui/textarea/textarea.svelte';
   import { Button } from './ui/button';
   import { toast } from 'svelte-sonner';
   import type { InterviewOneSchema } from '$lib/db/schema';
@@ -38,15 +37,11 @@
   );
 
   let options = $derived(
-    (agentsQuery.current?.items ?? []).map((agent) => {
-      console.log('options updated');
-
-      return {
-        id: agent.id,
-        value: agent.id,
-        name: agent.name
-      };
-    })
+    (agentsQuery.current?.items ?? []).map((agent) => ({
+      id: agent.id,
+      value: agent.id,
+      name: agent.name
+    }))
   );
 
   let formEnhance = async ({ submit }: { submit: any }) => {
@@ -92,10 +87,10 @@
     />
   </div>
 
-  {#snippet selectItem(name: string)}
+  {#snippet selectItem(value: string)}
     <div class="flex items-center gap-x-2">
-      <AvatarGen class="size-6 border" variant="bot" {name} />
-      <span>{name}</span>
+      <AvatarGen class="size-6 border" variant="bot" name={value} />
+      <span>{value}</span>
     </div>
   {/snippet}
 
@@ -106,13 +101,16 @@
       <Label for="agent">Agent</Label>
       <CommandSelect
         itemSnippet={selectItem}
-        onSelect={(value) => (selectedAgent = value)}
-        bind:agentSearch
+        onSelect={(value) => {
+          selectedAgent = value;
+          agentSearch = '';
+        }}
+        bind:search={agentSearch}
         bind:value={selectedAgent}
         bind:queryLoading={agentsQuery.loading}
         placeholder="Select an agent"
         bind:options
-      ></CommandSelect>
+      />
       <p class="text-muted-foreground text-sm">
         Can&apos;t find an agent?
         <button
