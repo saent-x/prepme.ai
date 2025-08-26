@@ -3,7 +3,7 @@
   import { Label } from '$lib/components/ui/label';
   import { Button } from './ui/button';
   import { toast } from 'svelte-sonner';
-  import type { InterviewOneSchema } from '$lib/db/schema';
+  import type { UpdateInterviewSchema } from '$lib/db/schema';
   import {
     createInterview,
     listInterviews,
@@ -17,7 +17,7 @@
 
   type Props = {
     onCancel: () => void;
-    initialValues?: InterviewOneSchema;
+    initialValues?: UpdateInterviewSchema;
     actionType?: 'update' | 'create';
   };
 
@@ -25,7 +25,7 @@
   let name = $state<string>(actionType === 'update' ? initialValues!.name : '');
   let pending = $state<boolean>(false);
   let agentSearch = $state<string>('');
-  let selectedAgent = $state<string>('');
+  let selectedAgent = $state<string>(actionType === 'update' ? initialValues!.agentId : '');
   let openNewAgentDialog = $state<boolean>(false);
 
   const agentsQuery = $derived(

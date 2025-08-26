@@ -47,9 +47,12 @@ export async function deleteOne(input: InterviewGetSchema, ctx: Context) {
 export async function getOne(input: InterviewGetSchema, ctx: Context) {
   const [selectedInterview] = await db
     .select({
-      ...getTableColumns(interviews)
+      ...getTableColumns(interviews),
+      agent: agents,
+      duration: sql<number>`EXTRACT(EPOCH FROM (ended_at - started_at))`.as('duration')
     })
     .from(interviews)
+    .innerJoin(agents, eq(interviews.agentId, agents.id))
     .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id ?? '')));
 
   if (!selectedInterview) {
