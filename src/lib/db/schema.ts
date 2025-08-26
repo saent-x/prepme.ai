@@ -113,6 +113,10 @@ export type InterviewOneSchema = Pick<
   InferSelectModel<typeof interviews>,
   'id' | 'name' | 'agentId' | 'startedAt' | 'endedAt' | 'status'
 >;
+export type UpdateInterviewSchema = Pick<
+  InferSelectModel<typeof interviews>,
+  'id' | 'name' | 'agentId'
+>;
 export type InterviewCreateSchema = Pick<InferSelectModel<typeof interviews>, 'name' | 'agentId'>;
 export type InterviewGetSchema = Pick<InferSelectModel<typeof interviews>, 'id'>;
 export const InterviewStatus = {

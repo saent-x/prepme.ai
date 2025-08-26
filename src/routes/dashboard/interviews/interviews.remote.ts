@@ -1,6 +1,5 @@
 import { query, form, getRequestEvent } from '$app/server';
 import { auth } from '$lib/auth';
-import type { InterviewStatusEnum } from '$lib/db/schema';
 import {
   listAll,
   createOne,
