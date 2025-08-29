@@ -7,6 +7,11 @@
   import ErrorState from '$lib/components/error-state.svelte';
   import LoadingState from '$lib/components/loading-state.svelte';
   import UpdateInterviewDialog from '$lib/components/update-interview-dialog.svelte';
+  import EmptyState from '$lib/components/empty-state.svelte';
+  import UpcomingState from '$lib/components/interview-states/upcoming-state.svelte';
+  import ActiveState from '$lib/components/interview-states/active-state.svelte';
+  import CancelledState from '$lib/components/interview-states/cancelled-state.svelte';
+  import ProcessingState from '$lib/components/interview-states/processing-state.svelte';
 
   const [ConfirmationDialog, confirmRemove, getPromise] = useConfirm();
 
@@ -52,5 +57,25 @@
       onUpdate={() => (openUpdateDialog = true)}
       onRemove={async () => await removeInterview(interviewQuery.current?.id ?? '')}
     />
+
+    {#if interviewQuery.current?.status === 'cancelled'}
+      <CancelledState />
+    {:else if interviewQuery.current?.status === 'active'}
+      <ActiveState interviewId={interviewQuery.current.id} />
+    {:else if interviewQuery.current?.status === 'upcoming'}
+      <UpcomingState
+        interviewId={interviewQuery.current.id}
+        onCancelInterview={() => {}}
+        isCancelling={false}
+      />
+    {:else if interviewQuery.current?.status === 'completed'}
+      <EmptyState
+        src="/src/assets/completed.svg"
+        title="Upcoming"
+        description="upcoming interview not yet started"
+      />
+    {:else if interviewQuery.current?.status === 'processing'}
+      <ProcessingState />
+    {/if}
   {/if}
 </div>
