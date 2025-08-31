@@ -1,6 +1,25 @@
-<script lang="ts">
+<script lang="ts" module>
   import { createAvatar } from '@dicebear/core';
-  import { botttsNeutral, funEmoji } from '@dicebear/collection';
+  import { botttsNeutral, funEmoji, initials } from '@dicebear/collection';
+
+  type Variant = 'botttsNeutral' | 'initials' | 'funEmoji';
+
+  export const generateAvatarUri = (variant: Variant, seed: string, size?: number): string => {
+    let avatar;
+
+    if (variant === 'botttsNeutral') {
+      avatar = createAvatar(botttsNeutral, { size, seed });
+    } else if (variant === 'funEmoji') {
+      avatar = createAvatar(funEmoji, { size, seed });
+    } else {
+      avatar = createAvatar(initials, { size, seed, fontWeight: 500, fontSize: 42 });
+    }
+
+    return avatar.toDataUri();
+  };
+</script>
+
+<script lang="ts">
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { cn } from '$lib/utils';
 
@@ -15,17 +34,10 @@
 
   $effect(() => {
     try {
-      if (variant === 'bot') {
-        avatar = createAvatar(botttsNeutral, {
-          size: 128,
-          seed: name || 'Bot'
-        }).toDataUri();
-      } else {
-        avatar = createAvatar(funEmoji, {
-          size: 128,
-          seed: name || 'User'
-        }).toDataUri();
-      }
+      avatar =
+        variant === 'bot'
+          ? generateAvatarUri('botttsNeutral', name || 'Bot', 128)
+          : generateAvatarUri('funEmoji', name || 'User', 128);
     } catch (error) {
       console.error('Avatar generation failed:', error);
       avatar = '';

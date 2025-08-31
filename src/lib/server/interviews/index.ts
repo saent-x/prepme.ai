@@ -12,8 +12,41 @@ import type { Context } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
 import z from 'zod/v4';
+import { streamVideo } from '../stream-video';
+import { generateAvatarUri } from '$lib/components/avatar-gen.svelte';
 
-export async function updateOne(input: InterviewOneSchema, ctx: Context) {
+export async function generateToken(ctx: Context): Promise<string> {
+  if (!ctx.session) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
+  await streamVideo.upsertUsers([
+    {
+      id: ctx.session?.user.id,
+      name: ctx.session?.user.name,
+      role: 'admin',
+      image: ctx.session?.user.image ?? generateAvatarUri('initials', ctx.session?.user.name)
+    }
+  ]);
+
+  const expirationTime = Math.floor(Date.now() / 1000) + 3600;
+  const issuedAt = Math.floor(Date.now() / 1000) - 60;
+
+  const token = streamVideo.generateUserToken({
+    user_id: ctx.session?.user.id,
+    exp: expirationTime,
+    validity_in_seconds: issuedAt
+  });
+
+  return token;
+}
+
+export async function updateOne(
+  input: Pick<InterviewOneSchema, 'id' | 'name' | 'agentId'>,
+  ctx: Context
+) {
   const [updatedInterview] = await db
     .update(interviews)
     .set(input)
@@ -124,6 +157,47 @@ export async function createOne(new_interview: InterviewCreateSchema, ctx: Conte
     .returning();
 
   // TODO: Create Stream Call, Upsert Stream Users
+  const call = streamVideo.video.call('default', createdInterview.id);
+  await call.create({
+    data: {
+      created_by_id: ctx.session?.user.id,
+      custom: {
+        interviewId: createdInterview.id,
+        interviewName: createdInterview.name
+      },
+      settings_override: {
+        transcription: {
+          language: 'en',
+          mode: 'auto-on',
+          closed_caption_mode: 'auto-on'
+        },
+        recording: {
+          mode: 'auto-on',
+          quality: '1080p'
+        }
+      }
+    }
+  });
+
+  const [existingAgent] = await db
+    .select()
+    .from(agents)
+    .where(eq(agents.id, createdInterview.agentId));
+
+  if (!existingAgent) {
+    error(404, {
+      message: 'Agent not found'
+    });
+  }
+
+  await streamVideo.upsertUsers([
+    {
+      id: existingAgent.id,
+      name: existingAgent.name,
+      role: 'user',
+      image: generateAvatarUri('botttsNeutral', existingAgent.name)
+    }
+  ]);
 
   return createdInterview;
 }

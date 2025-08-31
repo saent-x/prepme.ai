@@ -47,7 +47,9 @@
   let formEnhance = async ({ submit }: { submit: any }) => {
     try {
       pending = true;
+
       await submit().updates(listInterviews());
+      const result = $state.snapshot(action.result!) as { interviewId: string };
 
       toast.success(
         actionType === 'update'
@@ -56,7 +58,7 @@
       );
 
       onCancel();
-      goto(`/dashboard/interviews/${selectedAgent}`);
+      goto(`/dashboard/interviews/${result.interviewId}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An error occurred');
     } finally {

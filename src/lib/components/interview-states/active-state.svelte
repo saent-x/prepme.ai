@@ -21,7 +21,7 @@
 
     <Button
       class="w-full lg:w-auto"
-      href={`/dashboard/call/${interviewId}`}
+      href={`/call/${interviewId}`}
     >
       <VideoIcon />
       Join Interview
