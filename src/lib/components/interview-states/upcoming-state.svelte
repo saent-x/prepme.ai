@@ -33,7 +33,7 @@
     <Button
       class="w-full lg:w-auto"
       disabled={isCancelling}
-      href={`/dashboard/call/${interviewId}`}
+      href={`/call/${interviewId}`}
     >
       <VideoIcon />
       Start Interview

@@ -6,7 +6,8 @@ import {
   getOne,
   PaginationSchema,
   deleteOne,
-  updateOne
+  updateOne,
+  generateToken
 } from '$lib/server/interviews';
 import { authGuard } from '$lib/server/utils';
 import type { Session } from '$lib/utils';
@@ -19,6 +20,13 @@ const getContext = async (): Promise<{ session: Session }> => {
 
   return { session: currentSession };
 };
+
+export const getToken = query(async () => {
+  let { request } = getRequestEvent();
+  await authGuard(request.headers);
+
+  return await generateToken(await getContext());
+});
 
 export const updateInterview = form(async (data: FormData) => {
   let { request } = getRequestEvent();
@@ -74,7 +82,7 @@ export const createInterview = form(async (data: FormData) => {
   const name = data.get('name') as string;
   const agentId = data.get('agentId') as string;
 
-  await createOne(
+  const newInterview = await createOne(
     {
       name,
       agentId
@@ -83,6 +91,6 @@ export const createInterview = form(async (data: FormData) => {
   );
 
   return {
-    name // Not necessary?
+    interviewId: newInterview.id
   };
 });

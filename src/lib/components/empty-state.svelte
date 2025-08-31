@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { Picture } from 'vite-imagetools';
-
   type Props = {
     title: string;
     description: string;

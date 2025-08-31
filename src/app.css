@@ -130,3 +130,6 @@ body {
         cursor: pointer;
     }
 }
+
+/* Stream Video React SDK styles */
+@import '@stream-io/video-react-sdk/dist/css/styles.css';
