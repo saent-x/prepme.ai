@@ -5,5 +5,8 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [enhancedImages(), tailwindcss(), sveltekit(), devtoolsJson()]
+  plugins: [enhancedImages(), tailwindcss(), sveltekit(), devtoolsJson()],
+  server: {
+    allowedHosts: ['big-drake-quietly.ngrok-free.app']
+  }
 });

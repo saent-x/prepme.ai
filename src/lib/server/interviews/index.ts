@@ -156,7 +156,6 @@ export async function createOne(new_interview: InterviewCreateSchema, ctx: Conte
     .values({ ...new_interview, userId: ctx.session?.user.id ?? '' })
     .returning();
 
-  // TODO: Create Stream Call, Upsert Stream Users
   const call = streamVideo.video.call('default', createdInterview.id);
   await call.create({
     data: {
