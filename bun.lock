@@ -10,6 +10,7 @@
         "@fontsource-variable/inter": "^5.2.6",
         "@neondatabase/serverless": "^0.10.4",
         "@stream-io/node-sdk": "^0.6.2",
+        "@stream-io/openai-realtime-api": "^0.3.3",
         "@stream-io/video-client": "^1.28.1",
         "@stream-io/video-react-sdk": "^1.20.1",
         "@tanstack/svelte-query": "^5.83.1",
@@ -324,6 +325,8 @@
 
     "@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
+    "@openai/realtime-api-beta": ["@openai/realtime-api-beta@github:openai/openai-realtime-api-beta#a5cb948", { "dependencies": { "ws": "^8.18.0" } }, "openai-openai-realtime-api-beta-a5cb948"],
+
     "@peculiar/asn1-android": ["@peculiar/asn1-android@2.3.16", "", { "dependencies": { "@peculiar/asn1-schema": "^2.3.15", "asn1js": "^3.0.5", "tslib": "^2.8.1" } }, "sha512-a1viIv3bIahXNssrOIkXZIlI2ePpZaNmR30d4aBL99mu2rO+mT9D6zBsp7H6eROWGtmwv0Ionp5olJurIo09dw=="],
 
     "@peculiar/asn1-ecc": ["@peculiar/asn1-ecc@2.3.15", "", { "dependencies": { "@peculiar/asn1-schema": "^2.3.15", "@peculiar/asn1-x509": "^2.3.15", "asn1js": "^3.0.5", "tslib": "^2.8.1" } }, "sha512-/HtR91dvgog7z/WhCVdxZJ/jitJuIu8iTqiyWVgRE9Ac5imt2sT/E4obqIVGKQw7PIy+X6i8lVBoT6wC73XUgA=="],
@@ -403,6 +406,8 @@
     "@standard-schema/spec": ["@standard-schema/spec@1.0.0", "", {}, "sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA=="],
 
     "@stream-io/node-sdk": ["@stream-io/node-sdk@0.6.2", "", { "dependencies": { "@types/jsonwebtoken": "^9.0.3", "@types/node": "^18.3.0", "jsonwebtoken": "^9.0.2", "uuid": "^9.0.1" }, "peerDependencies": { "@stream-io/openai-realtime-api": "~0.1.3 || ~0.2.0 || ~0.3.0" }, "optionalPeers": ["@stream-io/openai-realtime-api"] }, "sha512-TPvpc+LT21bIRW4lHcNvIGr8K0kUbnkbic3e5ZwKkviEkTZ5uSrC2osMcbvkxi4Z1B95+qWWsfEzh1xBNIfLrQ=="],
+
+    "@stream-io/openai-realtime-api": ["@stream-io/openai-realtime-api@0.3.3", "", { "dependencies": { "@openai/realtime-api-beta": "github:openai/openai-realtime-api-beta#a5cb94824f625423858ebacb9f769226ca98945f", "ws": "^8.18.0" } }, "sha512-jHjvE8zIkUAK6oeR/ZmjKDkyGB/jmV0QSGEv8CmXbobX4uzWPjM72CK6kqzTdUqJdxjGun7UrCp2enrPhHizlg=="],
 
     "@stream-io/video-client": ["@stream-io/video-client@1.28.1", "", { "dependencies": { "@protobuf-ts/runtime": "^2.9.4", "@protobuf-ts/runtime-rpc": "^2.9.4", "@protobuf-ts/twirp-transport": "^2.9.4", "axios": "^1.8.1", "rxjs": "~7.8.1", "sdp-transform": "^2.15.0", "ua-parser-js": "^1.0.40", "webrtc-adapter": "^8.2.3" } }, "sha512-kPpbD80YVVrdOt5tHedWtzvK1ePJB4e3F+rrfwvhzoiWG94Xo3CzAgnvsy4VsiMXG9Bg50Fh4Bn91LT26x8FTQ=="],
 
@@ -983,6 +988,8 @@
     "webrtc-adapter": ["webrtc-adapter@8.2.4", "", { "dependencies": { "sdp": "^3.2.0" } }, "sha512-VwtwbYNKnVQW8koB9qb8YcxNwpSVHTvvKEZLzY6uQ3gFrA9E87VPbB5xE+m1AGwUjL1UgN35jRR9hQgteZI5bg=="],
 
     "which": ["which@4.0.0", "", { "dependencies": { "isexe": "^3.1.1" }, "bin": { "node-which": "bin/which.js" } }, "sha512-GlaYyEb07DPxYCKhKzplCWBJtvxZcZMrL+4UkrTSJHHPyZU4mYYTv3qaOe77H7EODLSSopAUFAc6W8U4yqvscg=="],
+
+    "ws": ["ws@8.18.3", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg=="],
 
     "yallist": ["yallist@5.0.0", "", {}, "sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw=="],
 
