@@ -23,9 +23,8 @@
       <span class="text-muted-foreground max-w-[200px] truncate text-sm capitalize">{name}</span>
     </div>
     <AvatarGen class="size-4" variant="bot" name={agent.name} />
+    <span class="text-muted-foreground text-sm">
+      | {startedAt ? format(startedAt, 'MMM d') : ''}
+    </span>
   </div>
-
-  <span class="text-muted-foreground text-sm">
-    {startedAt ? format(startedAt, 'MMM d') : ''}
-  </span>
 </div>

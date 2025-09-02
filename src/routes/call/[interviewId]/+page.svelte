@@ -11,7 +11,7 @@
 
 {#if interviewQuery.error}
   <ErrorState title="Failed to load interview" description="Please try again later..." />
-{:else if interviewQuery.current}
+{:else if interviewQuery.ready}
   <div class="h-full">
     {#if interviewQuery.current?.status === 'completed'}
       <div class="flex h-screen items-center justify-center">

@@ -26,7 +26,7 @@
   <ErrorState title="Failed to load agents" description="Please try again later..." />
 {:else if agentsQuery.loading}
   <LoadingState title="Retrieving Agents" description="This shouldn't take too long..." />
-{:else}
+{:else if agentsQuery.ready}
   <div class="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8 overflow-auto">
     <DataTable
       data={agentsQuery.current?.items ?? []}

@@ -11,6 +11,7 @@ import {
 } from '$lib/server/interviews';
 import { authGuard } from '$lib/server/utils';
 import type { Session } from '$lib/utils';
+import { error } from '@sveltejs/kit';
 import { z } from 'zod/v4';
 
 const getContext = async (): Promise<{ session: Session }> => {
@@ -25,7 +26,7 @@ export const getToken = query(async () => {
   let { request } = getRequestEvent();
   await authGuard(request.headers);
 
-  return await generateToken(await getContext());
+  return await generateToken(await getContext())
 });
 
 export const updateInterview = form(async (data: FormData) => {
