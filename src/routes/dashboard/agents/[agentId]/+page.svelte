@@ -35,7 +35,7 @@
     <ErrorState title="Failed to load agent" description="Please try again later..." />
   {:else if agentQuery.loading}
     <LoadingState title="Retrieving Agent" description="This shouldn't take too long..." />
-  {:else}
+  {:else if agentQuery.ready}
     <ConfirmationDialog.component
       bind:promise={confirmationDialogFlag}
       title="Are you sure?"

@@ -36,7 +36,7 @@
     <ErrorState title="Failed to load interview" description="Please try again later..." />
   {:else if interviewQuery.loading}
     <LoadingState title="Retrieving Interview" description="This shouldn't take too long..." />
-  {:else}
+  {:else if interviewQuery.ready}
     <ConfirmationDialog.component
       bind:promise={confirmationDialogFlag}
       title="Are you sure?"

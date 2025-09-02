@@ -2,6 +2,20 @@
   const { children } = $props();
 </script>
 
-<div class="h-screen bg-black">
+<svelte:boundary>
+  <div class="h-screen bg-black">
     {@render children()}
-</div>
+  </div>
+  {#snippet failed(error, reset)}
+    <div class="p-4">
+      <button onclick={reset}>oops! try again</button>
+      <p class="mt-5 text-red-700">
+        {error}
+      </p>
+    </div>
+  {/snippet}
+
+  {#snippet pending()}
+    <p>loading...</p>
+  {/snippet}
+</svelte:boundary>

@@ -18,7 +18,7 @@
 
   let client = $state<StreamVideoClient>();
   $effect(() => {
-    if (!tokenQuery.current) return;
+    if (!tokenQuery.ready) return;
 
     const _client = new StreamVideoClient({
       apiKey: env.PUBLIC_STREAM_API_KEY,
@@ -27,7 +27,10 @@
         name: userName,
         image: userImage
       },
-      tokenProvider: getToken // probably not work????
+      tokenProvider: async () => {
+        await tokenQuery.refresh();
+        return tokenQuery.current;
+      }
     });
 
     client = _client;

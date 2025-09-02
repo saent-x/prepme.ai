@@ -127,3 +127,11 @@ export const InterviewStatus = {
   Cancelled: 'cancelled'
 } as const;
 export type InterviewStatusEnum = (typeof interviewStatus.enumValues)[number];
+
+export type StreamTranscriptItem = {
+  speaker_id: string,
+  type: string;
+  text: string;
+  start_ts: number;
+  stop_ts: number;
+}

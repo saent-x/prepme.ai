@@ -16,31 +16,35 @@ import { streamVideo } from '../stream-video';
 import { generateAvatarUri } from '$lib/components/avatar-gen.svelte';
 
 export async function generateToken(ctx: Context): Promise<string> {
-  if (!ctx.session) {
-    error(401, {
-      message: 'Unauthorized'
-    });
-  }
-
-  await streamVideo.upsertUsers([
-    {
-      id: ctx.session?.user.id,
-      name: ctx.session?.user.name,
-      role: 'admin',
-      image: ctx.session?.user.image ?? generateAvatarUri('initials', ctx.session?.user.name)
+  try {
+    if (!ctx.session) {
+      error(401, {
+        message: 'Unauthorized'
+      });
     }
-  ]);
 
-  const expirationTime = Math.floor(Date.now() / 1000) + 3600;
-  const issuedAt = Math.floor(Date.now() / 1000) - 60;
+    await streamVideo.upsertUsers([
+      {
+        id: ctx.session?.user.id,
+        name: ctx.session?.user.name,
+        role: 'admin',
+        image: ctx.session?.user.image ?? generateAvatarUri('initials', ctx.session?.user.name)
+      }
+    ]);
 
-  const token = streamVideo.generateUserToken({
-    user_id: ctx.session?.user.id,
-    exp: expirationTime,
-    validity_in_seconds: issuedAt
-  });
+    const expirationTime = Math.floor(Date.now() / 1000) + 3600;
+    const issuedAt = Math.floor(Date.now() / 1000) - 60;
 
-  return token;
+    const token = streamVideo.generateUserToken({
+      user_id: ctx.session?.user.id,
+      exp: expirationTime,
+      validity_in_seconds: issuedAt
+    });
+
+    return token;
+  } catch {
+    return error(400, { message: 'Error generating token' });
+  }
 }
 
 export async function updateOne(

@@ -27,7 +27,7 @@
   <LoadingState title="Retrieving Interviews" description="This shouldn't take too long..." />
 {:else if interviewsQuery.error}
   <ErrorState title="Failed to load interviews" description="Please try again later..." />
-{:else}
+{:else if interviewsQuery.ready}
   <div class="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8">
     <DataTable
       data={interviewsQuery.current?.items ?? []}
