@@ -42,15 +42,15 @@ export const POST: RequestHandler = async ({ request }) => {
   const eventType = (payload as Record<string, unknown>)?.type;
 
   if (eventType === 'call.session_started') {
-    handleSessionStartedEvent(payload as CallSessionStartedEvent);
+    await handleSessionStartedEvent(payload as CallSessionStartedEvent);
   } else if (eventType === 'call.session_participant_left') {
-    handleSessionParticipantLeft(payload as CallSessionParticipantLeftEvent);
+    await handleSessionParticipantLeft(payload as CallSessionParticipantLeftEvent);
   } else if (eventType === 'call.session_ended') {
-    handleSessionEnded(payload as CallEndedEvent);
+    await handleSessionEnded(payload as CallEndedEvent);
   } else if (eventType === 'call.transcription_ready') {
-    handleTranscriptionReady(payload as CallTranscriptionReadyEvent);
+    await handleTranscriptionReady(payload as CallTranscriptionReadyEvent);
   } else if (eventType === 'call.recording_ready') {
-    handleRecordingReady(payload as CallRecordingReadyEvent);
+    await handleRecordingReady(payload as CallRecordingReadyEvent);
   }
 
   return json({ status: 'ok' });

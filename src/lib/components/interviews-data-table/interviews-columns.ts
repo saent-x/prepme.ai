@@ -1,16 +1,11 @@
 import type { ColumnDef } from '@tanstack/table-core';
 import { renderComponent } from '../ui/data-table';
 import DataTableCell from './data-table-cell.svelte';
-import type { AgentOneSchema, InterviewOneSchema } from '$lib/db/schema';
+import type { InterviewOneSchema } from '$lib/db/schema';
 import StatusCell from './status-cell.svelte';
 import DurationCell from './duration-cell.svelte';
 
-type InterviewColumnSchema = InterviewOneSchema & {
-  agent: AgentOneSchema;
-  duration: number;
-};
-
-export const columns: ColumnDef<InterviewColumnSchema>[] = [
+export const columns: ColumnDef<InterviewOneSchema>[] = [
   {
     accessorKey: 'name',
     header: 'Interview Name',
