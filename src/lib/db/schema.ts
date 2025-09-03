@@ -111,8 +111,19 @@ export type AgentGetSchema = Pick<InferSelectModel<typeof agents>, 'id'>;
 
 export type InterviewOneSchema = Pick<
   InferSelectModel<typeof interviews>,
-  'id' | 'name' | 'agentId' | 'startedAt' | 'endedAt' | 'status'
->;
+  | 'id'
+  | 'name'
+  | 'agentId'
+  | 'startedAt'
+  | 'endedAt'
+  | 'status'
+  | 'summary'
+  | 'transcriptUrl'
+  | 'recordingUrl'
+> & {
+  agent: AgentOneSchema;
+  duration: number;
+};
 export type UpdateInterviewSchema = Pick<
   InferSelectModel<typeof interviews>,
   'id' | 'name' | 'agentId'
@@ -129,9 +140,9 @@ export const InterviewStatus = {
 export type InterviewStatusEnum = (typeof interviewStatus.enumValues)[number];
 
 export type StreamTranscriptItem = {
-  speaker_id: string,
+  speaker_id: string;
   type: string;
   text: string;
   start_ts: number;
   stop_ts: number;
-}
+};

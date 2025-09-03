@@ -12,6 +12,7 @@
   import ActiveState from '$lib/components/interview-states/active-state.svelte';
   import CancelledState from '$lib/components/interview-states/cancelled-state.svelte';
   import ProcessingState from '$lib/components/interview-states/processing-state.svelte';
+    import CallCompleted from '$lib/components/call/call-completed.svelte';
 
   const [ConfirmationDialog, confirmRemove, getPromise] = useConfirm();
 
@@ -69,11 +70,7 @@
         isCancelling={false}
       />
     {:else if interviewQuery.current?.status === 'completed'}
-      <EmptyState
-        src="/src/assets/completed.svg"
-        title="Upcoming"
-        description="upcoming interview not yet started"
-      />
+      <CallCompleted data={interviewQuery.current} />
     {:else if interviewQuery.current?.status === 'processing'}
       <ProcessingState />
     {/if}

@@ -76,6 +76,7 @@
     "nuqs-svelte": "^1.2.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "svelte-exmarkdown": "^5.0.2",
     "zod": "^3.25.76"
   }
 }
