@@ -134,3 +134,4 @@ body {
 
 /* Stream Video React SDK styles */
 @import '@stream-io/video-react-sdk/dist/css/styles.css';
+@import 'stream-chat-react/dist/css/v2/index.css';

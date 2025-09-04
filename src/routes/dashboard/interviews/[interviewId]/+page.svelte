@@ -32,7 +32,7 @@
   let openUpdateDialog = $state<boolean>(false);
 </script>
 
-<div class="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8">
+<div class="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8 overflow-auto">
   {#if interviewQuery.error}
     <ErrorState title="Failed to load interview" description="Please try again later..." />
   {:else if interviewQuery.loading}

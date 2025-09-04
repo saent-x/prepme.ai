@@ -4,16 +4,114 @@ import {
   agents,
   interviews,
   InterviewStatus,
+  user,
   type InterviewCreateSchema,
   type InterviewGetSchema,
-  type InterviewOneSchema
+  type InterviewOneSchema,
+  type StreamTranscriptItem
 } from '$lib/db/schema';
-import type { Context } from '$lib/utils';
+import { parseJSONL, type Context } from '$lib/utils';
 import { error } from '@sveltejs/kit';
-import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
+import { and, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
 import z from 'zod/v4';
 import { streamVideo } from '../stream-video';
 import { generateAvatarUri } from '$lib/components/avatar-gen.svelte';
+import { streamChat } from '$lib/stream-chat';
+
+export async function generateChatToken(ctx: Context): Promise<string> {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
+  const token = streamChat.createToken(ctx.session?.user.id);
+
+  await streamChat.upsertUser({
+    id: ctx.session?.user.id,
+    role: 'admin'
+  });
+
+  return token;
+}
+
+export async function getTranscript(input: InterviewGetSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
+  const [existingInterview] = await db
+    .select()
+    .from(interviews)
+    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id)));
+
+  if (!existingInterview) {
+    error(404, {
+      message: 'Interview not found'
+    });
+  }
+
+  if (!existingInterview.transcriptUrl) {
+    return [];
+  }
+
+  const transcript = await fetch(existingInterview.transcriptUrl)
+    .then((res) => res.text())
+    .then((text) => parseJSONL<StreamTranscriptItem>(text))
+    .catch(() => {
+      return [];
+    });
+
+  const speakerIds = [...new Set(transcript.map((item) => item.speaker_id))];
+
+  const userSpeakers = await db
+    .select()
+    .from(user)
+    .where(inArray(user.id, speakerIds))
+    .then((users) =>
+      users.map((user) => ({
+        ...user,
+        image: user.image ?? generateAvatarUri('initials', user.name)
+      }))
+    );
+
+  const agentsSpeakers = await db
+    .select()
+    .from(agents)
+    .where(inArray(agents.id, speakerIds))
+    .then((agents) =>
+      agents.map((agent) => ({
+        ...agent,
+        image: generateAvatarUri('botttsNeutral', agent.name)
+      }))
+    );
+
+  const speakers = [...userSpeakers, ...agentsSpeakers];
+
+  return transcript.map((item) => {
+    const speaker = speakers.find((speaker) => speaker.id === item.speaker_id);
+
+    if (!speaker) {
+      return {
+        ...item,
+        user: {
+          name: 'Unknown',
+          image: generateAvatarUri('initials', 'Unknown')
+        }
+      };
+    }
+
+    return {
+      ...item,
+      user: {
+        name: speaker.name,
+        image: speaker.image
+      }
+    };
+  });
+}
 
 export async function generateToken(ctx: Context): Promise<string> {
   try {
@@ -51,10 +149,16 @@ export async function updateOne(
   input: Pick<InterviewOneSchema, 'id' | 'name' | 'agentId'>,
   ctx: Context
 ) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [updatedInterview] = await db
     .update(interviews)
     .set(input)
-    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id ?? '')))
+    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id)))
     .returning();
 
   if (!updatedInterview) {
@@ -67,9 +171,15 @@ export async function updateOne(
 }
 
 export async function deleteOne(input: InterviewGetSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [deletedInterview] = await db
     .delete(interviews)
-    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id ?? '')))
+    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id)))
     .returning();
 
   if (!deletedInterview) {
@@ -82,6 +192,12 @@ export async function deleteOne(input: InterviewGetSchema, ctx: Context) {
 }
 
 export async function getOne(input: InterviewGetSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [selectedInterview] = await db
     .select({
       ...getTableColumns(interviews),
@@ -90,7 +206,7 @@ export async function getOne(input: InterviewGetSchema, ctx: Context) {
     })
     .from(interviews)
     .innerJoin(agents, eq(interviews.agentId, agents.id))
-    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id ?? '')));
+    .where(and(eq(interviews.id, input.id), eq(interviews.userId, ctx.session?.user.id)));
 
   if (!selectedInterview) {
     error(404, {
@@ -110,6 +226,12 @@ export const PaginationSchema = z.object({
 });
 
 export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const { search, page, pageSize, status, agentId } = input;
 
   const data = await db
@@ -122,7 +244,7 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
     .innerJoin(agents, eq(interviews.agentId, agents.id))
     .where(
       and(
-        eq(interviews.userId, ctx.session?.user.id ?? ''),
+        eq(interviews.userId, ctx.session?.user.id),
         search ? ilike(interviews.name, `%${search}%`) : undefined,
         status ? eq(interviews.status, status) : undefined,
         agentId ? eq(interviews.agentId, agentId) : undefined
@@ -138,7 +260,7 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
     .innerJoin(agents, eq(interviews.agentId, agents.id))
     .where(
       and(
-        eq(interviews.userId, ctx.session?.user.id ?? ''),
+        eq(interviews.userId, ctx.session?.user.id),
         search ? ilike(interviews.name, `%${search}%`) : undefined,
         status ? eq(interviews.status, status) : undefined,
         agentId ? eq(interviews.agentId, agentId) : undefined
@@ -155,9 +277,15 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
 }
 
 export async function createOne(new_interview: InterviewCreateSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [createdInterview] = await db
     .insert(interviews)
-    .values({ ...new_interview, userId: ctx.session?.user.id ?? '' })
+    .values({ ...new_interview, userId: ctx.session?.user.id })
     .returning();
 
   const call = streamVideo.video.call('default', createdInterview.id);

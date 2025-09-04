@@ -15,6 +15,8 @@
   import { formatDuration } from '$lib/utils';
   import Markdown from 'svelte-exmarkdown';
   import { gfmPlugin } from 'svelte-exmarkdown/gfm';
+  import CallTranscript from './call-transcript.svelte';
+  import ChatProvider from '../chat/chat-provider.svelte';
 
   type Props = {
     data: InterviewOneSchema;
@@ -22,45 +24,53 @@
 
   const { data }: Props = $props();
   const plugins = [gfmPlugin()];
+  let videoEl: HTMLVideoElement;
+
+  function handleLoadedMetadata() {
+    if (!videoEl) return;
+
+    videoEl.currentTime = 0.01;
+    videoEl.pause();
+  }
 </script>
 
 <div class="flex flex-col gap-y-4">
-  <Tabs.Root value="summary">
+  <Tabs.Root value="chat">
     <div class="rounded-lg border bg-white px-3">
       <ScrollArea>
         <Tabs.List class="bg-background h-13 justify-start rounded-none p-0">
           <Tabs.Trigger
             value="summary"
-            class="text-muted-foreground bg-background data-[state=active] :shadow-none
-              data-[state=active]:border-b-primary data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full
-              rounded-none border-b-2 border-transparent"
+            class="text-muted-foreground bg-background data-[state=active]:border-b-primary
+              data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full rounded-none
+              border-b-2 border-transparent data-[state=active]:shadow-none"
           >
             <BookOpenTextIcon />
             Summary
           </Tabs.Trigger>
           <Tabs.Trigger
             value="transcript"
-            class="text-muted-foreground bg-background data-[state=active] :shadow-none
-              data-[state=active]:border-b-primary data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full
-              rounded-none border-b-2 border-transparent"
+            class="text-muted-foreground bg-background data-[state=active]:border-b-primary
+              data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full rounded-none
+              border-b-2 border-transparent data-[state=active]:shadow-none"
           >
             <FileTextIcon />
             Transcript
           </Tabs.Trigger>
           <Tabs.Trigger
             value="recording"
-            class="text-muted-foreground bg-background data-[state=active] :shadow-none
-              data-[state=active]:border-b-primary data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full
-              rounded-none border-b-2 border-transparent"
+            class="text-muted-foreground bg-background data-[state=active]:border-b-primary
+              data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full rounded-none
+              border-b-2 border-transparent data-[state=active]:shadow-none"
           >
             <FileVideoIcon />
             Recording
           </Tabs.Trigger>
           <Tabs.Trigger
             value="chat"
-            class="text-muted-foreground bg-background data-[state=active] :shadow-none
-              data-[state=active]:border-b-primary data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full
-              rounded-none border-b-2 border-transparent"
+            class="text-muted-foreground bg-background data-[state=active]:border-b-primary
+              data-[state=active]:text-accent-foreground hover:text-accent-foreground h-full rounded-none
+              border-b-2 border-transparent data-[state=active]:shadow-none"
           >
             <SparkleIcon />
             Ask AI
@@ -94,16 +104,28 @@
             </div>
           </div>
         </Tabs.Content>
-        <Tabs.Content value="transcript">Change your password here.</Tabs.Content>
+        <Tabs.Content value="transcript">
+          <CallTranscript interviewId={data.id} />
+        </Tabs.Content>
         <Tabs.Content value="recording">
-          <div class="rounded-lg border bg-white px-4 py-5">
+          <div class="rounded-lg bg-white px-4 py-5">
             <p class="p-2 text-sm text-red-700">*NOTE: videos expire after 2 weeks</p>
-            <video src={data.recordingUrl!} class="w-full rounded-lg" controls>
+            <video
+              bind:this={videoEl}
+              onloadedmetadata={handleLoadedMetadata}
+              id="recordedVideo"
+              src={data.recordingUrl!}
+              class="w-full rounded-lg"
+              controls
+              preload="auto"
+            >
               <track kind="captions" />
             </video>
           </div>
         </Tabs.Content>
-        <Tabs.Content value="chat">Change your password here.</Tabs.Content>
+        <Tabs.Content value="chat">
+          <ChatProvider interviewId={data.id} interviewName={data.name} />
+        </Tabs.Content>
         <Scrollbar orientation="horizontal" />
       </ScrollArea>
     </div>
@@ -127,9 +149,15 @@
     line-height: 1.7;
     font-weight: 600;
   }
-  :global(.markdown-body h1) { font-size: 1.625rem; }
-  :global(.markdown-body h2) { font-size: 1.375rem; }
-  :global(.markdown-body h3) { font-size: 1.25rem; }
+  :global(.markdown-body h1) {
+    font-size: 1.625rem;
+  }
+  :global(.markdown-body h2) {
+    font-size: 1.375rem;
+  }
+  :global(.markdown-body h3) {
+    font-size: 1.25rem;
+  }
 
   :global(.markdown-body p) {
     margin: 0.75em 0;
@@ -146,12 +174,20 @@
     margin: 0.75em 0 0.75em 1.25em;
     padding: 0;
   }
-  :global(.markdown-body ul) { list-style: disc; }
-  :global(.markdown-body ol) { list-style: decimal; }
-  :global(.markdown-body li + li) { margin-top: 0.25em; }
+  :global(.markdown-body ul) {
+    list-style: disc;
+  }
+  :global(.markdown-body ol) {
+    list-style: decimal;
+  }
+  :global(.markdown-body li + li) {
+    margin-top: 0.25em;
+  }
 
   :global(.markdown-body code) {
-    font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+      monospace;
     background: var(--muted, #f3f4f6);
     color: var(--foreground, #111827);
     padding: 0.15em 0.35em;
