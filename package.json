@@ -70,12 +70,16 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.40.1",
     "drizzle-zod": "^0.8.2",
+    "highlight-words": "^2.0.0",
     "humanize-duration": "^3.33.0",
     "inngest": "^3.40.1",
     "nanoid": "^5.1.5",
     "nuqs-svelte": "^1.2.1",
+    "openai": "^5.19.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "stream-chat": "^9.19.0",
+    "stream-chat-react": "^13.6.1",
     "svelte-exmarkdown": "^5.0.2",
     "zod": "^3.25.76"
   }

@@ -7,7 +7,9 @@ import {
   PaginationSchema,
   deleteOne,
   updateOne,
-  generateToken
+  generateToken,
+  getTranscript as getInterviewTranscript,
+  generateChatToken
 } from '$lib/server/interviews';
 import { authGuard } from '$lib/server/utils';
 import type { Session } from '$lib/utils';
@@ -22,16 +24,29 @@ const getContext = async (): Promise<{ session: Session }> => {
   return { session: currentSession };
 };
 
+export const getTranscript = query(z.string(), async (interviewId: string) => {
+  let { request } = getRequestEvent();
+  await authGuard(request.headers);
+
+  return await getInterviewTranscript({ id: interviewId }, await getContext());
+});
+
+export const getChatToken = query(async () => {
+  let { request } = getRequestEvent();
+  await authGuard(request.headers);
+
+  return await generateChatToken(await getContext());
+});
+
 export const getToken = query(async () => {
   let { request } = getRequestEvent();
   await authGuard(request.headers);
 
-  return await generateToken(await getContext())
+  return await generateToken(await getContext());
 });
 
 export const updateInterview = form(async (data: FormData) => {
   let { request } = getRequestEvent();
-
   await authGuard(request.headers);
 
   const id = data.get('id') as string;
@@ -77,7 +92,6 @@ export const listInterviews = query(PaginationSchema.or(z.void()), async (schema
 
 export const createInterview = form(async (data: FormData) => {
   let { request } = getRequestEvent();
-
   await authGuard(request.headers);
 
   const name = data.get('name') as string;

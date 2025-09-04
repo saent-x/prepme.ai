@@ -14,6 +14,13 @@ export function formatDuration(seconds: number) {
   });
 }
 
+export function parseJSONL<T = unknown>(text: string): T[] {
+  return text
+    .split('\n')
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line) as T);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

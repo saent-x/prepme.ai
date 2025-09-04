@@ -4,13 +4,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { inngest } from '.';
 import { createAgent, openai, type TextMessage } from '@inngest/agent-kit';
 import { env } from '$env/dynamic/private';
-
-function parseJSONL<T = unknown>(text: string): T[] {
-  return text
-    .split('\n')
-    .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as T);
-}
+import { parseJSONL } from '$lib/utils';
 
 const summarizer = createAgent({
   name: 'summarizer',
