@@ -6,6 +6,12 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [enhancedImages(), tailwindcss(), sveltekit(), devtoolsJson()],
+  ssr: {
+      noExternal: ["@polar-sh/sdk", "@polar-sh/better-auth"]
+    },
+    optimizeDeps: {
+      exclude: ["@polar-sh/sdk/webhooks.ts"]
+    },
   server: {
     allowedHosts: ['big-drake-quietly.ngrok-free.app']
   }

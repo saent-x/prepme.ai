@@ -1,7 +1,6 @@
 import { pgTable, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { nanoid } from 'nanoid';
-import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
