@@ -153,11 +153,17 @@ async function handleTranscriptionReady(event: CallTranscriptionReadyEvent) {
     .where(eq(interviews.id, interviewId))
     .returning();
 
-  // Call ingest to summarize transcriptUrl
-
   if (!updatedInterview) {
     return json({ error: 'meeting not found' }, { status: 404 });
   }
+
+  await inngest.send({
+    name: 'interviews/processing',
+    data: {
+      interviewId: updatedInterview.id,
+      transcriptUrl: updatedInterview.transcriptUrl
+    }
+  });
 
   return json({ status: 'ok' });
 }
@@ -176,14 +182,6 @@ async function handleRecordingReady(event: CallRecordingReadyEvent) {
   if (!updatedInterview) {
     return json({ error: 'interview not found' }, { status: 404 });
   }
-
-  await inngest.send({
-    name: 'interviews/processing',
-    data: {
-      interviewId: updatedInterview.id,
-      transcriptUrl: updatedInterview.transcriptUrl
-    }
-  });
 }
 
 async function handleNewMessage(event: MessageNewEvent) {
@@ -265,7 +263,7 @@ async function handleNewMessage(event: MessageNewEvent) {
       name: existingAgent.name,
       image: generateAvatarUri('botttsNeutral', existingAgent.name)
     };
-    
+
     streamChat.upsertUser(agentUser);
     channel.sendMessage({
       text: AIResponseText,

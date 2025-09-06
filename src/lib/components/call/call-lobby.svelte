@@ -2,13 +2,12 @@
   import {
     getAudioBrowserPermission,
     getVideoBrowserPermission,
-    OwnCapability,
     type Call
   } from '@stream-io/video-client';
   import { onMount } from 'svelte';
   import DisabledVideoPreview from '../video/disabled-video-preview.svelte';
   import { authClient } from '$lib/auth-client';
-  import { LoaderIcon, LogInIcon, Mic, MicOff, PhoneOff, Video, VideoOff } from '@lucide/svelte';
+  import { LoaderIcon, LogInIcon, Mic, MicOff, Video, VideoOff } from '@lucide/svelte';
   import { generateAvatarUri } from '../shared/avatar-gen.svelte';
   import VideoPreview from '../video/video-preview.svelte';
   import { Button } from '../ui/button';
@@ -22,7 +21,6 @@
 
   let hasMicPermissions = $state<boolean>(false);
   let hasCameraPermissions = $state<boolean>(false);
-  let hasBrowserMediaPermission = $state<boolean>(false);
 
   onMount(async () => {
     const micPermission = getAudioBrowserPermission();
@@ -30,7 +28,6 @@
 
     hasMicPermissions = (await micPermission.getState()) === 'granted';
     hasCameraPermissions = (await cameraPermission.getState()) === 'granted';
-    hasBrowserMediaPermission = hasMicPermissions && hasCameraPermissions;
   });
 
   const session = authClient.useSession();

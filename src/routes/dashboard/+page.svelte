@@ -1,4 +1,7 @@
 <script lang="ts">
-</script>
+  import { goto } from '$app/navigation';
 
-<h1>Dashboard</h1>
+  $effect(() => {
+    goto('/dashboard/agents');
+  });
+</script>

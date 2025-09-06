@@ -62,6 +62,7 @@
     "@stream-io/openai-realtime-api": "^0.3.3",
     "@stream-io/video-client": "^1.28.1",
     "@stream-io/video-react-sdk": "^1.20.1",
+    "@sveltejs/adapter-vercel": "^5.10.2",
     "@tanstack/svelte-query": "^5.83.1",
     "@tanstack/svelte-query-devtools": "^5.84.0",
     "@types/date-fns": "^2.6.3",
