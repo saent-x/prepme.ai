@@ -15,8 +15,9 @@ import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
 import z from 'zod/v4';
 import { streamVideo } from '../stream-video';
-import { generateAvatarUri } from '$lib/components/avatar-gen.svelte';
+import { generateAvatarUri } from '$lib/components/shared/avatar-gen.svelte';
 import { streamChat } from '$lib/stream-chat';
+import { CheckSubscription } from '../premium';
 
 export async function generateChatToken(ctx: Context): Promise<string> {
   if (!ctx.session || !ctx.session.user.id) {
@@ -282,6 +283,8 @@ export async function createOne(new_interview: InterviewCreateSchema, ctx: Conte
       message: 'Unauthorized'
     });
   }
+  
+  await CheckSubscription(ctx, 'interview');
 
   const [createdInterview] = await db
     .insert(interviews)

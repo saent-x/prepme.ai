@@ -1,15 +1,16 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import AgentViewHeader from '$lib/components/agent-view-header.svelte';
-  import AvatarGen from '$lib/components/avatar-gen.svelte';
-  import ErrorState from '$lib/components/error-state.svelte';
-  import LoadingState from '$lib/components/loading-state.svelte';
+  import AgentViewHeader from '$lib/components/agent/agent-view-header.svelte';
+  import AvatarGen from '$lib/components/shared/avatar-gen.svelte';
+  import ErrorState from '$lib/components/states/error-state.svelte';
+  import LoadingState from '$lib/components/states/loading-state.svelte';
   import Badge from '$lib/components/ui/badge/badge.svelte';
   import { VideoIcon } from '@lucide/svelte';
   import { deleteAgent, getAgent } from '../agents.remote';
   import { goto } from '$app/navigation';
-  import { useConfirm } from '$lib/components/use-confirm.svelte';
-  import UpdateAgentDialog from '$lib/components/update-agent-dialog.svelte';
+  import { useConfirm } from '$lib/hooks/use-confirm.svelte';
+  import UpdateAgentDialog from '$lib/components/agent/update-agent-dialog.svelte';
+    import { getFreeUsageStats } from '$lib/remote/premium.remote';
 
   let agentQuery = getAgent(page.params?.agentId ?? '');
   let agentName = $derived(agentQuery.current?.name ?? '');
@@ -22,6 +23,7 @@
 
     const deletedAgent = await deleteAgent(agentId);
     if (deletedAgent) {
+      getFreeUsageStats().refresh();
       goto('/dashboard/agents');
     }
   };
@@ -65,8 +67,8 @@
         </div>
         <Badge variant="outline" class="flex items-center gap-x-2 [&>svg]:size-4">
           <VideoIcon class="text-blue-700" />
-          {agentQuery.current?.meetingCount ?? 0}
-          {(agentQuery.current?.meetingCount ?? 0) === 1 ? 'meeting' : 'meetings'}
+          {agentQuery.current?.interviewCount ?? 0}
+          {(agentQuery.current?.interviewCount ?? 0) === 1 ? 'meeting' : 'meetings'}
         </Badge>
         <div class="flex flex-col gap-y-4">
           <p class="text-lg font-medium">Instructions</p>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import CallProvider from '$lib/components/call/call-provider.svelte';
-  import ErrorState from '$lib/components/error-state.svelte';
+  import ErrorState from '$lib/components/states/error-state.svelte';
   import { getInterview } from '../../dashboard/interviews/interviews.remote';
 
   const interviewId = page.params?.interviewId;

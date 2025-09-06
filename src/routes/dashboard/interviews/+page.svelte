@@ -1,14 +1,14 @@
 <script lang="ts">
-  import DataTable from '$lib/components/data-table.svelte';
-  import ErrorState from '$lib/components/error-state.svelte';
-  import InterviewHeader from '$lib/components/interview-header.svelte';
-  import LoadingState from '$lib/components/loading-state.svelte';
+  import DataTable from '$lib/components/data-table/data-table.svelte';
+  import ErrorState from '$lib/components/states/error-state.svelte';
+  import InterviewHeader from '$lib/components/interview/interview-header.svelte';
+  import LoadingState from '$lib/components/states/loading-state.svelte';
   import { listInterviews } from './interviews.remote';
-  import { columns } from '$lib/components/interviews-data-table/interviews-columns';
+  import { columns } from '$lib/components/data-table/interviews-data-table/interviews-columns';
   import { goto } from '$app/navigation';
-  import EmptyState from '$lib/components/empty-state.svelte';
+  import EmptyState from '$lib/components/states/empty-state.svelte';
   import { useInterviewsFilters } from '$lib/hooks/use-interviews-filters';
-  import DataPagination from '$lib/components/data-pagination.svelte';
+  import DataPagination from '$lib/components/data-table/data-pagination.svelte';
 
   const filters = useInterviewsFilters();
   const interviewsQuery = $derived(

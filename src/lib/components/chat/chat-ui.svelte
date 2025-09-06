@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getChatToken } from '../../../routes/dashboard/interviews/interviews.remote';
   import { Channel as StreamChannel, StreamChat } from 'stream-chat';
-  import LoadingState from '../loading-state.svelte';
+  import LoadingState from '../states/loading-state.svelte';
   import { env } from '$env/dynamic/public';
   import ChatInterface from './chat-interface.svelte';
 
@@ -34,7 +34,7 @@
       }
     );
 
-    const _channel = client.channel('messaging', interviewId, {
+    const _channel = client.channel("messaging", interviewId, {
       members: [userId]
     });
 

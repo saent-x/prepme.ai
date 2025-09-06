@@ -9,7 +9,7 @@
   import DisabledVideoPreview from '../video/disabled-video-preview.svelte';
   import { authClient } from '$lib/auth-client';
   import { LoaderIcon, LogInIcon, Mic, MicOff, PhoneOff, Video, VideoOff } from '@lucide/svelte';
-  import { generateAvatarUri } from '../avatar-gen.svelte';
+  import { generateAvatarUri } from '../shared/avatar-gen.svelte';
   import VideoPreview from '../video/video-preview.svelte';
   import { Button } from '../ui/button';
 

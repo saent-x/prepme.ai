@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { OPENAI_API_KEY } from '$env/static/private';
-import { generateAvatarUri } from '$lib/components/avatar-gen.svelte';
+import { generateAvatarUri } from '$lib/components/shared/avatar-gen.svelte';
 import { db } from '$lib/db/index.server';
 import { agents, interviews } from '$lib/db/schema';
 import { inngest } from '$lib/inngest';
