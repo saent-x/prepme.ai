@@ -15,7 +15,7 @@
   import { goto } from '$app/navigation';
   import NewAgentDialog from '../agent/new-agent-dialog.svelte';
   import { getFreeUsageStats } from '$lib/remote/premium.remote';
-    import type { HttpError } from '@sveltejs/kit';
+  import type { HttpError } from '@sveltejs/kit';
 
   type Props = {
     onCancel: () => void;

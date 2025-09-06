@@ -35,7 +35,7 @@
 </script>
 
 <div class="flex flex-col gap-y-4">
-  <Tabs.Root value="chat">
+  <Tabs.Root value="summary">
     <div class="rounded-lg border bg-white px-3">
       <ScrollArea>
         <Tabs.List class="bg-background h-13 justify-start rounded-none p-0">

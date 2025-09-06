@@ -68,8 +68,6 @@
     {:else if interviewQuery.current?.status === 'upcoming'}
       <UpcomingState
         interviewId={interviewQuery.current.id}
-        onCancelInterview={() => goto('/dashboard/interviews')}
-        isCancelling={false}
       />
     {:else if interviewQuery.current?.status === 'completed'}
       <CallCompleted data={interviewQuery.current} />

@@ -65,8 +65,8 @@ export async function getOne(input: AgentGetSchema, ctx: Context) {
 
   const [selectedAgent] = await db
     .select({
-      interviewCount: sql<number>`6`, // TODO: to be changed
-      ...getTableColumns(agents)
+      ...getTableColumns(agents),
+      interviewCount: db.$count(interviews, eq(agents.id, interviews.agentId))
     })
     .from(agents)
     .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id)));
@@ -98,17 +98,15 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
   const data = await db
     .select({
       ...getTableColumns(agents),
-      interviewCount: count(interviews.id)
+      interviewCount: db.$count(interviews, eq(agents.id, interviews.agentId)),
     })
     .from(agents)
-    .leftJoin(interviews, eq(agents.id, interviews.agentId))
     .where(
       and(
         eq(agents.userId, ctx.session?.user.id),
         search ? ilike(agents.name, `%${search}%`) : undefined
       )
     )
-    .groupBy(...Object.values(getTableColumns(agents)))
     .orderBy(desc(agents.createdAt), desc(agents.id))
     .limit(pageSize!)
     .offset((page - 1) * pageSize!);
