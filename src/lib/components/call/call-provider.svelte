@@ -2,7 +2,7 @@
   import { authClient } from '$lib/auth-client';
   import { LoaderIcon } from '@lucide/svelte';
   import CallConnect from './call-connect.svelte';
-  import { generateAvatarUri } from '../avatar-gen.svelte';
+  import { generateAvatarUri } from '../shared/avatar-gen.svelte';
 
   type Props = {
     interviewId: string;

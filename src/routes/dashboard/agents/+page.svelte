@@ -1,13 +1,13 @@
 <script lang="ts">
-  import LoadingState from '$lib/components/loading-state.svelte';
-  import ErrorState from '$lib/components/error-state.svelte';
-  import AgentsHeader from '$lib/components/agents-header.svelte';
+  import LoadingState from '$lib/components/states/loading-state.svelte';
+  import ErrorState from '$lib/components/states/error-state.svelte';
+  import AgentsHeader from '$lib/components/agent/agents-header.svelte';
   import { listAgents } from './agents.remote';
-  import DataTable from '$lib/components/data-table.svelte';
-  import { columns } from '$lib/components/agents-data-table/agents-columns';
-  import EmptyState from '$lib/components/empty-state.svelte';
+  import DataTable from '$lib/components/data-table/data-table.svelte';
+  import { columns } from '$lib/components/data-table/agents-data-table/agents-columns';
+  import EmptyState from '$lib/components/states/empty-state.svelte';
   import { useAgentsFilters } from '$lib/hooks/use-agents-filters';
-  import DataPagination from '$lib/components/data-pagination.svelte';
+  import DataPagination from '$lib/components/data-table/data-pagination.svelte';
   import { goto } from '$app/navigation';
 
   let filters = useAgentsFilters();

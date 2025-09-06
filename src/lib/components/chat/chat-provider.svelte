@@ -1,7 +1,7 @@
 <script lang="ts">
   import { authClient } from '$lib/auth-client';
-  import { generateAvatarUri } from '../avatar-gen.svelte';
-  import LoadingState from '../loading-state.svelte';
+  import { generateAvatarUri } from '../shared/avatar-gen.svelte';
+  import LoadingState from '../states/loading-state.svelte';
   import ChatUi from './chat-ui.svelte';
 
   type Props = {

@@ -2,6 +2,7 @@ import { DEFAULT_PAGE, MIN_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from '$
 import { db } from '$lib/db/index.server';
 import {
   agents,
+  interviews,
   type AgentCreateSchema,
   type AgentGetSchema,
   type AgentOneSchema
@@ -10,13 +11,19 @@ import type { Context } from '$lib/utils';
 import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
 import z from 'zod/v4';
-
+import { CheckSubscription } from '../premium';
 
 export async function updateOne(input: AgentOneSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [updatedAgent] = await db
     .update(agents)
     .set(input)
-    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')))
+    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id)))
     .returning();
 
   if (!updatedAgent) {
@@ -28,11 +35,16 @@ export async function updateOne(input: AgentOneSchema, ctx: Context) {
   return updatedAgent;
 }
 
-
 export async function deleteOne(input: AgentGetSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [deletedAgent] = await db
     .delete(agents)
-    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')))
+    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id)))
     .returning();
 
   if (!deletedAgent) {
@@ -44,15 +56,20 @@ export async function deleteOne(input: AgentGetSchema, ctx: Context) {
   return deletedAgent;
 }
 
-
 export async function getOne(input: AgentGetSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const [selectedAgent] = await db
     .select({
-      meetingCount: sql<number>`6`, // TODO: to be changed
+      interviewCount: sql<number>`6`, // TODO: to be changed
       ...getTableColumns(agents)
     })
     .from(agents)
-    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id ?? '')));
+    .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.session?.user.id)));
 
   if (!selectedAgent) {
     error(404, {
@@ -70,19 +87,30 @@ export const PaginationSchema = z.object({
 });
 
 export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
   const { search, page, pageSize } = input;
 
   const data = await db
-    .select()
+    .select({
+      ...getTableColumns(agents),
+      interviewCount: count(interviews.id)
+    })
     .from(agents)
+    .leftJoin(interviews, eq(agents.id, interviews.agentId))
     .where(
       and(
-        eq(agents.userId, ctx.session?.user.id ?? ''),
+        eq(agents.userId, ctx.session?.user.id),
         search ? ilike(agents.name, `%${search}%`) : undefined
       )
     )
+    .groupBy(...Object.values(getTableColumns(agents)))
     .orderBy(desc(agents.createdAt), desc(agents.id))
-    .limit(pageSize!) // exclamation should be fine since pageSize has a default value
+    .limit(pageSize!)
     .offset((page - 1) * pageSize!);
 
   const [total] = await db
@@ -90,7 +118,7 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
     .from(agents)
     .where(
       and(
-        eq(agents.userId, ctx.session?.user.id ?? ''),
+        eq(agents.userId, ctx.session?.user.id),
         search ? ilike(agents.name, `%${search}%`) : undefined
       )
     );
@@ -105,9 +133,16 @@ export async function listAll(input: z.infer<typeof PaginationSchema>, ctx: Cont
 }
 
 export async function createOne(new_agent: AgentCreateSchema, ctx: Context) {
+  if (!ctx.session || !ctx.session.user.id) {
+    error(401, {
+      message: 'Unauthorized'
+    });
+  }
+
+  await CheckSubscription(ctx, 'agent');
   const [createdAgent] = await db
     .insert(agents)
-    .values({ ...new_agent, userId: ctx.session?.user.id ?? '' })
+    .values({ ...new_agent, userId: ctx.session?.user.id })
     .returning();
 
   return createdAgent;

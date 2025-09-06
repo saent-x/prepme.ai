@@ -22,7 +22,6 @@ const getContext = async (): Promise<{ session: Session }> => {
 
 export const updateAgent = form(async (data: FormData) => {
   const { request } = getRequestEvent();
-
   await authGuard(request.headers);
 
   const name = data.get('name') as string;
@@ -50,7 +49,9 @@ export const deleteAgent = query(z.string(), async (id) => {
   const { request } = getRequestEvent();
   await authGuard(request.headers);
 
-  return await deleteOne({ id }, await getContext());
+  let deletedAgent = await deleteOne({ id }, await getContext());
+  
+  return deletedAgent;
 });
 
 export const getAgent = query(z.string(), async (id) => {

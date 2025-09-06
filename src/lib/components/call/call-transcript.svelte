@@ -4,9 +4,9 @@
   import { Input } from '../ui/input';
   import { ScrollArea } from '../ui/scroll-area';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import { generateAvatarUri } from '../avatar-gen.svelte';
+  import { generateAvatarUri } from '../shared/avatar-gen.svelte';
   import { format } from 'date-fns';
-  import Highlighter from '../highlighter.svelte';
+  import Highlighter from '../shared/highlighter.svelte';
 
   type Props = {
     interviewId: string;

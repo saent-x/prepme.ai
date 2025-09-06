@@ -9,7 +9,7 @@
     FileVideoIcon,
     SparkleIcon
   } from '@lucide/svelte';
-  import AvatarGen from '../avatar-gen.svelte';
+  import AvatarGen from '../shared/avatar-gen.svelte';
   import { format } from 'date-fns';
   import { Badge } from '../ui/badge';
   import { formatDuration } from '$lib/utils';

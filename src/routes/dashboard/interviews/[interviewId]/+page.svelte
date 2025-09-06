@@ -1,18 +1,19 @@
 <script lang="ts">
-  import InterviewViewHeader from '$lib/components/interview-view-header.svelte';
+  import InterviewViewHeader from '$lib/components/interview/interview-view-header.svelte';
   import { page } from '$app/state';
   import { deleteInterview, getInterview } from '../interviews.remote';
-  import { useConfirm } from '$lib/components/use-confirm.svelte';
+  import { useConfirm } from '$lib/hooks/use-confirm.svelte';
   import { goto } from '$app/navigation';
-  import ErrorState from '$lib/components/error-state.svelte';
-  import LoadingState from '$lib/components/loading-state.svelte';
-  import UpdateInterviewDialog from '$lib/components/update-interview-dialog.svelte';
-  import EmptyState from '$lib/components/empty-state.svelte';
-  import UpcomingState from '$lib/components/interview-states/upcoming-state.svelte';
-  import ActiveState from '$lib/components/interview-states/active-state.svelte';
-  import CancelledState from '$lib/components/interview-states/cancelled-state.svelte';
-  import ProcessingState from '$lib/components/interview-states/processing-state.svelte';
-    import CallCompleted from '$lib/components/call/call-completed.svelte';
+  import ErrorState from '$lib/components/states/error-state.svelte';
+  import LoadingState from '$lib/components/states/loading-state.svelte';
+  import UpdateInterviewDialog from '$lib/components/interview/update-interview-dialog.svelte';
+  import EmptyState from '$lib/components/states/empty-state.svelte';
+  import UpcomingState from '$lib/components/states/interview-states/upcoming-state.svelte';
+  import ActiveState from '$lib/components/states/interview-states/active-state.svelte';
+  import CancelledState from '$lib/components/states/interview-states/cancelled-state.svelte';
+  import ProcessingState from '$lib/components/states/interview-states/processing-state.svelte';
+  import CallCompleted from '$lib/components/call/call-completed.svelte';
+    import { getFreeUsageStats } from '$lib/remote/premium.remote';
 
   const [ConfirmationDialog, confirmRemove, getPromise] = useConfirm();
 
@@ -24,6 +25,7 @@
 
     const deletedAgent = await deleteInterview(interviewId);
     if (deletedAgent) {
+      getFreeUsageStats().refresh();
       goto('/dashboard/interviews');
     }
   };
@@ -32,7 +34,7 @@
   let openUpdateDialog = $state<boolean>(false);
 </script>
 
-<div class="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8 overflow-auto">
+<div class="flex flex-1 flex-col gap-y-4 overflow-auto px-4 py-4 md:px-8">
   {#if interviewQuery.error}
     <ErrorState title="Failed to load interview" description="Please try again later..." />
   {:else if interviewQuery.loading}
@@ -66,7 +68,7 @@
     {:else if interviewQuery.current?.status === 'upcoming'}
       <UpcomingState
         interviewId={interviewQuery.current.id}
-        onCancelInterview={() => {}}
+        onCancelInterview={() => goto('/dashboard/interviews')}
         isCancelling={false}
       />
     {:else if interviewQuery.current?.status === 'completed'}

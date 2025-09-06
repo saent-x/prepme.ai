@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AuthForm from '$lib/components/auth-form.svelte';
+  import AuthForm from '$lib/components/auth/auth-form.svelte';
   import { authClient } from '$lib/auth-client';
   import { toast } from 'svelte-sonner';
 

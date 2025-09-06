@@ -73,7 +73,9 @@ export const deleteInterview = query(z.string(), async (id) => {
   let { request } = getRequestEvent();
   await authGuard(request.headers);
 
-  return await deleteOne({ id }, await getContext());
+  let deletedInterview = await deleteOne({ id }, await getContext());
+
+  return deletedInterview;
 });
 
 export const getInterview = query(z.string(), async (id) => {
