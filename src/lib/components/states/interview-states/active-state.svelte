@@ -12,7 +12,7 @@
 
 <div class="flex flex-col items-center justify-center gap-y-8 rounded-lg bg-white px-4 py-5">
   <EmptyState
-    src="/src/assets/active.svg"
+    src="/active.svg"
     title="Interview is active"
     description="Interview would end once all participants have left"
   />

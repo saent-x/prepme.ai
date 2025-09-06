@@ -4,10 +4,10 @@
   import { toast } from 'svelte-sonner';
   import { goto } from '$app/navigation';
 
-  let name = $state('devtor');
-  let email = $state('devtor@mail.com');
-  let password = $state('johnpaul@UL1');
-  let confirmPassword = $state('johnpaul@UL1');
+  let name = $state('');
+  let email = $state('');
+  let password = $state('');
+  let confirmPassword = $state('');
 
   let signing_up = $state(false);
 

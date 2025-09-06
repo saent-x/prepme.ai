@@ -43,7 +43,7 @@
 
     {#if interviewsQuery.current?.items.length === 0}
       <EmptyState
-        src="/src/assets/empty-interviews.svg"
+        src="/empty-interviews.svg"
         title="Create your very first interview"
         description="Schedule a meeting to connect with others. Each meeting lets you collaborate, share ideas, and interact with participants in real-time"
       />

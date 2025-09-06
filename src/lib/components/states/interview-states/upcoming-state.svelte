@@ -12,7 +12,7 @@
 
 <div class="flex flex-col items-center justify-center gap-y-8 rounded-lg bg-white px-4 py-5">
   <EmptyState
-    src="/src/assets/upcoming.svg"
+    src="/upcoming.svg"
     title="Interview not started yet"
     description="Interview summary would appear once started"
   />
