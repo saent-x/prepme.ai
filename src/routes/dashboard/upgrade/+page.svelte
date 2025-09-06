@@ -2,7 +2,7 @@
   import { authClient } from '$lib/auth-client';
   import ErrorState from '$lib/components/states/error-state.svelte';
   import LoadingState from '$lib/components/states/loading-state.svelte';
-  import PricingCard from '$lib/pricing/pricing-card.svelte';
+  import PricingCard from '$lib/components/pricing/pricing-card.svelte';
   import { getUserCurrentSubscription, getUserProducts } from '$lib/remote/premium.remote';
   import type { Product } from '@polar-sh/sdk/models/components/product.js';
 
