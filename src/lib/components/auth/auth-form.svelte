@@ -49,7 +49,6 @@
     } catch (error) {
       if (error instanceof ZodError) {
         errors = error.formErrors.fieldErrors as Record<string, string[]>;
-        console.log(errors);
       }
       return false;
     }
@@ -140,14 +139,14 @@
           {#if authType === 'sign-up'}
             <div class="grid gap-3">
               <div class="flex items-center">
-                <Label for="password">ConfirmPassword</Label>
+                <Label for="confirm-password-{id}">Confirm Password</Label>
               </div>
               <Input
                 id="confirm-password-{id}"
                 bind:value={confirmPassword}
                 type="password"
                 required
-                aria-invalid={errors.email ? 'true' : undefined}
+                aria-invalid={errors.confirmPassword ? 'true' : undefined}
               />
               {#if errors.confirmPassword}
                 {#each errors.confirmPassword as confirm_password_error}

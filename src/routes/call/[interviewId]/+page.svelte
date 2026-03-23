@@ -20,11 +20,11 @@
           description="Interview cannot be rejoined when completed"
         />
       </div>
+    {:else}
+      <CallProvider
+        interviewId={interviewQuery.current?.id ?? ''}
+        interviewName={interviewQuery.current?.name ?? ''}
+      />
     {/if}
-
-    <CallProvider
-      interviewId={interviewQuery.current?.id ?? ''}
-      interviewName={interviewQuery.current?.name ?? ''}
-    />
   </div>
 {/if}

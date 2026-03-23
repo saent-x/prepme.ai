@@ -7,7 +7,6 @@ export const authGuard = async (headers: Headers) => {
   });
 
   if (!session) {
-    console.log('guard failed');
     throw error(401, 'UNAUTHORIZED');
   }
 
