@@ -25,6 +25,7 @@
     </div>
   </nav>
 
+  <main>
   <!-- Hero Section -->
   <section class="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center">
     <div class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary mb-8">
@@ -194,6 +195,7 @@
       </div>
     </div>
   </section>
+  </main>
 
   <!-- Footer -->
   <footer class="border-t border-border/50 py-12">

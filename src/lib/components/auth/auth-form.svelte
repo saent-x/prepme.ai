@@ -115,7 +115,7 @@
           </div>
           <div class="grid gap-3">
             <div class="flex items-center">
-              <Label for="password">Password</Label>
+              <Label for="password-{id}">Password</Label>
               {#if authType === 'sign-in'}
                 <a href="##" class="ml-auto text-sm underline-offset-2 hover:underline">
                   Forgot your password?
