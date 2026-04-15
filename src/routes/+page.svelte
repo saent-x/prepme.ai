@@ -6,7 +6,6 @@
     BrainCircuit,
     Calendar,
     ArrowRight,
-    Star,
     CheckCircle2,
     Sparkles
   } from '@lucide/svelte';
@@ -159,46 +158,8 @@
     </div>
   </section>
 
-  <!-- Social Proof / Highlights -->
-  <section class="border-t border-border/50 bg-muted/30 py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <div class="grid gap-8 md:grid-cols-3 text-center">
-        <div>
-          <div class="flex items-center justify-center gap-1 mb-2">
-            {#each Array(5) as _}
-              <Star class="size-5 fill-primary text-primary" />
-            {/each}
-          </div>
-          <p class="text-muted-foreground text-sm">
-            "Felt like a real interview. The AI asked great follow-up questions."
-          </p>
-        </div>
-        <div>
-          <div class="flex items-center justify-center gap-1 mb-2">
-            {#each Array(5) as _}
-              <Star class="size-5 fill-primary text-primary" />
-            {/each}
-          </div>
-          <p class="text-muted-foreground text-sm">
-            "I practiced daily for a week and landed my dream job. Highly recommend!"
-          </p>
-        </div>
-        <div>
-          <div class="flex items-center justify-center gap-1 mb-2">
-            {#each Array(5) as _}
-              <Star class="size-5 fill-primary text-primary" />
-            {/each}
-          </div>
-          <p class="text-muted-foreground text-sm">
-            "The video format made all the difference. Way better than just text-based prep."
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Pricing Teaser -->
-  <section class="py-24">
+  <section class="border-t border-border/50 bg-muted/30 py-24">
     <div class="mx-auto max-w-2xl px-6 text-center">
       <h2 class="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Start free, upgrade anytime</h2>
       <p class="text-muted-foreground text-lg mb-8">
