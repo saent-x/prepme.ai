@@ -13,18 +13,20 @@
   <ErrorState title="Failed to load interview" description="Please try again later..." />
 {:else if interviewQuery.ready}
   <div class="h-full">
-    {#if interviewQuery.current?.status === 'completed'}
+    {#if !interviewQuery.current}
+      <ErrorState title="Interview not found" description="The requested interview does not exist." />
+    {:else if interviewQuery.current.status === 'completed'}
       <div class="flex h-screen items-center justify-center">
         <ErrorState
           title="Interview concluded"
           description="Interview cannot be rejoined when completed"
         />
       </div>
+    {:else}
+      <CallProvider
+        interviewId={interviewQuery.current.id}
+        interviewName={interviewQuery.current.name}
+      />
     {/if}
-
-    <CallProvider
-      interviewId={interviewQuery.current?.id ?? ''}
-      interviewName={interviewQuery.current?.name ?? ''}
-    />
   </div>
 {/if}
