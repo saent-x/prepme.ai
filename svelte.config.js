@@ -15,9 +15,9 @@ const config = {
     experimental: {
       remoteFunctions: true
     },
-    adapter: adapter({
-      runtime: 'nodejs20.x'
-    })
+    // Node 20 is end-of-life and no longer accepted by Vercel. The runtime now
+    // follows the Node version in package.json "engines" (24.x).
+    adapter: adapter()
   }
 };
 
