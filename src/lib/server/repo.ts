@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { and, asc, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, getTableColumns, inArray, like, sql } from 'drizzle-orm';
 import { db } from '$lib/db/index.server';
 import { agents, interviewMessages, interviews, type InterviewStatus } from '$lib/db/schema';
 
@@ -11,10 +11,10 @@ export async function listInterviewers(userId: string, search?: string | null) {
   return db
     .select({
       ...getTableColumns(agents),
-      interviewCount: sql<number>`(select count(*)::int from ${interviews} where ${interviews.agentId} = ${agents.id})`
+      interviewCount: sql<number>`(select count(*) from ${interviews} where ${interviews.agentId} = ${agents.id})`
     })
     .from(agents)
-    .where(and(eq(agents.userId, userId), search ? ilike(agents.name, `%${search}%`) : undefined))
+    .where(and(eq(agents.userId, userId), search ? like(agents.name, `%${search}%`) : undefined))
     .orderBy(desc(agents.createdAt));
 }
 
@@ -32,9 +32,8 @@ export async function getInterviewerOwned(userId: string, id: string) {
 // Interviews
 // ---------------------------------------------------------------------------
 
-const durationSql = sql<
-  number | null
->`EXTRACT(EPOCH FROM (${interviews.endedAt} - ${interviews.startedAt}))::int`;
+/** Seconds between start and end (timestamps are stored in milliseconds). */
+const durationSql = sql<number | null>`(${interviews.endedAt} - ${interviews.startedAt}) / 1000`;
 
 export async function listInterviews(
   userId: string,
@@ -50,7 +49,7 @@ export async function listInterviews(
   const pageSize = Math.min(50, Math.max(1, opts.pageSize ?? 12));
   const where = and(
     eq(interviews.userId, userId),
-    opts.search ? ilike(interviews.name, `%${opts.search}%`) : undefined,
+    opts.search ? like(interviews.name, `%${opts.search}%`) : undefined,
     opts.status ? eq(interviews.status, opts.status) : undefined,
     opts.agentId ? eq(interviews.agentId, opts.agentId) : undefined
   );

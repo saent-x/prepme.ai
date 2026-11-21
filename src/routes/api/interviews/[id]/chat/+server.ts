@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import type { RequestHandler } from './$types';
-import type { Config } from '@sveltejs/adapter-vercel';
 import { requireUser } from '$lib/server/guard';
 import { getInterviewOwned, listMessages } from '$lib/server/repo';
 import { db } from '$lib/db/index.server';
@@ -10,7 +9,6 @@ import { openai } from '$lib/server/openai';
 import { config as appConfig } from '$lib/server/config';
 import { buildChatSystemPrompt, formatTranscript } from '$lib/server/prompts';
 
-export const config: Config = { maxDuration: 120 };
 
 const Body = z.object({ message: z.string().trim().min(1).max(4000) });
 

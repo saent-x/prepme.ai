@@ -1,0 +1,18 @@
+# Local secrets for `bun run dev` (copy to .dev.vars). Production values are set
+# with `wrangler secret put NAME` or in the Cloudflare dashboard.
+BETTER_AUTH_SECRET="generate-with: openssl rand -base64 32"
+BETTER_AUTH_URL="http://localhost:5173"
+OPENAI_API_KEY=
+# Optional: route scoring + coach chat through Cloudflare AI Gateway for logs, caching and spend limits.
+# https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_name>/openai
+OPENAI_BASE_URL=
+# Optional social sign-in (a provider shows only when both values are set)
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+MICROSOFT_CLIENT_ID=
+MICROSOFT_CLIENT_SECRET=
+# Optional billing
+POLAR_ACCESS_TOKEN=
+POLAR_SERVER="sandbox"

@@ -7,13 +7,28 @@ import type { Agent, Interview } from '$lib/db/schema';
 import { buildAnalysisPrompt } from './prompts';
 import { isVoice } from '$lib/templates';
 
-let client: OpenAI | null = null;
+let textClient: OpenAI | null = null;
+let directClient: OpenAI | null = null;
 
+function apiKey() {
+  const key = config.openai.apiKey();
+  if (!key) error(503, { message: 'OpenAI is not configured. Set OPENAI_API_KEY.' });
+  return key;
+}
+
+/**
+ * Client for scoring and the coach chat. Goes through Cloudflare AI Gateway when
+ * OPENAI_BASE_URL is set (request logs, caching, rate and spend limits).
+ */
 export function openai() {
-  const apiKey = config.openai.apiKey();
-  if (!apiKey) error(503, { message: 'OpenAI is not configured. Set OPENAI_API_KEY.' });
-  client ??= new OpenAI({ apiKey, maxRetries: 2 });
-  return client;
+  textClient ??= new OpenAI({ apiKey: apiKey(), baseURL: config.openai.baseURL(), maxRetries: 2 });
+  return textClient;
+}
+
+/** Direct client for minting realtime keys; the live audio itself never touches our server. */
+function openaiDirect() {
+  directClient ??= new OpenAI({ apiKey: apiKey(), maxRetries: 2 });
+  return directClient;
 }
 
 /**
@@ -24,7 +39,7 @@ export function openai() {
  */
 export async function createRealtimeClientSecret(opts: { instructions: string; voice: string }) {
   const model = config.openai.realtimeModel();
-  const client = openai();
+  const client = openaiDirect();
   let secret;
   try {
     secret = await client.realtime.clientSecrets.create({

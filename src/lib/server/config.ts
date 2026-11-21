@@ -4,6 +4,8 @@ import { env } from '$env/dynamic/private';
 export const config = {
   openai: {
     apiKey: () => env.OPENAI_API_KEY ?? '',
+    /** Optional Cloudflare AI Gateway URL for scoring and chat (…/openai). Empty = call OpenAI directly. */
+    baseURL: () => env.OPENAI_BASE_URL || undefined,
     realtimeModel: () => env.OPENAI_REALTIME_MODEL || 'gpt-realtime-mini',
     transcribeModel: () => env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe',
     analysisModel: () => env.OPENAI_ANALYSIS_MODEL || 'gpt-5.6-luna',

@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "prepme",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Output of @sveltejs/adapter-cloudflare (vite build)
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "assets": { "binding": "ASSETS", "directory": ".svelte-kit/cloudflare" },
+  "observability": { "enabled": true },
+  // Served on the studio domain; the workers.dev URL stays on for previews.
+  "routes": [{ "pattern": "prepme.stbrn.studio", "custom_domain": true }],
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "prepme",
+      "database_id": "36e981b5-e28c-4d4c-9818-c7b9802f03c7",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  // Non-secret settings. Secrets (OPENAI_API_KEY, BETTER_AUTH_SECRET, POLAR_ACCESS_TOKEN,
+  // social client secrets) are set with `wrangler secret put` or in the dashboard,
+  // and in .dev.vars for local development.
+  "vars": {
+    "BETTER_AUTH_URL": "https://prepme.stbrn.studio",
+    "OPENAI_REALTIME_MODEL": "gpt-realtime-mini",
+    "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
+    "OPENAI_ANALYSIS_MODEL": "gpt-5.6-luna",
+    "OPENAI_CHAT_MODEL": "gpt-5.6-luna",
+    "POLAR_SERVER": "production",
+    "UNLIMITED_USAGE": "false"
+  }
+}
