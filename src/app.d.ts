@@ -6,6 +6,10 @@ declare global {
       user: AuthSession['user'] | null;
       session: AuthSession['session'] | null;
     }
+    interface Platform {
+      env: Cloudflare.Env;
+      ctx: { waitUntil(promise: Promise<unknown>): void };
+    }
     interface Error {
       message: string;
       code?: string;
