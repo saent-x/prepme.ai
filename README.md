@@ -15,38 +15,64 @@ Practise job interviews out loud. Pick an interviewer, paste the job description
     ├── transcript autosave ──► POST /api/interviews/:id/transcript   (debounced + sendBeacon on close)
     ├── hang up ─────────────► POST /api/interviews/:id/complete      → status "processing"
     │                                   └─► scorecard via Responses API + Zod structured output
-    └── coach chat ──────────► POST /api/interviews/:id/chat          (streamed, stored in Postgres)
+    └── coach chat ──────────► POST /api/interviews/:id/chat          (streamed, stored in D1)
 ```
 
-- **Nothing long-running lives in a serverless function.** The browser talks to OpenAI directly with a short-lived key, so a Vercel function freezing or timing out can no longer end the call. (That was the cause of the old "the interview stops abruptly" bug.)
+- **Nothing long-running lives on the server.** The browser talks to OpenAI directly with a short-lived key, so a server function freezing or timing out can no longer end the call. (That was the cause of the old "the interview stops abruptly" bug.)
 - **Survives a bad connection.** The transcript is saved while you talk. If the line drops, the call reconnects up to three times and the interviewer picks up where it left off, using the transcript so far.
 - **Time-boxed like a real interview.** The interviewer is told when two minutes are left, wraps up, and asks if you have questions.
 - **Structured scorecard.** Overall score, verdict, five competencies with evidence, per-question feedback with a stronger answer, and what to practise next.
 
 ## Stack
 
-SvelteKit 2 + Svelte 5 · TypeScript · Tailwind CSS 4 · bits-ui · OpenAI (Realtime + Responses) · Drizzle ORM on Postgres (Neon) · Better Auth · Polar · Vercel (Node 24)
+SvelteKit 2 + Svelte 5 · TypeScript · Tailwind CSS 4 · bits-ui · OpenAI (Realtime + Responses) · Better Auth · Polar · Drizzle ORM
+
+Everything runs on Cloudflare:
+
+| Piece | Cloudflare product |
+| --- | --- |
+| App (pages + API) | Workers, with static assets (`@sveltejs/adapter-cloudflare` 7.x, the last line for SvelteKit 2) |
+| Database | D1 (`DB` binding), migrations in `./drizzle` |
+| Scoring and coach chat traffic | AI Gateway, optional (`OPENAI_BASE_URL`) for logs, caching and spend limits |
+| Domain | `prepme.stbrn.studio` custom domain in `wrangler.jsonc` |
 
 ## Getting started
 
 ```sh
-bun install            # or npm install
-cp .env.example .env   # fill in DATABASE_URL, BETTER_AUTH_SECRET, OPENAI_API_KEY
-bun run db:push        # create or update tables
+bun install
+cp .dev.vars.example .dev.vars   # fill in BETTER_AUTH_SECRET and OPENAI_API_KEY
+bun run db:migrate:local          # create tables in the local D1 database
 bun run dev
 ```
 
-All settings are documented in [.env.example](./.env.example). Social sign-in and Polar billing are optional: they only switch on when their keys are set. Model names can be changed through env vars without a code change.
+`bun run dev` runs Vite with Wrangler's local bindings, so D1 is a local SQLite file under `.wrangler/state`. Model names and other non-secret settings are `vars` in [wrangler.jsonc](./wrangler.jsonc); secrets go in `.dev.vars` locally and in the Worker's settings in production.
+
+### Deploying
+
+1. Set secrets once: `bunx wrangler secret put BETTER_AUTH_SECRET`, then `OPENAI_API_KEY`, and optionally `POLAR_ACCESS_TOKEN` and the social sign-in secrets.
+2. `bun run deploy` builds, applies any new D1 migrations, and deploys the Worker.
+
+Or connect the repository in the Cloudflare dashboard (Workers Builds) with build command `bun run build` and deploy command `bunx wrangler d1 migrations apply prepme --remote && bunx wrangler deploy`, so every push to `main` deploys and branches get preview URLs.
 
 ### Scripts
 
 | Script | What it does |
 | --- | --- |
-| `dev` / `build` / `preview` | Vite dev server, production build, preview |
-| `check` | `svelte-check` type check |
-| `test` | Vitest unit tests |
-| `db:push` / `db:generate` / `db:migrate` / `db:studio` | Drizzle Kit |
+| `dev` / `build` / `preview` | Vite dev server, production build, build + local Worker preview |
+| `deploy` | Build, migrate D1, deploy to Cloudflare |
+| `check` / `test` | `svelte-check` and Vitest |
+| `db:generate` | Generate a SQL migration after changing `src/lib/db/schema.ts` |
+| `db:migrate:local` / `db:migrate` | Apply migrations to local / production D1 |
+
+### Moving data from Neon
+
+`scripts/neon-to-d1.ts` copies users, sign-in accounts, interviewers, interviews and coach messages from the old Postgres database into D1. Passwords keep working; everyone signs in once more because sessions are not copied.
+
+```sh
+DATABASE_URL=postgres://…neon… bun scripts/neon-to-d1.ts > neon-export.sql
+bunx wrangler d1 execute prepme --remote --file neon-export.sql
+```
 
 ## Upgrading from v1
 
-v2 drops Stream Video/Chat, Inngest and the webhook pipeline. Run `db:push` once: it adds new columns (`transcript`, `scorecard`, `job_description`, …) and the `interview_messages` table. Old interviews are kept and show their original summary. The Stream, Inngest and old OpenAI webhook env vars can be removed from Vercel.
+v2 drops Stream Video/Chat, Inngest, Vercel and Neon. Copy the data with the script above; old interviews keep their original summary.
