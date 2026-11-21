@@ -6,6 +6,8 @@ Mock interviews with an AI interviewer that joins a real video call and talks to
 
 **Live:** [prepme-ai.vercel.app](https://prepme-ai.vercel.app)
 
+![PrepMe landing page](docs/landing.png)
+
 ## How it works
 
 ```
