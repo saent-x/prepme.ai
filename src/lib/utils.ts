@@ -1,24 +1,52 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import humanizeDuration from 'humanize-duration';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDuration(seconds: number) {
-  return humanizeDuration(seconds * 1000, {
-    largest: 1,
-    round: true,
-    units: ['h', 'm', 's']
-  });
+/** 754 → "12m 34s", 3720 → "1h 2m". */
+export function formatDuration(seconds: number | null | undefined) {
+  if (!seconds || seconds < 1) return '—';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h) return `${h}h ${m}m`;
+  if (m) return s ? `${m}m ${s}s` : `${m}m`;
+  return `${s}s`;
 }
 
-export function parseJSONL<T = unknown>(text: string): T[] {
-  return text
-    .split('\n')
-    .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as T);
+/** 65_000 → "1:05". */
+export function formatClock(ms: number) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = (total % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+export function initials(name: string) {
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]!.toUpperCase())
+      .join('') || '?'
+  );
+}
+
+/** Stable hue (0-360) from a string, for interviewer avatars. */
+export function hueFrom(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 360;
+  return h;
+}
+
+export function scoreTone(score: number | null | undefined): 'good' | 'ok' | 'low' | 'none' {
+  if (score == null) return 'none';
+  if (score >= 70) return 'good';
+  if (score >= 50) return 'ok';
+  return 'low';
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,29 +55,3 @@ export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
 export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
-
-export type Session = {
-  session: {
-    id: string;
-    userId: string;
-    expiresAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    token: string;
-    ipAddress?: string | null | undefined | undefined;
-    userAgent?: string | null | undefined | undefined;
-  };
-  user: {
-    id: string;
-    email: string;
-    emailVerified: boolean;
-    name: string;
-    createdAt: Date;
-    updatedAt: Date;
-    image?: string | null | undefined | undefined;
-  };
-} | null;
-
-export type Context = {
-  session: Session;
-};
