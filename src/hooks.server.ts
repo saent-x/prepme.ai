@@ -1,17 +1,14 @@
-import { auth } from '$lib/auth';
+import type { Handle } from '@sveltejs/kit';
+import { building } from '$app/environment';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
+import { auth } from '$lib/auth';
 
-/**
- * Handles incoming server requests by delegating to the authentication-aware SvelteKit handler.
- *
- * Integrates authentication into the request lifecycle, ensuring that requests are processed with user session or access control logic before continuing.
- */
-export async function handle({ event, resolve }: {
-  event: {
-      request: Request;
-      url: URL;
-  };
-  resolve: (event: any) => any;
-}) {
-  return svelteKitHandler({event, resolve, auth});
-}
+export const handle: Handle = async ({ event, resolve }) => {
+  // Resolve the session once per request so loads and endpoints can read locals.
+  if (!building) {
+    const result = await auth.api.getSession({ headers: event.request.headers });
+    event.locals.session = result?.session ?? null;
+    event.locals.user = result?.user ?? null;
+  }
+  return svelteKitHandler({ event, resolve, auth, building });
+};

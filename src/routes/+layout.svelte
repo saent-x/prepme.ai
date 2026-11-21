@@ -1,14 +1,13 @@
 <script lang="ts">
   import '../app.css';
-  import '@fontsource-variable/inter';
-
+  import '@fontsource-variable/inter-tight';
+  import '@fontsource-variable/jetbrains-mono';
+  import { ModeWatcher } from 'mode-watcher';
   import { Toaster } from '$lib/components/ui/sonner/index.js';
-  import { NuqsAdapter } from 'nuqs-svelte/adapters/svelte-kit';
 
   const { children } = $props();
 </script>
 
-<NuqsAdapter>
-  <Toaster />
-  {@render children()}
-</NuqsAdapter>
+<ModeWatcher defaultMode="light" />
+<Toaster position="top-center" richColors />
+{@render children()}

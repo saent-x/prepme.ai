@@ -1,39 +1,7 @@
 <script lang="ts">
-  import AuthForm from '$lib/components/auth/auth-form.svelte';
-  import { authClient } from '$lib/auth-client';
-  import { toast } from 'svelte-sonner';
-
-  let email = $state('');
-  let password = $state('');
-
-  let signing_in = $state(false);
-
-  function signinHandler() {
-    signing_in = true;
-    authClient.signIn.email(
-      {
-        email,
-        password,
-        callbackURL: '/dashboard'
-      },
-      {
-        onError: (error_ctx) => {
-          signing_in = false;
-          toast.error(error_ctx?.error.message || 'An error occurred during sign in');
-        },
-        onSuccess: () => {
-          signing_in = false;
-          toast.success('Successfully signed in!');
-        }
-      }
-    );
-  }
+  import AuthForm from '$lib/components/app/auth-form.svelte';
+  let { data } = $props();
 </script>
 
-<AuthForm
-  authType="sign-in"
-  bind:email
-  bind:password
-  bind:processing={signing_in}
-  onSubmit={signinHandler}
-/>
+<svelte:head><title>Sign in · PrepMe</title></svelte:head>
+<AuthForm mode="sign-in" providers={data.providers} next={data.next} />

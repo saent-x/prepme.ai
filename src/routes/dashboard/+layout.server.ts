@@ -1,16 +1,12 @@
-import { redirect } from '@sveltejs/kit';
-import { auth } from '$lib/auth';
+import type { LayoutServerLoad } from './$types';
+import { requireUserPage } from '$lib/server/guard';
+import { getUsageSummary } from '$lib/server/billing';
 
-export const load = async ({ url, request }) => {
-  const session = await auth.api.getSession({
-    headers: request.headers
-  });
-
-  if (!session) {
-    throw redirect(307, `/auth/sign-in?redirect=${url.pathname}`);
-  }
-
+export const load: LayoutServerLoad = async (event) => {
+  const user = requireUserPage(event);
+  event.depends('app:usage');
   return {
-    session
+    user: { id: user.id, name: user.name, email: user.email, image: user.image ?? null },
+    usage: await getUsageSummary(user.id)
   };
 };

@@ -1,8 +1,6 @@
 # PrepMe
 
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/saent-x/prepme.ai?utm_source=oss&utm_medium=github&utm_campaign=saent-x%2Fprepme.ai&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
-
-Mock interviews with an AI interviewer that joins a real video call and talks to you. You set up an interviewer agent (role, style, focus areas), start a call, and the agent interviews you by voice in real time. When the call ends, PrepMe turns the recording into a transcript, a structured summary with timestamped notes, and a chat where you can ask follow-up questions about how it went.
+Practise job interviews out loud. Pick an interviewer, paste the job description, and have a real-time voice interview in your browser. When you hang up, PrepMe scores every answer, writes a stronger version of each one, and lets you ask a coach follow-up questions.
 
 **Live:** [prepme-ai.vercel.app](https://prepme-ai.vercel.app)
 
@@ -17,44 +15,46 @@ Mock interviews with an AI interviewer that joins a real video call and talks to
 ## How it works
 
 ```
- you ──► Stream video call ◄── OpenAI Realtime voice agent (your interviewer's instructions)
-                │
-   call.session_ended ─► transcription + recording webhooks
-                │
-                ▼
-   Inngest pipeline: fetch transcript ─► attribute speakers ─► GPT-4o summary agent ─► Postgres
-                │
-                ▼
-   Post-interview chat: GPT-4o answers questions grounded in the summary + recent messages
+ browser ──WebRTC audio──► OpenAI Realtime (gpt-realtime-mini)
+    │  ▲                         ▲
+    │  └── ephemeral key ────────┤  POST /api/interviews/:id/session
+    │                            │  (server mints a 2-minute client secret)
+    │
+    ├── transcript autosave ──► POST /api/interviews/:id/transcript   (debounced + sendBeacon on close)
+    ├── hang up ─────────────► POST /api/interviews/:id/complete      → status "processing"
+    │                                   └─► scorecard via Responses API + Zod structured output
+    └── coach chat ──────────► POST /api/interviews/:id/chat          (streamed, stored in Postgres)
 ```
 
-- **Realtime voice interviewer.** On `call.session_started`, the webhook connects an OpenAI Realtime agent to the Stream call and loads the interviewer's custom instructions as its session prompt.
-- **Durable post-processing.** Transcript handling runs as a multi-step Inngest function, so each step (fetch, parse JSONL, speaker lookup, summarise, save) retries on its own instead of failing the whole job.
-- **Grounded follow-up chat.** Stream Chat messages hit a webhook that answers with GPT-4o, using the interview summary as context and the last five messages for continuity.
-- **Product plumbing.** Better Auth (GitHub, Google, Microsoft sign-in), Polar subscriptions with free-tier limits, Drizzle ORM on Neon Postgres, deployed on Vercel.
+- **Nothing long-running lives in a serverless function.** The browser talks to OpenAI directly with a short-lived key, so a Vercel function freezing or timing out can no longer end the call. (That was the cause of the old "the interview stops abruptly" bug.)
+- **Survives a bad connection.** The transcript is saved while you talk. If the line drops, the call reconnects up to three times and the interviewer picks up where it left off, using the transcript so far.
+- **Time-boxed like a real interview.** The interviewer is told when two minutes are left, wraps up, and asks if you have questions.
+- **Structured scorecard.** Overall score, verdict, five competencies with evidence, per-question feedback with a stronger answer, and what to practise next.
 
 ## Stack
 
-SvelteKit 5 · TypeScript · Tailwind CSS · Stream Video & Chat · OpenAI Realtime + GPT-4o · Inngest AgentKit · Drizzle ORM · Neon Postgres · Better Auth · Polar · Vercel
+SvelteKit 2 + Svelte 5 · TypeScript · Tailwind CSS 4 · bits-ui · OpenAI (Realtime + Responses) · Drizzle ORM on Postgres (Neon) · Better Auth · Polar · Vercel (Node 24)
 
-## Run it locally
+## Getting started
 
-```bash
-bun install
-cp .env.example .env   # then add OpenAI, Stream and Polar keys alongside the DB and OAuth ones
-bun run db:push
+```sh
+bun install            # or npm install
+cp .env.example .env   # fill in DATABASE_URL, BETTER_AUTH_SECRET, OPENAI_API_KEY
+bun run db:push        # create or update tables
 bun run dev
 ```
 
-Stream webhooks need a public URL to reach your machine; `bun run dev:webhook` starts an ngrok tunnel for that.
+All settings are documented in [.env.example](./.env.example). Social sign-in and Polar billing are optional: they only switch on when their keys are set. Model names can be changed through env vars without a code change.
 
-## Layout
+### Scripts
 
-| Path | What |
+| Script | What it does |
 | --- | --- |
-| `src/routes/api/webhook` | Stream video and chat webhooks (agent join, transcripts, chat replies) |
-| `src/lib/inngest` | Transcript processing and summarisation pipeline |
-| `src/lib/server` | Agents, interviews and premium-tier server logic |
-| `src/lib/db` | Drizzle schema |
-| `src/routes/dashboard` | Agents, interviews and upgrade pages |
-| `src/routes/call/[interviewId]` | In-call experience |
+| `dev` / `build` / `preview` | Vite dev server, production build, preview |
+| `check` | `svelte-check` type check |
+| `test` | Vitest unit tests |
+| `db:push` / `db:generate` / `db:migrate` / `db:studio` | Drizzle Kit |
+
+## Upgrading from v1
+
+v2 drops Stream Video/Chat, Inngest and the webhook pipeline. Run `db:push` once: it adds new columns (`transcript`, `scorecard`, `job_description`, …) and the `interview_messages` table. Old interviews are kept and show their original summary. The Stream, Inngest and old OpenAI webhook env vars can be removed from Vercel.
