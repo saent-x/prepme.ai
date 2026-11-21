@@ -1,20 +1,31 @@
-import { env } from '$env/dynamic/private';
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
-import { drizzle as drizzlePostgres, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { neon } from '@neondatabase/serverless';
-import postgres from 'postgres';
+import { getRequestEvent } from '$app/server';
+import { drizzle, type DrizzleD1Database } from 'drizzle-orm/d1';
 import * as schema from './schema';
 
-if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+export type DB = DrizzleD1Database<typeof schema>;
 
-const url = env.DATABASE_URL;
-const isNeon = /\.neon\.tech|neon\.build/.test(url);
+const instances = new WeakMap<object, DB>();
+
+function current(): DB {
+  const binding = getRequestEvent().platform?.env?.DB;
+  if (!binding) throw new Error('The D1 binding "DB" is missing. Check wrangler.jsonc.');
+  let db = instances.get(binding);
+  if (!db) {
+    db = drizzle(binding, { schema });
+    instances.set(binding, db);
+  }
+  return db;
+}
 
 /**
- * Neon's HTTP driver in production (no pooled TCP connections from serverless),
- * plain postgres-js for any other Postgres (local dev, tests, self-hosting).
+ * D1 through the `DB` binding in wrangler.jsonc. Bindings live on the request's
+ * `platform.env`, so the client is resolved per request rather than at import
+ * (SvelteKit also imports server modules during the build, when none exist).
  */
-export const db: PostgresJsDatabase<typeof schema> = isNeon
-  ? // Same query-builder surface; cast so callers see one type.
-    (drizzleNeon(neon(url), { schema }) as unknown as PostgresJsDatabase<typeof schema>)
-  : drizzlePostgres(postgres(url, { max: 5 }), { schema });
+export const db: DB = new Proxy({} as DB, {
+  get(_, prop) {
+    const instance = current();
+    const value = Reflect.get(instance, prop, instance);
+    return typeof value === 'function' ? value.bind(instance) : value;
+  }
+});

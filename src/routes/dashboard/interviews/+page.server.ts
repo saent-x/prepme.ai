@@ -1,11 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { listInterviewers, listInterviews } from '$lib/server/repo';
-import { interviewStatus, type InterviewStatus } from '$lib/db/schema';
+import { INTERVIEW_STATUSES, type InterviewStatus } from '$lib/db/schema';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   const userId = locals.user!.id;
   const statusParam = url.searchParams.get('status');
-  const status = (interviewStatus.enumValues as readonly string[]).includes(statusParam ?? '')
+  const status = (INTERVIEW_STATUSES as readonly string[]).includes(statusParam ?? '')
     ? (statusParam as InterviewStatus)
     : null;
   const search = url.searchParams.get('q')?.slice(0, 100) || null;

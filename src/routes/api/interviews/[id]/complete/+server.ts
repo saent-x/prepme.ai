@@ -1,12 +1,10 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import type { Config } from '@sveltejs/adapter-vercel';
 import { requireUser } from '$lib/server/guard';
 import { completeInterview } from '$lib/server/interviews';
 import { TranscriptSchema } from '$lib/interview-types';
 
 // Scoring a long transcript can take a while.
-export const config: Config = { maxDuration: 300 };
 
 export const POST: RequestHandler = async (event) => {
   const user = requireUser(event);
