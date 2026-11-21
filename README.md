@@ -2,7 +2,7 @@
 
 Practise job interviews out loud. Pick an interviewer, paste the job description, and have a real-time voice interview in your browser. When you hang up, PrepMe scores every answer, writes a stronger version of each one, and lets you ask a coach follow-up questions.
 
-**Live:** [prepme-ai.vercel.app](https://prepme-ai.vercel.app)
+**Live:** [prepme.stbrn.studio](https://prepme.stbrn.studio)
 
 ![PrepMe landing page](docs/landing.png)
 
