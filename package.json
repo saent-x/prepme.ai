@@ -47,7 +47,8 @@
     "wrangler": "^4.166.0"
   },
   "dependencies": {
-    "@fontsource-variable/inter-tight": "^5.2.6",
+    "@dicebear/collection": "^9.2.3",
+    "@dicebear/core": "^9.2.3",
     "@fontsource-variable/jetbrains-mono": "^5.2.6",
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@polar-sh/better-auth": "^2.1.5",
