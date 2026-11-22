@@ -11,7 +11,8 @@ export async function listInterviewers(userId: string, search?: string | null) {
   return db
     .select({
       ...getTableColumns(agents),
-      interviewCount: sql<number>`(select count(*) from ${interviews} where ${interviews.agentId} = ${agents.id})`
+      // Column names are written out: inside a subquery drizzle drops the table prefix, which made this compare interviews.id.
+      interviewCount: sql<number>`(select count(*) from interviews where interviews.agent_id = agents.id)`
     })
     .from(agents)
     .where(and(eq(agents.userId, userId), search ? like(agents.name, `%${search}%`) : undefined))

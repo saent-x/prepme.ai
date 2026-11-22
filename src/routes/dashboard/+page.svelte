@@ -1,113 +1,135 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
-  import TrendChart from '$lib/components/viz/trend-chart.svelte';
   import CompetencyBars from '$lib/components/viz/competency-bars.svelte';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
-  import { TEMPLATES } from '$lib/templates';
-  import { ArrowRight, Mic, PhoneCall } from '@lucide/svelte';
+  import InterviewHead from '$lib/components/app/interview-head.svelte';
+  import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
+  import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
+  import { COMPETENCY_LABELS } from '$lib/interview-types';
+  import { ArrowRight, Plus } from '@lucide/svelte';
 
   let { data } = $props();
+  let creating = $state(false);
   const p = $derived(data.progress);
   const first = $derived(data.user.name.split(' ')[0]);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const weakest = $derived([...p.competencies].sort((a, b) => a.avg - b.avg)[0]);
+  const weakestLabel = $derived(weakest ? (COMPETENCY_LABELS[weakest.key as keyof typeof COMPETENCY_LABELS] ?? weakest.key) : '');
+  const active = $derived(data.active[0]);
+  const lastInterviewer = $derived(data.recent[0]?.agent.name ?? data.interviewers[0]?.name ?? 'sam');
+  const hours = $derived(p.minutes >= 60 ? `${Math.floor(p.minutes / 60)}h ${p.minutes % 60}m` : `${p.minutes}m`);
 </script>
 
-<svelte:head><title>Overview · PrepMe</title></svelte:head>
+<svelte:head><title>Home · PrepMe</title></svelte:head>
 
-<div class="flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <p class="eyebrow">Overview</p>
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{greeting}, {first}.</h1>
-  </div>
-  <Button href="/dashboard/interviews/new" variant="signal" size="lg"><Mic /> New interview</Button>
+<div class="flex h-9 items-center justify-between gap-4">
+  <h1 class="text-xl font-bold tracking-tight">{greeting}, {first}</h1>
+  <Button href="/dashboard/interviews/new"><Plus /> New interview</Button>
 </div>
 
-{#each data.active as a}
-  <a
-    href="/call/{a.id}"
-    class="mt-6 flex items-center gap-4 rounded-2xl border border-signal/30 bg-signal-soft/60 p-4 transition-colors hover:bg-signal-soft"
-  >
-    <span class="grid size-10 place-items-center rounded-full bg-signal text-white"><PhoneCall class="size-4" /></span>
-    <div class="flex-1">
-      <div class="font-medium">“{a.name}” is still in progress</div>
-      <div class="text-sm text-muted-foreground">Your transcript is saved. Rejoin to carry on where you left off.</div>
+<!-- One "what to do next" strip. -->
+<section class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl bg-primary px-5 py-4 text-primary-foreground" aria-label="Next step">
+  {#if active}
+    <InterviewerAvatar name={active.agent.name} size="lg" class="ring-2 ring-white/80" />
+    <div class="min-w-0 flex-1">
+      <div class="text-xs font-medium opacity-80">Interview in progress</div>
+      <div class="truncate text-[17px] font-bold">{active.name}</div>
+      <div class="text-[13px] opacity-80">Your answers so far are saved.</div>
     </div>
-    <ArrowRight class="size-5" />
-  </a>
-{/each}
+    <Button href="/call/{active.id}" class="bg-white text-[#18161f] hover:bg-white/90">Rejoin <ArrowRight /></Button>
+  {:else if p.completedCount > 0 && weakest}
+    <InterviewerAvatar name={lastInterviewer} size="lg" class="ring-2 ring-white/80" />
+    <div class="min-w-0 flex-1">
+      <div class="text-xs font-medium opacity-80">Practise next</div>
+      <div class="truncate text-[17px] font-bold">{weakestLabel}</div>
+      <div class="text-[13px] opacity-80">Your lowest skill so far, at {weakest.avg} out of 5.</div>
+    </div>
+    <Button href="/dashboard/interviews/new?focus={encodeURIComponent(weakestLabel)}" class="bg-white text-[#18161f] hover:bg-white/90">
+      Start a 10 minute drill <ArrowRight />
+    </Button>
+  {:else if data.interviewers.length}
+    <InterviewerAvatar name={data.interviewers[0].name} size="lg" class="ring-2 ring-white/80" />
+    <div class="min-w-0 flex-1">
+      <div class="text-xs font-medium opacity-80">Ready when you are</div>
+      <div class="truncate text-[17px] font-bold">Do your first interview with {data.interviewers[0].name}</div>
+      <div class="text-[13px] opacity-80">You get a scorecard as soon as it ends.</div>
+    </div>
+    <Button href="/dashboard/interviews/new?interviewer={data.interviewers[0].id}" class="bg-white text-[#18161f] hover:bg-white/90">Start <ArrowRight /></Button>
+  {:else}
+    <InterviewerAvatar name="sam" size="lg" class="ring-2 ring-white/80" />
+    <div class="min-w-0 flex-1">
+      <div class="text-xs font-medium opacity-80">Start here</div>
+      <div class="truncate text-[17px] font-bold">Make your first interviewer</div>
+      <div class="text-[13px] opacity-80">Name the job. It takes a minute.</div>
+    </div>
+    <Button onclick={() => (creating = true)} class="bg-white text-[#18161f] hover:bg-white/90">New interviewer <ArrowRight /></Button>
+  {/if}
+</section>
 
-<!-- Stats -->
-<section class="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Your stats">
+<!-- Stats: one row, no cards. -->
+<section class="mt-3 grid grid-cols-2 rounded-xl border bg-card sm:grid-cols-4" aria-label="Your stats">
   {#each [
-    { label: 'Interviews scored', value: p.completedCount },
-    { label: 'Average score', value: p.averageScore ?? '—' },
-    { label: 'Best score', value: p.best ?? '—' },
-    { label: 'Minutes practised', value: p.minutes }
-  ] as s}
-    <div class="rounded-3xl border bg-card p-5">
-      <div class="eyebrow">{s.label}</div>
-      <div class="tabular mt-3 text-4xl font-semibold tracking-tight">{s.value}</div>
+    { label: 'interviews done', value: p.completedCount },
+    { label: 'average score', value: p.averageScore ?? '—' },
+    { label: 'best score', value: p.best ?? '—' },
+    { label: 'spoken practice', value: hours }
+  ] as s, i}
+    <div class="flex items-baseline gap-2 px-5 py-3.5 {i ? 'sm:border-l' : ''} {i % 2 ? 'border-l' : ''} {i > 1 ? 'border-t sm:border-t-0' : ''}">
+      <span class="tabular text-2xl font-extrabold tracking-tight">{s.value}</span>
+      <span class="text-[13px] text-muted-foreground">{s.label}</span>
     </div>
   {/each}
 </section>
 
-{#if p.completedCount === 0}
-  <!-- First run -->
-  <section class="mt-8 rounded-3xl border bg-card p-6 sm:p-8">
-    <h2 class="text-xl font-semibold">Start with an interviewer</h2>
-    <p class="mt-1 text-muted-foreground">Pick one and you'll be talking in under a minute. You can edit it later.</p>
-    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {#each TEMPLATES.slice(0, 6) as t}
-        <a
-          href="/dashboard/interviews/new?template={t.id}"
-          class="group rounded-2xl border bg-background p-4 transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-sm"
-        >
-          <div class="eyebrow">{t.category}</div>
-          <div class="mt-2 font-semibold">{t.name}</div>
-          <div class="mt-1 text-sm text-muted-foreground">{t.tagline}</div>
-          <div class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-signal">
-            Start <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
-          </div>
-        </a>
-      {/each}
+<div class="mt-3 grid items-start gap-3 lg:grid-cols-[1.55fr_1fr]">
+  <section class="overflow-hidden rounded-xl border bg-card">
+    <div class="flex items-baseline justify-between px-4 pt-3.5 pb-2.5">
+      <h2 class="text-sm font-bold">Recent interviews</h2>
+      <a href="/dashboard/interviews" class="text-[13px] font-semibold text-primary hover:underline">See all</a>
     </div>
-  </section>
-{:else}
-  <section class="mt-3 grid gap-3 lg:grid-cols-[1.6fr_1fr]">
-    <div class="rounded-3xl border bg-card p-6">
-      <div class="flex items-baseline justify-between">
-        <h2 class="font-semibold">Score trend</h2>
-        <span class="text-sm text-muted-foreground">{p.trend.length} scored</span>
-      </div>
-      <div class="mt-4"><TrendChart points={p.trend} /></div>
-    </div>
-    <div class="rounded-3xl border bg-card p-6">
-      <h2 class="font-semibold">Competencies</h2>
-      <p class="text-sm text-muted-foreground">Average across all interviews</p>
-      <div class="mt-5">
-        <CompetencyBars items={p.competencies.map((c) => ({ key: c.key, score: c.avg }))} />
-      </div>
-      {#if weakest}
-        <Button href="/dashboard/interviews/new?focus={encodeURIComponent(weakest.key.replace('_', ' '))}" variant="outline" class="mt-6 w-full">
-          Practise your weakest area
-        </Button>
-      {/if}
-    </div>
-  </section>
-{/if}
-
-<section class="mt-3 rounded-3xl border bg-card p-3 sm:p-4">
-  <div class="flex items-center justify-between px-3 pt-2 pb-3">
-    <h2 class="font-semibold">Recent interviews</h2>
-    <a href="/dashboard/interviews" class="text-sm text-muted-foreground hover:text-foreground">View all</a>
-  </div>
-  {#if data.recent.length}
-    <div class="grid">
+    {#if data.recent.length}
+      <InterviewHead />
       {#each data.recent as row (row.id)}<InterviewRow {row} />{/each}
-    </div>
-  {:else}
-    <p class="px-3 pb-4 text-sm text-muted-foreground">No interviews yet.</p>
-  {/if}
-</section>
+    {:else}
+      <p class="border-t px-4 py-6 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
+    {/if}
+  </section>
+
+  <div class="grid gap-3">
+    <section class="rounded-xl border bg-card px-4 py-3.5">
+      <div class="flex items-baseline gap-2">
+        <h2 class="text-sm font-bold">Your skills</h2>
+        <span class="text-xs text-faint">
+          {p.completedCount ? `average of your ${p.completedCount} scored interview${p.completedCount === 1 ? '' : 's'}` : 'scored out of 5 after each interview'}
+        </span>
+      </div>
+      <div class="mt-3">
+        {#if p.competencies.length}
+          <CompetencyBars items={p.competencies.map((c) => ({ key: c.key, score: c.avg }))} />
+        {:else}
+          <CompetencyBars items={Object.keys(COMPETENCY_LABELS).map((key) => ({ key, score: 0 }))} />
+        {/if}
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-xl border bg-card">
+      <div class="flex items-baseline justify-between px-4 pt-3.5 pb-2.5">
+        <h2 class="text-sm font-bold">Your interviewers</h2>
+        <button type="button" class="text-[13px] font-semibold text-primary hover:underline" onclick={() => (creating = true)}>New</button>
+      </div>
+      {#each data.interviewers as i (i.id)}
+        <div class="flex items-center gap-2.5 border-t px-4 py-2 text-sm">
+          <InterviewerAvatar name={i.name} size="sm" />
+          <a href="/dashboard/interviewers/{i.id}" class="min-w-0 flex-1 truncate font-semibold hover:underline">{i.name}</a>
+          <span class="tabular text-[13px] text-faint">{i.interviewCount} interview{i.interviewCount === 1 ? '' : 's'}</span>
+          <a href="/dashboard/interviews/new?interviewer={i.id}" class="text-[13px] font-semibold text-primary hover:underline">Start</a>
+        </div>
+      {:else}
+        <p class="border-t px-4 py-4 text-sm text-muted-foreground">None yet.</p>
+      {/each}
+    </section>
+  </div>
+</div>
+
+<InterviewerDialog bind:open={creating} />

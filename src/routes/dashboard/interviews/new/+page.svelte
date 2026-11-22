@@ -31,13 +31,12 @@
 
 <svelte:head><title>New interview · PrepMe</title></svelte:head>
 
-<p class="eyebrow">New interview</p>
-<h1 class="mt-2 text-3xl font-semibold tracking-tight">Set the scene</h1>
-<p class="mt-2 max-w-xl text-muted-foreground">Choose who interviews you and, if you have one, paste the job description. Everything else is optional.</p>
+<a href="/dashboard/interviews" class="text-[13px] text-muted-foreground hover:text-foreground">← Interviews</a>
+<h1 class="mt-2 text-xl font-bold tracking-tight">New interview</h1>
 
 <form
   method="POST"
-  class="mt-10 grid gap-10 lg:grid-cols-[1fr_340px]"
+  class="mt-4 grid items-start gap-3 lg:grid-cols-[1fr_300px]"
   use:enhance={() => {
     busy = true;
     return async ({ update }) => {
@@ -46,24 +45,21 @@
     };
   }}
 >
-  <div class="grid gap-10">
+  <div class="grid gap-5 rounded-xl border bg-card px-5 py-4">
     <fieldset>
-      <legend class="text-lg font-semibold">1. Interviewer</legend>
+      <legend class="text-sm font-bold">Who interviews you</legend>
       <input type="hidden" name="interviewer" value={choice} />
-      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <div class="mt-2 grid gap-2 sm:grid-cols-2">
         {#each data.interviewers as i (i.id)}
           <button
             type="button"
             onclick={() => (choice = i.id)}
             aria-pressed={choice === i.id}
-            class="relative flex items-center gap-3 rounded-2xl border bg-card p-4 text-left transition-all hover:border-foreground/25 aria-pressed:border-foreground aria-pressed:ring-1 aria-pressed:ring-foreground"
+            class="relative flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors hover:border-input aria-pressed:border-primary aria-pressed:bg-signal-soft"
           >
-            <InterviewerAvatar name={i.name} />
-            <span class="min-w-0">
-              <span class="block truncate font-medium">{i.name}</span>
-              <span class="block text-xs text-muted-foreground">Your interviewer</span>
-            </span>
-            {#if choice === i.id}<Check class="absolute top-3 right-3 size-4" />{/if}
+            <InterviewerAvatar name={i.name} size="sm" />
+            <span class="min-w-0 flex-1 truncate text-sm font-semibold">{i.name}</span>
+            {#if choice === i.id}<Check class="size-4 text-primary" />{/if}
           </button>
         {/each}
         {#each freshTemplates as t (t.id)}
@@ -71,77 +67,79 @@
             type="button"
             onclick={() => (choice = `template:${t.id}`)}
             aria-pressed={choice === `template:${t.id}`}
-            class="relative rounded-2xl border border-dashed bg-card/50 p-4 text-left transition-all hover:border-foreground/25 aria-pressed:border-solid aria-pressed:border-foreground aria-pressed:ring-1 aria-pressed:ring-foreground"
+            class="relative flex items-center gap-2.5 rounded-lg border border-dashed px-3 py-2 text-left transition-colors hover:border-input aria-pressed:border-solid aria-pressed:border-primary aria-pressed:bg-signal-soft"
           >
-            <span class="eyebrow">{t.category} template</span>
-            <span class="mt-1.5 block font-medium">{t.name}</span>
-            <span class="mt-0.5 block text-sm text-muted-foreground">{t.tagline}</span>
-            {#if choice === `template:${t.id}`}<Check class="absolute top-3 right-3 size-4" />{/if}
+            <InterviewerAvatar name={t.name} size="sm" />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-semibold">{t.name}</span>
+              <span class="block truncate text-xs text-faint">Example · {t.tagline}</span>
+            </span>
+            {#if choice === `template:${t.id}`}<Check class="size-4 text-primary" />{/if}
           </button>
         {/each}
       </div>
-      <a href="/dashboard/interviewers/new" class="mt-3 inline-block text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground">Write your own interviewer</a>
+      <a href="/dashboard/interviewers/new" class="mt-2 inline-block text-[13px] font-semibold text-primary hover:underline">Make a new interviewer</a>
     </fieldset>
 
     <fieldset>
-      <legend class="text-lg font-semibold">2. The role <span class="font-normal text-muted-foreground">(optional)</span></legend>
+      <legend class="text-sm font-bold">The job <span class="font-normal text-faint">(optional)</span></legend>
       {#if showJd || form?.values?.jobDescription}
         <Textarea
           name="jobDescription"
           rows={8}
-          class="mt-4"
-          placeholder="Paste the job description. The interviewer will ask about what this role needs."
+          class="mt-2"
+          placeholder="Paste the job advert. The interviewer asks about what this job needs."
           value={String(form?.values?.jobDescription ?? '')}
         />
       {:else}
         <button
           type="button"
-          class="mt-4 w-full rounded-2xl border border-dashed p-6 text-left text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+          class="mt-2 w-full rounded-lg border border-dashed px-3 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:border-input hover:text-foreground"
           onclick={() => (showJd = true)}
         >
-          + Paste a job description to tailor the questions
+          + Paste the job advert to tailor the questions
         </button>
       {/if}
-      <div class="mt-4 grid gap-1.5">
+      <div class="mt-3 grid gap-1.5">
         <Label for="focus">Anything to focus on?</Label>
-        <Input id="focus" name="focus" placeholder="e.g. system design, leadership stories, salary negotiation" value={String(form?.values?.focus ?? data.preset.focus)} class="h-11" />
+        <Input id="focus" name="focus" placeholder="e.g. handling a difficult customer, salary, why this employer" value={String(form?.values?.focus ?? data.preset.focus)} />
       </div>
     </fieldset>
   </div>
 
-  <aside class="h-fit rounded-3xl border bg-card p-6 lg:sticky lg:top-10">
-    <h2 class="text-lg font-semibold">3. Length</h2>
+  <aside class="h-fit rounded-xl border bg-card px-5 py-4 lg:sticky lg:top-6">
+    <h2 class="text-sm font-bold">Length</h2>
     <input type="hidden" name="durationMinutes" value={duration} />
-    <div class="mt-4 grid grid-cols-5 gap-1.5">
+    <div class="mt-2 grid grid-cols-5 rounded-lg bg-muted p-[3px]">
       {#each DURATIONS as d}
         <button
           type="button"
           disabled={d > data.maxMinutes}
           aria-pressed={duration === d}
           onclick={() => (duration = d)}
-          class="rounded-xl border py-2.5 font-mono text-sm transition-colors disabled:opacity-35 aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background"
+          class="tabular rounded-md py-1.5 text-[13px] font-semibold text-muted-foreground transition-colors disabled:opacity-35 aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-xs"
         >
           {d}
         </button>
       {/each}
     </div>
-    <p class="mt-2 text-xs text-muted-foreground">
+    <p class="mt-1.5 text-xs text-faint">
       minutes{data.maxMinutes < 45 ? ` · up to ${data.maxMinutes} on the free plan` : ''}
     </p>
 
-    <div class="mt-6 grid gap-1.5">
-      <Label for="name">Name <span class="text-muted-foreground">(optional)</span></Label>
-      <Input id="name" name="name" placeholder="e.g. Monzo onsite prep" value={String(form?.values?.name ?? '')} class="h-11" />
+    <div class="mt-4 grid gap-1.5">
+      <Label for="name">Name <span class="font-normal text-faint">(optional)</span></Label>
+      <Input id="name" name="name" placeholder="e.g. Second interview practice" value={String(form?.values?.name ?? '')} />
     </div>
 
     {#if form?.error}
-      <p class="mt-4 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{form.error}</p>
+      <p class="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{form.error}</p>
     {/if}
 
-    <Button type="submit" variant="signal" size="xl" class="mt-6 w-full" disabled={busy}>
+    <Button type="submit" size="lg" class="mt-4 w-full" disabled={busy}>
       {#if busy}<LoaderCircle class="animate-spin" />{:else}<Mic />{/if}
-      Go to the interview room
+      Continue
     </Button>
-    <p class="mt-3 text-center text-xs text-muted-foreground">You'll check your mic before it starts.</p>
+    <p class="mt-2 text-center text-xs text-faint">You check your microphone next.</p>
   </aside>
 </form>

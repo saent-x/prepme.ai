@@ -13,7 +13,7 @@
   const pct = $derived(Math.max(0, Math.min(100, score ?? 0)) / 100);
   const tone = $derived(scoreTone(score));
   const color = $derived(
-    tone === 'good' ? 'var(--success)' : tone === 'ok' ? 'var(--warning)' : tone === 'low' ? 'var(--signal)' : 'var(--border)'
+    tone === 'good' ? 'var(--success)' : tone === 'ok' ? 'var(--warning)' : tone === 'low' ? 'var(--destructive)' : 'var(--border)'
   );
 </script>
 
@@ -35,8 +35,8 @@
   </svg>
   <div class="absolute inset-0 grid place-items-center text-center">
     <div>
-      <div class="tabular font-semibold tracking-tight" style="font-size:{size * 0.3}px;line-height:1">{score ?? '—'}</div>
-      <div class="eyebrow mt-1" style="font-size:{Math.max(9, size * 0.075)}px">{label}</div>
+      <div class="tabular font-extrabold tracking-tight" style="font-size:{size * 0.3}px;line-height:1">{score ?? '—'}</div>
+      {#if label}<div class="mt-0.5 text-faint" style="font-size:{Math.max(10, size * 0.09)}px">{label}</div>{/if}
     </div>
   </div>
 </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import '../app.css';
-  import '@fontsource-variable/inter-tight';
+  import '@fontsource-variable/plus-jakarta-sans';
   import '@fontsource-variable/jetbrains-mono';
   import { ModeWatcher } from 'mode-watcher';
   import { Toaster } from '$lib/components/ui/sonner/index.js';

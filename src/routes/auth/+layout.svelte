@@ -1,30 +1,27 @@
 <script lang="ts">
   import Logo from '$lib/components/brand/logo.svelte';
+  import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
   const { children } = $props();
 </script>
 
-<div class="grid min-h-svh lg:grid-cols-[1fr_1.05fr]">
-  <div class="flex flex-col px-6 py-6 sm:px-10">
+<div class="grid min-h-svh lg:grid-cols-[1fr_1fr]">
+  <div class="flex flex-col px-6 py-5 sm:px-10">
     <a href="/" aria-label="PrepMe home" class="w-fit"><Logo /></a>
-    <div class="flex flex-1 items-center justify-center py-10">
-      <div class="w-full max-w-sm">
+    <div class="flex flex-1 items-center justify-center py-8">
+      <div class="w-full max-w-[340px]">
         {@render children()}
       </div>
     </div>
   </div>
-  <aside class="relative hidden overflow-hidden bg-[oklch(0.17_0.006_60)] p-12 text-white lg:flex lg:flex-col lg:justify-between">
-    <div class="absolute -top-32 -right-32 size-[520px] rounded-full bg-signal/30 blur-3xl"></div>
-    <p class="eyebrow relative text-white/50">● On air</p>
-    <div class="relative">
-      <p class="max-w-md text-3xl leading-tight font-semibold tracking-tight">
-        Interviews are a performance. Rehearse them like one.
-      </p>
-      <p class="mt-6 max-w-sm text-white/55">A live voice interviewer that follows up on vague answers, then a scorecard for every question.</p>
-    </div>
-    <div class="relative grid grid-cols-3 gap-3 text-sm">
-      {#each [['Listen', 'Natural voice'], ['Probe', 'Real follow-ups'], ['Score', 'Per-answer feedback']] as [a, b]}
-        <div class="rounded-2xl bg-white/6 p-4"><div class="font-semibold">{a}</div><div class="text-white/50">{b}</div></div>
+  <aside class="hidden flex-col items-center justify-center gap-8 bg-primary p-12 text-primary-foreground lg:flex">
+    <div class="flex items-end gap-3">
+      {#each ['rex', 'sam', 'juno', 'ivy', 'nova'] as n, i}
+        <InterviewerAvatar name={n} class="{i === 2 ? 'size-24' : i % 2 ? 'size-16' : 'size-12'} ring-4 ring-white/25" />
       {/each}
+    </div>
+    <div class="text-center">
+      <p class="text-3xl leading-tight font-extrabold tracking-tight">Name the interview.<br />Nail it.</p>
+      <p class="mx-auto mt-3 max-w-xs text-sm opacity-80">Make an interviewer for the job you want, talk it through out loud, and get a scorecard.</p>
     </div>
   </aside>
 </div>

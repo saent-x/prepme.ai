@@ -1,23 +1,24 @@
 <script lang="ts">
-  import { cn, hueFrom, initials } from '$lib/utils';
+  import { cn } from '$lib/utils';
+  import { interviewerFace } from '$lib/avatars';
   let {
     name,
     class: className = '',
     size = 'md'
-  }: { name: string; class?: string; size?: 'sm' | 'md' | 'lg' } = $props();
-  const hue = $derived(hueFrom(name));
+  }: { name: string; class?: string; size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' } = $props();
+  const src = $derived(interviewerFace(name));
 </script>
 
-<span
-  aria-hidden="true"
+<img
+  {src}
+  alt=""
   class={cn(
-    'inline-grid shrink-0 place-items-center rounded-xl font-mono font-semibold text-white',
-    size === 'sm' && 'size-7 rounded-lg text-[11px]',
-    size === 'md' && 'size-10 text-sm',
-    size === 'lg' && 'size-14 rounded-2xl text-lg',
+    'inline-block shrink-0 rounded-full',
+    size === 'xs' && 'size-6',
+    size === 'sm' && 'size-7',
+    size === 'md' && 'size-9',
+    size === 'lg' && 'size-12',
+    size === 'xl' && 'size-16',
     className
   )}
-  style="background: linear-gradient(140deg, oklch(0.55 0.13 {hue}), oklch(0.35 0.08 {hue + 40}));"
->
-  {initials(name)}
-</span>
+/>

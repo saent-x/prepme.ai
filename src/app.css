@@ -4,84 +4,91 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * PrepMe v2 — "On air" theme.
- * Warm paper, near-black ink, one signal colour (the red of a recording light).
+ * PrepMe "Lean" theme.
+ * White surfaces, ink text, one accent, green and amber only for scores.
  */
 :root {
-  --radius: 0.875rem;
+  --radius: 0.625rem;
 
-  --background: oklch(0.975 0.004 85);
-  --foreground: oklch(0.2 0.01 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.01 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.01 60);
+  --background: #fcfcfd;
+  --foreground: #18161f;
+  --card: #ffffff;
+  --card-foreground: #18161f;
+  --popover: #ffffff;
+  --popover-foreground: #18161f;
 
-  --primary: oklch(0.2 0.01 60);
-  --primary-foreground: oklch(0.985 0.003 85);
-  --signal: oklch(0.64 0.21 35);
-  --signal-foreground: oklch(0.99 0 0);
-  --signal-soft: oklch(0.95 0.035 40);
+  /* One accent. Change these three to re-colour the whole app. */
+  --primary: #6d3df5;
+  --primary-foreground: #ffffff;
+  --signal: #6d3df5;
+  --signal-foreground: #ffffff;
+  --signal-soft: #f1ecff;
 
-  --secondary: oklch(0.94 0.006 85);
-  --secondary-foreground: oklch(0.2 0.01 60);
-  --muted: oklch(0.945 0.006 85);
-  --muted-foreground: oklch(0.5 0.012 70);
-  --accent: oklch(0.93 0.008 85);
-  --accent-foreground: oklch(0.2 0.01 60);
-  --destructive: oklch(0.58 0.22 27);
-  --success: oklch(0.6 0.14 155);
-  --warning: oklch(0.75 0.15 75);
+  --secondary: #f7f6fa;
+  --secondary-foreground: #18161f;
+  --muted: #f7f6fa;
+  --muted-foreground: #5b5870;
+  --faint: #9794a6;
+  --accent: #f7f6fa;
+  --accent-foreground: #18161f;
+  --destructive: #e5484d;
+  --success: #16a34a;
+  --success-soft: #e8f6ee;
+  --warning: #d97706;
+  --warning-soft: #fdf1dc;
 
-  --border: oklch(0.9 0.008 85);
-  --input: oklch(0.88 0.008 85);
-  --ring: oklch(0.64 0.21 35 / 60%);
+  --border: #e8e6ee;
+  --input: #dcd9e6;
+  --ring: #6d3df5;
 
-  --chart-1: oklch(0.64 0.21 35);
-  --chart-2: oklch(0.2 0.01 60);
-  --chart-3: oklch(0.6 0.14 155);
-  --chart-4: oklch(0.75 0.15 75);
-  --chart-5: oklch(0.55 0.15 260);
+  --chart-1: #6d3df5;
+  --chart-2: #18161f;
+  --chart-3: #16a34a;
+  --chart-4: #d97706;
+  --chart-5: #38bdf8;
 }
 
 .dark {
-  --background: oklch(0.16 0.006 60);
-  --foreground: oklch(0.95 0.005 85);
-  --card: oklch(0.2 0.006 60);
-  --card-foreground: oklch(0.95 0.005 85);
-  --popover: oklch(0.22 0.006 60);
-  --popover-foreground: oklch(0.95 0.005 85);
+  --background: #121118;
+  --foreground: #f1f0f5;
+  --card: #1a1822;
+  --card-foreground: #f1f0f5;
+  --popover: #1e1c27;
+  --popover-foreground: #f1f0f5;
 
-  --primary: oklch(0.95 0.005 85);
-  --primary-foreground: oklch(0.18 0.006 60);
-  --signal: oklch(0.7 0.19 38);
-  --signal-foreground: oklch(0.15 0 0);
-  --signal-soft: oklch(0.3 0.06 38);
+  --primary: #8b66ff;
+  --primary-foreground: #ffffff;
+  --signal: #8b66ff;
+  --signal-foreground: #ffffff;
+  --signal-soft: #2a2145;
 
-  --secondary: oklch(0.25 0.006 60);
-  --secondary-foreground: oklch(0.95 0.005 85);
-  --muted: oklch(0.24 0.006 60);
-  --muted-foreground: oklch(0.7 0.01 70);
-  --accent: oklch(0.28 0.006 60);
-  --accent-foreground: oklch(0.95 0.005 85);
-  --destructive: oklch(0.68 0.2 25);
-  --success: oklch(0.72 0.14 155);
-  --warning: oklch(0.8 0.14 80);
+  --secondary: #23202d;
+  --secondary-foreground: #f1f0f5;
+  --muted: #211f2a;
+  --muted-foreground: #a9a6b8;
+  --faint: #7d7a8c;
+  --accent: #262330;
+  --accent-foreground: #f1f0f5;
+  --destructive: #f2686c;
+  --success: #3fc76f;
+  --success-soft: #16301f;
+  --warning: #f0a23a;
+  --warning-soft: #3a2a10;
 
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.7 0.19 38 / 60%);
+  --border: #2b2836;
+  --input: #383446;
+  --ring: #8b66ff;
 }
 
 @theme inline {
-  --font-sans: 'Inter Tight Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
-  --radius-2xl: calc(var(--radius) + 12px);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 4px);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -103,6 +110,9 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-faint: var(--faint);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -134,7 +144,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: 'ss01', 'cv11';
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
@@ -148,7 +157,7 @@
 @layer components {
   /* Small uppercase label used for section eyebrows and stat captions. */
   .eyebrow {
-    @apply font-mono text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase;
+    @apply text-xs font-medium text-faint;
   }
   .tabular {
     font-variant-numeric: tabular-nums;

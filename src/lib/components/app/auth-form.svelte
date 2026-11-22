@@ -72,37 +72,37 @@
   );
 </script>
 
-<h1 class="text-3xl font-semibold tracking-tight">{mode === 'sign-in' ? 'Welcome back' : 'Create your account'}</h1>
-<p class="mt-2 text-muted-foreground">
+<h1 class="text-2xl font-extrabold tracking-tight">{mode === 'sign-in' ? 'Welcome back' : 'Create your account'}</h1>
+<p class="mt-1 text-sm text-muted-foreground">
   {mode === 'sign-in' ? 'Sign in to continue practising.' : '5 free interviews. No card needed.'}
 </p>
 
 {#if providers.length}
-  <div class="mt-8 grid gap-2">
+  <div class="mt-6 grid gap-2">
     {#each providers as p}
       <Button variant="outline" size="lg" class="w-full" disabled={busy || !ready} onclick={() => social(p)}>
         Continue with {labels[p]}
       </Button>
     {/each}
   </div>
-  <div class="my-6 flex items-center gap-3 text-xs text-muted-foreground">
+  <div class="my-5 flex items-center gap-3 text-xs text-muted-foreground">
     <span class="h-px flex-1 bg-border"></span>or use email<span class="h-px flex-1 bg-border"></span>
   </div>
 {:else}
-  <div class="mt-8"></div>
+  <div class="mt-6"></div>
 {/if}
 
 <form class="grid gap-4" onsubmit={submit} novalidate>
   {#if mode === 'sign-up'}
     <div class="grid gap-1.5">
       <Label for="name">Name</Label>
-      <Input id="name" autocomplete="name" bind:value={name} aria-invalid={!!errors.name} class="h-11" />
+      <Input id="name" autocomplete="name" bind:value={name} aria-invalid={!!errors.name} class="h-10" />
       {#if errors.name}<p class="text-sm text-destructive">{errors.name}</p>{/if}
     </div>
   {/if}
   <div class="grid gap-1.5">
     <Label for="email">Email</Label>
-    <Input id="email" type="email" autocomplete="email" bind:value={email} aria-invalid={!!errors.email} class="h-11" />
+    <Input id="email" type="email" autocomplete="email" bind:value={email} aria-invalid={!!errors.email} class="h-10" />
     {#if errors.email}<p class="text-sm text-destructive">{errors.email}</p>{/if}
   </div>
   <div class="grid gap-1.5">
@@ -113,7 +113,7 @@
       autocomplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
       bind:value={password}
       aria-invalid={!!errors.password}
-      class="h-11"
+      class="h-10"
     />
     {#if errors.password}<p class="text-sm text-destructive">{errors.password}</p>{/if}
   </div>
@@ -123,9 +123,9 @@
   </Button>
 </form>
 
-<p class="mt-8 text-center text-sm text-muted-foreground">
+<p class="mt-6 text-center text-sm text-muted-foreground">
   {mode === 'sign-in' ? "Don't have an account?" : 'Already have an account?'}
-  <a href={switchHref} class="font-medium text-foreground underline underline-offset-4">
+  <a href={switchHref} class="font-semibold text-primary hover:underline">
     {mode === 'sign-in' ? 'Sign up' : 'Sign in'}
   </a>
 </p>

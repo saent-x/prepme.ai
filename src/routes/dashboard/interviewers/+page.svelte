@@ -1,50 +1,62 @@
 <script lang="ts">
+  import { page } from '$app/state';
+  import { replaceState } from '$app/navigation';
+  import { onMount } from 'svelte';
   import { Button } from '$lib/components/ui/button';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
-  import { getTemplate, VOICES } from '$lib/templates';
+  import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
+  import { VOICES } from '$lib/templates';
   import { Mic, Plus } from '@lucide/svelte';
 
   let { data } = $props();
+  let creating = $state(false);
+  let job = $state('');
   const voiceLabel = (v: string) => VOICES.find((x) => x.id === v)?.label ?? v;
+
+  // Old links to /dashboard/interviewers/new and the landing page land here with ?new=1 (and maybe ?job=).
+  onMount(() => {
+    if (page.url.searchParams.has('new')) {
+      job = (page.url.searchParams.get('job') ?? '').slice(0, 120);
+      creating = true;
+      replaceState('/dashboard/interviewers', {});
+    }
+  });
 </script>
 
 <svelte:head><title>Interviewers · PrepMe</title></svelte:head>
 
-<div class="flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <p class="eyebrow">Interviewers</p>
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight">Who interviews you</h1>
-    <p class="mt-2 max-w-xl text-muted-foreground">Each interviewer has its own brief and voice. Start from a template or write your own.</p>
-  </div>
-  <Button href="/dashboard/interviewers/new" size="lg"><Plus /> New interviewer</Button>
+<div class="flex h-9 items-center justify-between gap-4">
+  <h1 class="text-xl font-bold tracking-tight">Interviewers</h1>
+  <Button onclick={() => (creating = true)}><Plus /> New interviewer</Button>
 </div>
 
 {#if data.interviewers.length}
-  <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="mt-4 overflow-hidden rounded-xl border bg-card">
+    <div class="hidden grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_90px_110px] gap-x-4 border-b px-4 py-2 text-xs font-medium text-faint md:grid">
+      <span>Interviewer</span><span>Brief</span><span>Voice</span><span>Interviews</span><span></span>
+    </div>
     {#each data.interviewers as i (i.id)}
-      <article class="group flex flex-col rounded-3xl border bg-card p-5 transition-shadow hover:shadow-sm">
-        <a href="/dashboard/interviewers/{i.id}" class="flex items-center gap-3">
-          <InterviewerAvatar name={i.name} />
-          <div class="min-w-0">
-            <h2 class="truncate font-semibold group-hover:underline">{i.name}</h2>
-            <p class="text-xs text-muted-foreground">{getTemplate(i.template)?.category ?? 'Custom'} · {voiceLabel(i.voice)} voice</p>
-          </div>
+      <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 border-t px-4 py-2.5 text-sm first:border-t-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_90px_110px] md:[&:nth-child(2)]:border-t-0">
+        <a href="/dashboard/interviewers/{i.id}" class="flex min-w-0 items-center gap-2.5 hover:underline">
+          <InterviewerAvatar name={i.name} size="sm" />
+          <span class="truncate font-semibold">{i.name}</span>
         </a>
-        <p class="mt-4 line-clamp-3 flex-1 text-sm text-muted-foreground">{i.instructions}</p>
-        <div class="mt-5 flex items-center justify-between">
-          <span class="text-sm text-muted-foreground">{i.interviewCount} interview{i.interviewCount === 1 ? '' : 's'}</span>
+        <span class="hidden truncate text-muted-foreground md:block">{i.instructions}</span>
+        <span class="hidden text-muted-foreground md:block">{voiceLabel(i.voice)}</span>
+        <span class="tabular hidden text-muted-foreground md:block">{i.interviewCount}</span>
+        <span class="flex justify-end">
           <Button href="/dashboard/interviews/new?interviewer={i.id}" variant="outline" size="sm"><Mic /> Interview</Button>
-        </div>
-      </article>
+        </span>
+      </div>
     {/each}
   </div>
 {:else}
-  <div class="mt-8 grid place-items-center rounded-3xl border bg-card px-6 py-16 text-center">
-    <h2 class="text-lg font-semibold">No interviewers yet</h2>
-    <p class="mt-1 max-w-sm text-muted-foreground">Pick a template when you start an interview, or write your own brief.</p>
-    <div class="mt-6 flex gap-2">
-      <Button href="/dashboard/interviews/new">Use a template</Button>
-      <Button href="/dashboard/interviewers/new" variant="outline">Write your own</Button>
-    </div>
+  <div class="mt-4 grid place-items-center rounded-xl border bg-card px-6 py-12 text-center">
+    <InterviewerAvatar name="pip" size="lg" />
+    <h2 class="mt-3 font-bold">No interviewers yet</h2>
+    <p class="mt-1 max-w-sm text-sm text-muted-foreground">Make one for the job you are going for. It takes a minute.</p>
+    <Button class="mt-4" onclick={() => (creating = true)}><Plus /> New interviewer</Button>
   </div>
 {/if}
+
+{#key job}<InterviewerDialog bind:open={creating} {job} />{/key}

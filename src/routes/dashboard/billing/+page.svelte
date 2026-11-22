@@ -38,25 +38,27 @@
     new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: amount % 1 ? 2 : 0 }).format(amount);
 </script>
 
-<svelte:head><title>Plan & billing · PrepMe</title></svelte:head>
+<svelte:head><title>Plan and billing · PrepMe</title></svelte:head>
 
-<p class="eyebrow">Plan & billing</p>
-<h1 class="mt-2 text-3xl font-semibold tracking-tight">{plan.premium ? `You're on ${plan.productName ?? 'Pro'}` : "You're on the free plan"}</h1>
+<div class="flex h-9 items-center gap-2.5">
+  <h1 class="text-xl font-bold tracking-tight">Plan and billing</h1>
+  <span class="rounded-md bg-signal-soft px-2 py-0.5 text-xs font-semibold text-primary">{plan.premium ? (plan.productName ?? 'Pro') : 'Free'}</span>
+</div>
 
-<section class="mt-8 grid gap-3 sm:grid-cols-2">
+<section class="mt-4 grid rounded-xl border bg-card sm:grid-cols-2" aria-label="Usage">
   {#each [
-    { label: 'Interviews', used: usage.interviews, max: limits.interviews },
-    { label: 'Interviewers', used: usage.interviewers, max: limits.interviewers }
-  ] as u}
-    <div class="rounded-3xl border bg-card p-6">
-      <div class="eyebrow">{u.label}</div>
-      <div class="tabular mt-2 text-3xl font-semibold">{u.used}{#if !plan.premium}<span class="text-lg text-muted-foreground"> / {u.max}</span>{/if}</div>
+    { label: 'interviews', used: usage.interviews, max: limits.interviews },
+    { label: 'interviewers', used: usage.interviewers, max: limits.interviewers }
+  ] as u, i}
+    <div class="px-5 py-3.5 {i ? 'border-t sm:border-t-0 sm:border-l' : ''}">
+      <div class="flex items-baseline gap-2">
+        <span class="tabular text-2xl font-extrabold tracking-tight">{u.used}</span>
+        <span class="text-[13px] text-muted-foreground">{plan.premium ? `${u.label}, unlimited` : `of ${u.max} ${u.label}`}</span>
+      </div>
       {#if !plan.premium}
-        <div class="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-          <div class="h-full rounded-full {u.used >= u.max ? 'bg-signal' : 'bg-foreground'}" style="width:{Math.min(100, (u.used / u.max) * 100)}%"></div>
+        <div class="mt-2 h-[5px] overflow-hidden rounded-full bg-muted">
+          <div class="h-full rounded-full {u.used >= u.max ? 'bg-warning' : 'bg-primary'}" style="width:{Math.min(100, (u.used / u.max) * 100)}%"></div>
         </div>
-      {:else}
-        <p class="mt-2 text-sm text-muted-foreground">Unlimited</p>
       {/if}
     </div>
   {/each}
@@ -64,27 +66,27 @@
 
 {#if plan.premium}
   {#if plan.billingEnabled}
-    <Button class="mt-6" variant="outline" onclick={portal} disabled={busy === 'portal'}>
+    <Button class="mt-4" variant="outline" onclick={portal} disabled={busy === 'portal'}>
       {#if busy === 'portal'}<LoaderCircle class="animate-spin" />{/if} Manage subscription
     </Button>
   {/if}
 {:else if !plan.billingEnabled}
-  <p class="mt-8 rounded-3xl border bg-card p-6 text-muted-foreground">Billing isn't set up on this deployment yet.</p>
+  <p class="mt-4 rounded-xl border bg-card px-5 py-4 text-sm text-muted-foreground">Billing isn't set up on this deployment yet.</p>
 {:else if data.products.length}
-  <section class="mt-10">
-    <h2 class="text-xl font-semibold">Upgrade</h2>
-    <div class="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+  <section class="mt-5">
+    <h2 class="text-sm font-bold">Upgrade</h2>
+    <div class="mt-2 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
       {#each data.products as p}
-        <article class="flex flex-col rounded-3xl border bg-card p-6">
-          <h3 class="font-semibold">{p.name}</h3>
+        <article class="flex flex-col rounded-xl border bg-card p-5">
+          <h3 class="font-bold">{p.name}</h3>
           {#if p.description}<p class="mt-1 text-sm text-muted-foreground">{p.description}</p>{/if}
-          <div class="mt-5"><span class="tabular text-4xl font-semibold">{fmt(p.amount, p.currency)}</span><span class="text-muted-foreground"> / {p.interval}</span></div>
-          <ul class="mt-5 flex-1 space-y-2 text-sm">
+          <div class="mt-3"><span class="tabular text-3xl font-extrabold tracking-tight">{fmt(p.amount, p.currency)}</span><span class="text-muted-foreground"> / {p.interval}</span></div>
+          <ul class="mt-4 flex-1 space-y-1.5 text-sm">
             {#each p.benefits.length ? p.benefits : ['Unlimited interviews', 'Unlimited interviewers', 'Calls up to 45 minutes'] as b}
               <li class="flex gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" />{b}</li>
             {/each}
           </ul>
-          <Button class="mt-6" variant="signal" onclick={() => checkout(p.id)} disabled={busy === p.id}>
+          <Button class="mt-5" onclick={() => checkout(p.id)} disabled={busy === p.id}>
             {#if busy === p.id}<LoaderCircle class="animate-spin" />{/if} Upgrade
           </Button>
         </article>
@@ -92,5 +94,5 @@
     </div>
   </section>
 {:else}
-  <p class="mt-8 rounded-3xl border bg-card p-6 text-muted-foreground">Plans are loading or unavailable right now. Try again shortly.</p>
+  <p class="mt-4 rounded-xl border bg-card px-5 py-4 text-sm text-muted-foreground">Plans are loading or unavailable right now. Try again shortly.</p>
 {/if}

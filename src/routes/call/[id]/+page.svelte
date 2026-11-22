@@ -6,7 +6,8 @@
   import { Button } from '$lib/components/ui/button';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
-  import Orb from '$lib/components/viz/orb.svelte';
+  import UserAvatar from '$lib/components/app/user-avatar.svelte';
+  import { faceColour } from '$lib/avatars';
   import LevelMeter from '$lib/components/viz/level-meter.svelte';
   import { InterviewCall } from '$lib/realtime/interview-call.svelte';
   import { formatClock } from '$lib/utils';
@@ -100,6 +101,8 @@
   const status = $derived(
     call.phase === 'connecting'
       ? 'Connecting…'
+      : call.phase === 'error'
+        ? 'Paused'
       : call.phase === 'reconnecting'
         ? 'Connection dropped. Reconnecting…'
         : call.interviewerSpeaking
@@ -111,6 +114,8 @@
               : 'Your turn'
   );
   const lowTime = $derived(call.phase === 'live' && call.remainingMs < 2 * 60_000);
+  const stage = $derived(faceColour(data.interviewer.name));
+  const pulse = $derived(call.interviewerSpeaking ? 1 + Math.min(0.12, call.interviewerLevel * 0.25) : 1);
   const lastLine = $derived(call.transcript.filter((t) => t.text).at(-1));
 
   $effect(() => {
@@ -155,130 +160,128 @@
 <svelte:head><title>{data.interview.name} · Interview room</title></svelte:head>
 <svelte:window onkeydown={onKey} onbeforeunload={onBeforeUnload} />
 
-<div class="dark min-h-svh bg-[oklch(0.14_0.005_60)] text-foreground">
+<div class="min-h-svh bg-background text-foreground">
   {#if call.phase === 'idle'}
     <!-- ================= LOBBY ================= -->
-    <div class="mx-auto flex min-h-svh max-w-5xl flex-col px-5 py-6">
+    <div class="mx-auto flex min-h-svh max-w-[880px] flex-col px-5 py-4">
       <header class="flex items-center justify-between">
         <a href="/dashboard/interviews/{data.interview.id}" aria-label="Back"><Logo /></a>
         <Button href="/dashboard/interviews/{data.interview.id}" variant="ghost" size="sm">Not now</Button>
       </header>
 
-      <div class="grid flex-1 items-center gap-6 py-10 lg:grid-cols-2">
-        <section class="rounded-[28px] border bg-card p-7">
-          <p class="eyebrow">Interview room</p>
-          <h1 class="mt-3 text-3xl font-semibold tracking-tight text-balance">{data.interview.name}</h1>
-          <div class="mt-6 flex items-center gap-4 rounded-2xl bg-muted p-4">
-            <InterviewerAvatar name={data.interviewer.name} size="lg" />
+      <div class="grid flex-1 place-items-center py-8">
+        <div class="grid w-full overflow-hidden rounded-xl border bg-card md:grid-cols-[1fr_1.15fr]">
+          <section class="flex flex-col items-center justify-center gap-3 px-6 py-8 text-center text-[#18161f]" style="background:{stage}">
+            <InterviewerAvatar name={data.interviewer.name} class="size-24 ring-4 ring-white/40" />
             <div>
-              <div class="font-medium">{data.interviewer.name}</div>
-              <div class="text-sm text-muted-foreground">Voice: {data.interviewer.voice}</div>
+              <div class="text-lg font-bold">{data.interviewer.name}</div>
+              <div class="text-[13px] opacity-75">{data.interview.name}</div>
             </div>
-          </div>
-          <dl class="mt-6 grid grid-cols-2 gap-3 text-sm">
-            <div class="rounded-2xl border p-4"><dt class="eyebrow">Length</dt><dd class="mt-1 text-lg font-semibold">{data.interview.durationMinutes} min</dd></div>
-            <div class="rounded-2xl border p-4"><dt class="eyebrow">Tailored</dt><dd class="mt-1 text-lg font-semibold">{data.interview.hasJobDescription ? 'To the job' : 'General'}</dd></div>
-          </dl>
-          {#if data.interview.focus}
-            <p class="mt-4 text-sm text-muted-foreground"><span class="text-foreground">Focus:</span> {data.interview.focus}</p>
-          {/if}
-          {#if data.interview.savedTurns}
-            <p class="mt-4 rounded-2xl bg-signal-soft p-4 text-sm">You've already started this one. The interviewer will pick up where you left off.</p>
-          {/if}
-        </section>
+            <div class="flex flex-wrap justify-center gap-1.5 text-xs font-semibold">
+              <span class="rounded-md bg-white/60 px-2 py-0.5">{data.interview.durationMinutes} min</span>
+              <span class="rounded-md bg-white/60 px-2 py-0.5">{data.interview.hasJobDescription ? 'Tailored to the job' : 'General'}</span>
+            </div>
+          </section>
 
-        <section class="rounded-[28px] border bg-card p-7">
-          <h2 class="text-xl font-semibold">Check your microphone</h2>
-          {#if !mic}
-            <p class="mt-2 text-muted-foreground">PrepMe needs your microphone for the voice interview. Audio goes straight to the interviewer and isn't recorded.</p>
-            {#if micError}<p class="mt-4 flex gap-2 rounded-2xl bg-destructive/15 p-4 text-sm"><TriangleAlert class="size-4 shrink-0" />{micError}</p>{/if}
-            <Button size="xl" class="mt-6 w-full" onclick={() => requestMic()}><Mic /> Allow microphone</Button>
-          {:else}
-            <div class="mt-5 flex items-center gap-4 rounded-2xl bg-muted p-4">
-              <span class="grid size-10 place-items-center rounded-full bg-success/20 text-success"><Mic class="size-5" /></span>
-              <div class="flex-1">
-                <div class="text-sm font-medium">Say something to test</div>
-                <div class="mt-2 h-2 overflow-hidden rounded-full bg-background">
-                  <div class="h-full rounded-full bg-success transition-[width] duration-75" style="width:{Math.round(lobbyLevel * 100)}%"></div>
+          <section class="px-6 py-6">
+            <h1 class="text-base font-bold">Check your microphone</h1>
+            {#if data.interview.focus}
+              <p class="mt-1 text-[13px] text-muted-foreground">Focus: {data.interview.focus}</p>
+            {/if}
+            {#if data.interview.savedTurns}
+              <p class="mt-3 rounded-lg bg-signal-soft px-3 py-2 text-[13px]">You already started this one. The interviewer picks up where you left off.</p>
+            {/if}
+            {#if !mic}
+              <p class="mt-2 text-sm text-muted-foreground">Your voice goes straight to the interviewer. It is not recorded.</p>
+              {#if micError}<p class="mt-3 flex gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-[13px] text-destructive"><TriangleAlert class="size-4 shrink-0" />{micError}</p>{/if}
+              <Button size="lg" class="mt-5 w-full" onclick={() => requestMic()}><Mic /> Allow microphone</Button>
+            {:else}
+              <div class="mt-4 flex items-center gap-3">
+                <Mic class="size-4 shrink-0 text-success" />
+                <div class="flex-1">
+                  <div class="text-[13px] font-medium">Say something to test</div>
+                  <div class="mt-1.5 h-[5px] overflow-hidden rounded-full bg-muted">
+                    <div class="h-full rounded-full bg-success transition-[width] duration-75" style="width:{Math.round(lobbyLevel * 100)}%"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-            {#if devices.length > 1}
-              <label class="mt-4 block text-sm">
-                <span class="text-muted-foreground">Microphone</span>
-                <select
-                  class="mt-1.5 h-11 w-full rounded-xl border bg-background px-3"
-                  value={deviceId}
-                  onchange={(e) => requestMic(e.currentTarget.value)}
-                >
-                  {#each devices as d}<option value={d.deviceId}>{d.label || 'Microphone'}</option>{/each}
-                </select>
-              </label>
+              {#if devices.length > 1}
+                <label class="mt-4 block text-[13px]">
+                  <span class="font-medium">Microphone</span>
+                  <select class="mt-1 h-9 w-full rounded-md border border-input bg-card px-2.5 text-sm" value={deviceId} onchange={(e) => requestMic(e.currentTarget.value)}>
+                    {#each devices as d}<option value={d.deviceId}>{d.label || 'Microphone'}</option>{/each}
+                  </select>
+                </label>
+              {/if}
+              <ul class="mt-4 grid gap-1.5 text-[13px] text-muted-foreground">
+                <li class="flex gap-2"><Headphones class="mt-0.5 size-3.5 shrink-0" /> Headphones work best.</li>
+                <li class="flex gap-2"><Volume2 class="mt-0.5 size-3.5 shrink-0" /> The interviewer speaks first and waits for you to finish.</li>
+                <li class="flex gap-2"><ShieldCheck class="mt-0.5 size-3.5 shrink-0" /> If the line drops, your progress is kept.</li>
+              </ul>
+              <Button size="lg" class="mt-5 w-full" onclick={begin}><Mic /> Start interview</Button>
             {/if}
-            <ul class="mt-6 grid gap-2.5 text-sm text-muted-foreground">
-              <li class="flex gap-2.5"><Headphones class="size-4 shrink-0" /> Headphones stop the interviewer hearing itself.</li>
-              <li class="flex gap-2.5"><Volume2 class="size-4 shrink-0" /> The interviewer speaks first. Take your time; it waits for you to finish.</li>
-              <li class="flex gap-2.5"><ShieldCheck class="size-4 shrink-0" /> If the line drops, your progress is kept and the call reconnects.</li>
-            </ul>
-            <Button variant="signal" size="xl" class="mt-7 w-full" onclick={begin}><Mic /> Start interview</Button>
-          {/if}
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   {:else if call.phase === 'ending' || call.phase === 'ended'}
     <!-- ================= SCORING ================= -->
     <div class="grid min-h-svh place-items-center px-6 text-center">
       <div>
-        <LoaderCircle class="mx-auto size-10 animate-spin text-signal" />
-        <h1 class="mt-6 text-2xl font-semibold">Scoring your interview</h1>
-        <p class="mt-2 text-muted-foreground">Reading {call.transcript.length} turns against the role. Usually under a minute.</p>
+        <InterviewerAvatar name={data.interviewer.name} class="mx-auto size-16" />
+        <h1 class="mt-4 flex items-center justify-center gap-2 text-lg font-bold"><LoaderCircle class="size-4 animate-spin text-primary" /> Scoring your interview</h1>
+        <p class="mt-1 text-sm text-muted-foreground">Usually under a minute.</p>
       </div>
     </div>
   {:else if inCall}
     <!-- ================= LIVE ================= -->
-    <div class="flex min-h-svh">
+    <div class="flex min-h-svh text-[#18161f]" style="background:{stage}">
       <div class="flex min-w-0 flex-1 flex-col">
-        <header class="flex items-center justify-between gap-4 px-5 py-4">
+        <header class="flex items-center justify-between gap-4 px-5 py-3.5">
           <div class="flex min-w-0 items-center gap-3">
-            <Logo compact />
-            <span class="truncate text-sm text-muted-foreground">{data.interview.name}</span>
+            <Logo class="[&>span]:text-[#18161f]" />
+            <span class="truncate text-sm font-medium opacity-70">{data.interview.name}</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="inline-flex items-center gap-2 rounded-full bg-card px-3 py-1.5 font-mono text-xs {lowTime ? 'text-signal' : ''}" aria-live="polite">
-              <span class="size-1.5 rounded-full {call.phase === 'live' ? 'animate-onair bg-signal' : 'bg-warning'}"></span>
-              {call.phase === 'live' ? 'LIVE' : call.phase === 'error' ? 'PAUSED' : 'CONNECTING'}
-              · {formatClock(call.elapsedMs)} / {call.durationMinutes}:00
+            <span class="tabular inline-flex items-center gap-2 rounded-md bg-white/70 px-2.5 py-1 text-[13px] font-semibold {lowTime ? 'text-destructive' : ''}" aria-live="polite">
+              <span class="size-1.5 rounded-full {call.phase === 'live' ? 'animate-onair bg-destructive' : 'bg-warning'}"></span>
+              {call.phase === 'live' ? '' : call.phase === 'error' ? 'Paused · ' : 'Connecting · '}{formatClock(call.elapsedMs)} / {call.durationMinutes}:00
             </span>
-            <Button variant="ghost" size="icon" aria-label="Toggle transcript" aria-pressed={showPanel} onclick={() => (showPanel = !showPanel)}><PanelRight /></Button>
+            <button
+              class="hidden size-8 place-items-center rounded-md bg-white/70 transition-colors hover:bg-white md:grid"
+              aria-label="Toggle transcript"
+              aria-pressed={showPanel}
+              onclick={() => (showPanel = !showPanel)}><PanelRight class="size-4" /></button
+            >
           </div>
         </header>
 
         <main class="relative flex flex-1 flex-col items-center justify-center px-5">
-          <Orb
-            level={call.interviewerLevel}
-            speaking={call.interviewerSpeaking}
-            state={call.phase === 'live' ? 'live' : call.phase === 'reconnecting' ? 'reconnecting' : 'connecting'}
-            size={240}
-          />
-          <h1 class="mt-10 text-xl font-semibold">{data.interviewer.name}</h1>
-          <p class="mt-1 text-muted-foreground" aria-live="polite">{status}</p>
+          <div class="relative grid size-[220px] place-items-center">
+            <span class="absolute inset-[-56px] rounded-full bg-white/15 transition-transform duration-150" style="transform:scale({pulse})"></span>
+            <span class="absolute inset-[-26px] rounded-full bg-white/20 transition-transform duration-100" style="transform:scale({pulse})"></span>
+            <InterviewerAvatar name={data.interviewer.name} class="relative size-[220px] ring-[6px] ring-white {call.phase === 'live' ? '' : 'opacity-60'}" />
+          </div>
+          <h1 class="mt-16 text-lg font-bold">{data.interviewer.name}</h1>
+          <p class="text-sm font-medium opacity-70" aria-live="polite">{status}</p>
 
-          {#if showCaptions}
-            <div class="mt-8 min-h-24 w-full max-w-2xl text-center" aria-live="polite">
+          {#if showCaptions && call.phase !== 'error'}
+            <div class="mt-5 grid min-h-[76px] w-full max-w-[640px] place-items-center rounded-xl bg-white/85 px-5 py-3 text-center" aria-live="polite">
               {#if call.caption?.text}
-                <p class="text-lg leading-relaxed text-balance {call.caption.speaker === 'candidate' ? 'text-muted-foreground' : ''}">{call.caption.text}</p>
+                <p class="text-[15px] leading-relaxed font-medium text-balance {call.caption.speaker === 'candidate' ? 'opacity-60' : ''}">{call.caption.text}</p>
               {:else if lastLine}
-                <p class="text-lg leading-relaxed text-balance {lastLine.speaker === 'candidate' ? 'text-muted-foreground' : 'opacity-80'}">{lastLine.text}</p>
+                <p class="text-[15px] leading-relaxed font-medium text-balance {lastLine.speaker === 'candidate' ? 'opacity-60' : ''}">{lastLine.text}</p>
+              {:else}
+                <p class="text-sm opacity-50">Captions show here.</p>
               {/if}
             </div>
           {/if}
 
           {#if call.phase === 'error'}
-            <div class="absolute inset-x-5 bottom-6 mx-auto max-w-md rounded-3xl border bg-card p-6 text-center shadow-2xl">
-              <TriangleAlert class="mx-auto size-6 text-signal" />
-              <p class="mt-3 font-medium">The interview is paused</p>
+            <div class="mt-5 w-full max-w-md rounded-xl border bg-card p-5 text-center text-foreground shadow-xl">
+              <p class="flex items-center justify-center gap-2 font-bold"><TriangleAlert class="size-4 text-warning" /> The interview is paused</p>
               <p class="mt-1 text-sm text-muted-foreground">{call.error}</p>
-              <div class="mt-5 flex justify-center gap-2">
+              <div class="mt-4 flex justify-center gap-2">
                 <Button onclick={() => call.resume()}><RefreshCw /> Reconnect</Button>
                 <Button variant="outline" onclick={hangUp}>End and score</Button>
               </div>
@@ -286,41 +289,45 @@
           {/if}
         </main>
 
-        <footer class="flex items-center justify-center gap-3 px-5 pt-4 pb-8">
+        <footer class="flex flex-wrap items-center justify-center gap-2.5 px-5 pt-3 pb-6">
+          <span class="mr-2 hidden items-center gap-2 rounded-full bg-white/70 py-1 pr-3 pl-1 text-[13px] font-semibold sm:inline-flex">
+            <UserAvatar name={data.user.name} image={data.user.image} class="size-7" />
+            You
+            {#if !call.muted}<LevelMeter level={call.micLevel} />{/if}
+          </span>
           <button
-            class="relative grid size-14 place-items-center rounded-full transition-colors {call.muted ? 'bg-signal text-white' : 'bg-card hover:bg-accent'}"
+            class="grid size-11 place-items-center rounded-full transition-colors disabled:opacity-50 {call.muted ? 'bg-[#18161f] text-white' : 'bg-white hover:bg-white/80'}"
             aria-label={call.muted ? 'Unmute (M)' : 'Mute (M)'}
             aria-pressed={call.muted}
             onclick={() => call.toggleMute()}
             disabled={call.phase !== 'live'}
           >
-            {#if call.muted}<MicOff class="size-5" />{:else}<Mic class="size-5" />{/if}
-            {#if !call.muted}<LevelMeter level={call.micLevel} class="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5 text-foreground" />{/if}
+            {#if call.muted}<MicOff class="size-[18px]" />{:else}<Mic class="size-[18px]" />{/if}
           </button>
           <button
-            class="grid size-14 place-items-center rounded-full bg-card transition-colors hover:bg-accent"
+            class="grid size-11 place-items-center rounded-full bg-white transition-colors hover:bg-white/80"
             aria-label={showCaptions ? 'Hide captions (C)' : 'Show captions (C)'}
             aria-pressed={showCaptions}
             onclick={() => (showCaptions = !showCaptions)}
           >
-            {#if showCaptions}<Captions class="size-5" />{:else}<CaptionsOff class="size-5" />{/if}
+            {#if showCaptions}<Captions class="size-[18px]" />{:else}<CaptionsOff class="size-[18px]" />{/if}
           </button>
           <button
-            class="flex h-14 items-center gap-2 rounded-full bg-destructive px-6 font-medium text-white transition-opacity hover:opacity-90"
+            class="ml-1 flex h-11 items-center gap-2 rounded-lg bg-[#18161f] px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             onclick={() => (confirmEnd = true)}
           >
-            <PhoneOff class="size-5" /> End interview
+            <PhoneOff class="size-4" /> End and get scorecard
           </button>
         </footer>
       </div>
 
       {#if showPanel}
-        <aside class="hidden w-[380px] shrink-0 flex-col border-l bg-card/40 md:flex" aria-label="Live transcript">
-          <div class="border-b px-5 py-4 font-medium">Live transcript</div>
-          <ol bind:this={transcriptEl} class="flex-1 space-y-4 overflow-y-auto p-5 text-sm">
+        <aside class="hidden w-[340px] shrink-0 flex-col border-l bg-card text-foreground md:flex" aria-label="Live transcript">
+          <div class="border-b px-4 py-3 text-sm font-bold">Live transcript</div>
+          <ol bind:this={transcriptEl} class="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
             {#each call.transcript.filter((t) => t.text) as t (t.id)}
               <li>
-                <div class="eyebrow mb-1">{t.speaker === 'interviewer' ? data.interviewer.name : 'You'} · {formatClock(t.at)}</div>
+                <div class="mb-0.5 text-xs font-medium text-faint">{t.speaker === 'interviewer' ? data.interviewer.name : 'You'} · {formatClock(t.at)}</div>
                 <p class="leading-relaxed {t.speaker === 'candidate' ? 'text-muted-foreground' : ''}">{t.text}</p>
               </li>
             {:else}
@@ -334,7 +341,7 @@
 </div>
 
 <AlertDialog.Root bind:open={confirmEnd}>
-  <AlertDialog.Content class="dark">
+  <AlertDialog.Content>
     <AlertDialog.Header>
       <AlertDialog.Title>End the interview?</AlertDialog.Title>
       <AlertDialog.Description>
