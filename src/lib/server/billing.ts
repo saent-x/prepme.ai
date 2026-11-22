@@ -61,7 +61,7 @@ export async function limitMessage(userId: string, entity: 'interview' | 'interv
     return `The free plan includes ${FREE_LIMITS.interviews} interviews. Upgrade to keep practising.`;
   }
   if (entity === 'interviewer' && usage.interviewers >= FREE_LIMITS.interviewers) {
-    return `The free plan includes ${FREE_LIMITS.interviewers} interviewers. Upgrade for more, or reuse one you have.`;
+    return `The free plan includes ${FREE_LIMITS.interviewers} agents. Upgrade for more, or reuse one you have.`;
   }
   return null;
 }

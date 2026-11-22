@@ -48,7 +48,7 @@
 <section class="mt-4 grid rounded-xl border bg-card sm:grid-cols-2" aria-label="Usage">
   {#each [
     { label: 'interviews', used: usage.interviews, max: limits.interviews },
-    { label: 'interviewers', used: usage.interviewers, max: limits.interviewers }
+    { label: 'agents', used: usage.interviewers, max: limits.interviewers }
   ] as u, i}
     <div class="px-5 py-3.5 {i ? 'border-t sm:border-t-0 sm:border-l' : ''}">
       <div class="flex items-baseline gap-2">
@@ -82,7 +82,7 @@
           {#if p.description}<p class="mt-1 text-sm text-muted-foreground">{p.description}</p>{/if}
           <div class="mt-3"><span class="tabular text-3xl font-extrabold tracking-tight">{fmt(p.amount, p.currency)}</span><span class="text-muted-foreground"> / {p.interval}</span></div>
           <ul class="mt-4 flex-1 space-y-1.5 text-sm">
-            {#each p.benefits.length ? p.benefits : ['Unlimited interviews', 'Unlimited interviewers', 'Calls up to 45 minutes'] as b}
+            {#each p.benefits.length ? p.benefits : ['Unlimited interviews', 'Unlimited agents', 'Calls up to 45 minutes'] as b}
               <li class="flex gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" />{b}</li>
             {/each}
           </ul>

@@ -33,3 +33,12 @@ function withArticle(s: string) {
   if (/^(a|an|the)\s/i.test(s)) return s;
   return (/^[aeiou]/i.test(s) ? 'an ' : 'a ') + s;
 }
+
+/** One short line describing an agent, for lists and dropdowns. */
+export function agentBlurb(instructions: string) {
+  const job = instructions.match(/for this job:\s*(.+?)\.?\s*$/m)?.[1];
+  if (job) return `Interviews you for ${job}`;
+  const first = instructions.split(/\n/)[0]?.trim() ?? '';
+  const line = first.replace(/^You are\s+/i, '');
+  return line ? line.charAt(0).toUpperCase() + line.slice(1) : '';
+}

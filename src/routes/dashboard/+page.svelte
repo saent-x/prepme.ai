@@ -55,7 +55,7 @@
         cta: 'Start',
         href: `/dashboard/interviews/new?interviewer=${data.interviewers[0].id}`
       };
-    return { face: 'sam', label: 'Start here', title: 'Make your first interviewer', sub: 'Name the job. It takes a minute.', cta: 'New interviewer', href: null };
+    return { face: 'sam', label: 'Start here', title: 'Make your first agent', sub: 'Name the job. It takes a minute.', cta: 'New agent', href: null };
   });
   const hours = $derived(p.minutes >= 60 ? `${Math.floor(p.minutes / 60)}h ${p.minutes % 60}m` : `${p.minutes}m`);
 </script>
@@ -102,9 +102,9 @@
 </section>
 
 <!-- Interviewers: a row of faces. Click one to start an interview with them. -->
-<section class="mt-5" aria-label="Your interviewers">
+<section class="mt-5" aria-label="Your agents">
   <div class="flex items-baseline justify-between">
-    <h2 class="text-sm font-bold">Your interviewers</h2>
+    <h2 class="text-sm font-bold">Your agents</h2>
     <a href="/dashboard/interviewers" class="text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">Manage</a>
   </div>
   <div class="mt-2.5 flex gap-5 overflow-x-auto pb-1">

@@ -9,7 +9,7 @@
   import UserAvatar from '$lib/components/app/user-avatar.svelte';
   import { faceColour } from '$lib/avatars';
   import LevelMeter from '$lib/components/viz/level-meter.svelte';
-  import { InterviewCall } from '$lib/realtime/interview-call.svelte';
+  import { IDLE_END_MS, InterviewCall } from '$lib/realtime/interview-call.svelte';
   import { formatClock } from '$lib/utils';
   import {
     Captions,
@@ -127,6 +127,15 @@
   $effect(() => {
     if (call.phase === 'live' && call.elapsedMs > call.durationMinutes * 60_000 + 90_000) void hangUp();
   });
+
+  // Left idle: nobody answered the "still there?" notice, so end and score what was said.
+  $effect(() => {
+    if (call.phase === 'live' && call.idleExpired) {
+      toast.info('The interview ended because it was left idle.');
+      void hangUp();
+    }
+  });
+  const idleLeft = $derived(Math.max(0, Math.ceil((IDLE_END_MS - call.idleMs) / 1000)));
 
   async function hangUp() {
     confirmEnd = false;
@@ -274,6 +283,16 @@
               {:else}
                 <p class="text-sm opacity-50">Captions show here.</p>
               {/if}
+            </div>
+          {/if}
+
+          {#if call.idleWarning}
+            <div class="mt-4 flex w-full max-w-[640px] flex-wrap items-center justify-between gap-3 rounded-xl bg-[#18161f] px-4 py-3 text-white" role="alert">
+              <div>
+                <p class="text-sm font-bold">Are you still there?</p>
+                <p class="tabular text-[13px] opacity-75">The interview ends and is scored in {idleLeft} seconds.</p>
+              </div>
+              <button class="h-9 rounded-lg bg-white px-3.5 text-sm font-semibold text-[#18161f] hover:bg-white/90" onclick={() => call.markActive()}>I'm here</button>
             </div>
           {/if}
 

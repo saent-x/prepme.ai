@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/state';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto, invalidateAll, replaceState } from '$app/navigation';
+  import InterviewDialog from '$lib/components/app/interview-dialog.svelte';
+  import { newInterview, openNewInterview } from '$lib/new-interview.svelte';
   import Logo from '$lib/components/brand/logo.svelte';
   import { Button } from '$lib/components/ui/button';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -46,7 +48,7 @@
   const nav = [
     { href: '/dashboard', label: 'Home', icon: House, exact: true },
     { href: '/dashboard/interviews', label: 'Interviews', icon: Mic },
-    { href: '/dashboard/interviewers', label: 'Interviewers', icon: Bot }
+    { href: '/dashboard/interviewers', label: 'Agents', icon: Bot }
   ];
   const active = (href: string, exact = false) =>
     exact ? page.url.pathname === href : page.url.pathname === href || page.url.pathname.startsWith(href + '/');
@@ -54,6 +56,33 @@
   $effect(() => {
     page.url.pathname;
     mobileOpen = false;
+  });
+
+  // "New interview" is a pop-up. Any link to /dashboard/interviews/new opens it in place.
+  let dialogKey = $state(0);
+  function open(preset: { agent?: string | null; focus?: string | null }) {
+    dialogKey += 1;
+    openNewInterview(preset);
+  }
+  function onLinkClick(e: MouseEvent) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+    if (!a || a.target) return;
+    const u = new URL(a.href, location.href);
+    if (u.origin !== location.origin || u.pathname !== '/dashboard/interviews/new') return;
+    e.preventDefault();
+    open({ agent: u.searchParams.get('interviewer'), focus: u.searchParams.get('focus') });
+  }
+  // Arriving by URL (an old link, or straight after making an agent) lands on ?new=1.
+  $effect(() => {
+    const u = page.url;
+    if (u.pathname === '/dashboard/interviews' && u.searchParams.get('new') === '1') {
+      const preset = { agent: u.searchParams.get('interviewer'), focus: u.searchParams.get('focus') };
+      setTimeout(() => {
+        replaceState('/dashboard/interviews', {});
+        open(preset);
+      });
+    }
   });
 
   async function signOut() {
@@ -134,7 +163,8 @@
   </div>
 {/snippet}
 
-<div class="min-h-svh transition-[grid-template-columns] duration-150 lg:grid {collapsed ? 'lg:grid-cols-[56px_1fr]' : 'lg:grid-cols-[216px_1fr]'}">
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div onclick={onLinkClick} class="min-h-svh transition-[grid-template-columns] duration-150 lg:grid {collapsed ? 'lg:grid-cols-[56px_1fr]' : 'lg:grid-cols-[216px_1fr]'}">
   <aside class="sticky top-0 hidden h-svh overflow-hidden border-r bg-card lg:block">
     {@render sidebar(collapsed)}
   </aside>
@@ -160,3 +190,14 @@
     </div>
   </main>
 </div>
+
+{#key dialogKey}
+  <InterviewDialog
+    bind:open={newInterview.open}
+    agents={data.newInterview.agents}
+    examples={data.newInterview.examples}
+    maxMinutes={data.newInterview.maxMinutes}
+    agent={newInterview.agent}
+    focus={newInterview.focus}
+  />
+{/key}

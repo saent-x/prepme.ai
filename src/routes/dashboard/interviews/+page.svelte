@@ -64,11 +64,11 @@
   {#if data.interviewers.length > 1}
     <select
       class="h-9 rounded-md border border-input bg-card px-2.5 text-sm"
-      aria-label="Filter by interviewer"
+      aria-label="Filter by agent"
       value={data.filters.interviewer ?? ''}
       onchange={(e) => update({ interviewer: e.currentTarget.value || null })}
     >
-      <option value="">All interviewers</option>
+      <option value="">All agents</option>
       {#each data.interviewers as i}<option value={i.id}>{i.name}</option>{/each}
     </select>
   {/if}

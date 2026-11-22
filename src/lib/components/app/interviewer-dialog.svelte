@@ -36,7 +36,7 @@
 <Dialog.Root bind:open>
   <Dialog.Content class="max-h-[calc(100svh-2rem)] gap-0 overflow-y-auto p-0 sm:max-w-[540px]">
     <Dialog.Header class="border-b px-5 py-3.5">
-      <Dialog.Title class="text-base font-bold">New interviewer</Dialog.Title>
+      <Dialog.Title class="text-base font-bold">New agent</Dialog.Title>
       <Dialog.Description class="sr-only">Describe who should interview you.</Dialog.Description>
     </Dialog.Header>
 
@@ -46,7 +46,7 @@
       use:enhance={({ submitter, cancel }) => {
         error = null;
         if (!own && !role.trim()) {
-          error = 'Say which job this interviewer is for.';
+          error = 'Say which job this agent interviews you for.';
           cancel();
           return;
         }
@@ -65,7 +65,7 @@
     >
       <div class="grid gap-4 px-5 py-4">
         <div class="flex items-center gap-3.5">
-          <InterviewerAvatar name={name || 'new interviewer'} size="xl" />
+          <InterviewerAvatar name={name || 'new agent'} size="xl" />
           <div class="grid flex-1 gap-1.5">
             <Label for="iv-name">Name</Label>
             <Input id="iv-name" name="name" bind:value={name} placeholder="e.g. Pip" autocomplete="off" />

@@ -25,7 +25,7 @@ export async function getInterviewerOwned(userId: string, id: string) {
     .select()
     .from(agents)
     .where(and(eq(agents.id, id), eq(agents.userId, userId)));
-  if (!row) error(404, { message: 'Interviewer not found' });
+  if (!row) error(404, { message: 'Agent not found' });
   return row;
 }
 

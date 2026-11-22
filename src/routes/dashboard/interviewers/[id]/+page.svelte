@@ -13,7 +13,7 @@
   let confirmDelete = $state(false);
 
   $effect(() => {
-    if (form?.saved) toast.success('Interviewer saved');
+    if (form?.saved) toast.success('Agent saved');
   });
 </script>
 
@@ -30,7 +30,7 @@
   </div>
   <div class="flex gap-2">
     <Button href="/dashboard/interviews/new?interviewer={data.interviewer.id}" ><Mic /> Start interview</Button>
-    <Button variant="outline" size="icon" aria-label="Delete interviewer" onclick={() => (confirmDelete = true)}><Trash2 /></Button>
+    <Button variant="outline" size="icon" aria-label="Delete agent" onclick={() => (confirmDelete = true)}><Trash2 /></Button>
   </div>
 </header>
 
