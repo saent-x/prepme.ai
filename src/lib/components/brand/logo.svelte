@@ -3,4 +3,4 @@
   let { class: className = '' }: { class?: string } = $props();
 </script>
 
-<span class={cn('text-[21px] leading-none font-extrabold tracking-[-0.04em]', className)}>Prep<span class="text-primary">Me</span></span>
+<span class={cn('text-[21px] leading-none font-extrabold tracking-[-0.04em]', className)}>PrepMe</span>

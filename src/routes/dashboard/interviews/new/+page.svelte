@@ -78,7 +78,7 @@
           </button>
         {/each}
       </div>
-      <a href="/dashboard/interviewers/new" class="mt-2 inline-block text-[13px] font-semibold text-primary hover:underline">Make a new interviewer</a>
+      <a href="/dashboard/interviewers/new" class="mt-2 inline-block text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">Make a new interviewer</a>
     </fieldset>
 
     <fieldset>

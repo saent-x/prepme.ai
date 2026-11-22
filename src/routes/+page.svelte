@@ -79,10 +79,10 @@
       </div>
     {/each}
     <h1 class="text-[44px] leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-[64px]">
-      Name the interview.<br /><span class="text-primary">Nail it.</span>
+      Name the interview.<br /><span class="bg-[linear-gradient(transparent_62%,#ffc531_62%,#ffc531_92%,transparent_92%)] px-1">Nail it.</span>
     </h1>
     <p class="mx-auto mt-4 max-w-md text-[17px] text-muted-foreground">Make an interviewer for the job you want. Practise out loud. Get a scorecard.</p>
-    <form class="mx-auto mt-7 flex max-w-[520px] items-center gap-2 rounded-xl border border-input bg-card p-1.5 shadow-xs focus-within:border-primary" action={start} onsubmit={(e) => { e.preventDefault(); location.href = start; }}>
+    <form class="mx-auto mt-7 flex max-w-[520px] items-center gap-2 rounded-xl border border-input bg-card p-1.5 shadow-xs focus-within:border-foreground" action={start} onsubmit={(e) => { e.preventDefault(); location.href = start; }}>
       <input
         bind:value={job}
         aria-label="The job you are interviewing for"

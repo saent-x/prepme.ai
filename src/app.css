@@ -5,7 +5,7 @@
 
 /*
  * PrepMe "Lean" theme.
- * White surfaces, ink text, one accent, green and amber only for scores.
+ * White surfaces and ink text. Colour comes from interviewer avatars; green and amber are only for scores.
  */
 :root {
   --radius: 0.625rem;
@@ -17,12 +17,12 @@
   --popover: #ffffff;
   --popover-foreground: #18161f;
 
-  /* One accent. Change these three to re-colour the whole app. */
-  --primary: #6d3df5;
+  /* The accent is ink. Colour comes from the interviewers and from scores, not from the chrome. */
+  --primary: #18161f;
   --primary-foreground: #ffffff;
-  --signal: #6d3df5;
+  --signal: #18161f;
   --signal-foreground: #ffffff;
-  --signal-soft: #f1ecff;
+  --signal-soft: #efedf4;
 
   --secondary: #f7f6fa;
   --secondary-foreground: #18161f;
@@ -39,9 +39,9 @@
 
   --border: #e8e6ee;
   --input: #dcd9e6;
-  --ring: #6d3df5;
+  --ring: #18161f;
 
-  --chart-1: #6d3df5;
+  --chart-1: #18161f;
   --chart-2: #18161f;
   --chart-3: #16a34a;
   --chart-4: #d97706;
@@ -56,11 +56,11 @@
   --popover: #1e1c27;
   --popover-foreground: #f1f0f5;
 
-  --primary: #8b66ff;
-  --primary-foreground: #ffffff;
-  --signal: #8b66ff;
-  --signal-foreground: #ffffff;
-  --signal-soft: #2a2145;
+  --primary: #f1f0f5;
+  --primary-foreground: #18161f;
+  --signal: #f1f0f5;
+  --signal-foreground: #18161f;
+  --signal-soft: #2b2836;
 
   --secondary: #23202d;
   --secondary-foreground: #f1f0f5;
@@ -77,7 +77,7 @@
 
   --border: #2b2836;
   --input: #383446;
-  --ring: #8b66ff;
+  --ring: #f1f0f5;
 }
 
 @theme inline {

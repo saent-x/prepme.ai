@@ -125,7 +125,7 @@
 
 <p class="mt-6 text-center text-sm text-muted-foreground">
   {mode === 'sign-in' ? "Don't have an account?" : 'Already have an account?'}
-  <a href={switchHref} class="font-semibold text-primary hover:underline">
+  <a href={switchHref} class="font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">
     {mode === 'sign-in' ? 'Sign up' : 'Sign in'}
   </a>
 </p>

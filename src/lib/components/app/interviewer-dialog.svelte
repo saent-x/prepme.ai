@@ -142,7 +142,7 @@
         <input type="hidden" name="template" value="" />
 
         {#if !own}
-          <button type="button" class="w-fit text-[13px] font-semibold text-primary hover:underline" onclick={writeOwn}>Write the brief yourself</button>
+          <button type="button" class="w-fit text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground" onclick={writeOwn}>Write the brief yourself</button>
         {/if}
         {#if error}<p class="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>{/if}
       </div>

@@ -2,7 +2,7 @@ import { createAvatar } from '@dicebear/core';
 import { funEmoji, openPeeps } from '@dicebear/collection';
 
 /** Interviewer colours. The avatar picks one from the name, so it never changes for a given interviewer. */
-export const FACE_COLOURS = ['ff7a66', '38bdf8', '34d399', 'ffc531', 'ff9f43', 'a78bfa'] as const;
+export const FACE_COLOURS = ['ff7a66', '38bdf8', '34d399', 'ffc531', 'ff9f43', 'f9a8d4'] as const;
 
 function hash(seed: string) {
   // FNV-1a: spreads short names evenly across the colours.
