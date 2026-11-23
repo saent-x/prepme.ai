@@ -1,4 +1,10 @@
 @import 'tailwindcss';
+/*
+ * ui-sdk's default look (@ui-sdk/core/web.css) is not imported. It styles [data-slot="button"],
+ * "dialog-content", "input" and 25 more slot names that the shadcn components in
+ * src/lib/components/ui already use, and it underlines every link, so importing it changes
+ * every existing page. Style ui-sdk parts with the theme tokens below instead.
+ */
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));

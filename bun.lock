@@ -11,6 +11,8 @@
         "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
         "@polar-sh/better-auth": "^2.1.5",
         "@polar-sh/sdk": "^1.3.2",
+        "@ui-sdk/core": "^0.1.0-beta.13",
+        "@ui-sdk/svelte": "^0.1.0-beta.13",
         "better-auth": "^1.7.27",
         "date-fns": "^4.1.0",
         "drizzle-orm": "^0.45.4",
@@ -436,6 +438,10 @@
     "@types/yargs": ["@types/yargs@17.0.24", "", { "dependencies": { "@types/yargs-parser": "*" } }, "sha512-6i0aC7jV6QzQB8ne1joVZ0eSFIstHsCrobmOtghM11yGlH0j43FKL2UhWdELkyps0zuf7qVTUVCCR+tgSlyLLw=="],
 
     "@types/yargs-parser": ["@types/yargs-parser@21.0.3", "", {}, "sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ=="],
+
+    "@ui-sdk/core": ["@ui-sdk/core@0.1.0-beta.13", "", {}, "sha512-URjk9hqdc/cZKDtw6Gb9NqjY48U8l0EgoP4d5ghlooa3av+GrR0iSmsav133UU4oelcuKIO1ZPJ4j7gIPMr1Vg=="],
+
+    "@ui-sdk/svelte": ["@ui-sdk/svelte@0.1.0-beta.13", "", { "peerDependencies": { "@ui-sdk/core": "^0.1.0-beta.13", "svelte": ">=5.33" } }, "sha512-2yGep6KtTUNBSKnoXzyD1pwI3pywJjT5aZ23gyOthNFXHOVLaGyv1qJVWKjTQ14x/iMDA/d9iztmxyBxH36Nuw=="],
 
     "@ungap/structured-clone": ["@ungap/structured-clone@1.4.0", "", {}, "sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ=="],
 
