@@ -19,7 +19,7 @@
 
 <div class={cn('relative inline-grid place-items-center', className)} style="width:{size}px;height:{size}px">
   <svg width={size} height={size} viewBox="0 0 {size} {size}" class="-rotate-90" role="img" aria-label="{label} score {score ?? 'not available'} out of 100">
-    <circle cx={size / 2} cy={size / 2} {r} fill="none" stroke="var(--muted)" stroke-width={stroke} />
+    <circle cx={size / 2} cy={size / 2} {r} fill="none" stroke="var(--track)" stroke-width={stroke} />
     <circle
       cx={size / 2}
       cy={size / 2}
@@ -35,8 +35,8 @@
   </svg>
   <div class="absolute inset-0 grid place-items-center text-center">
     <div>
-      <div class="tabular font-extrabold tracking-tight" style="font-size:{size * 0.3}px;line-height:1">{score ?? '—'}</div>
-      {#if label}<div class="mt-0.5 text-faint" style="font-size:{Math.max(10, size * 0.09)}px">{label}</div>{/if}
+      <div class="tabular font-extrabold tracking-tight" style="font-size:{Math.round(size * 0.22)}px;line-height:1">{score ?? '—'}</div>
+      {#if label}<div class="mt-0.5 text-muted-foreground" style="font-size:{Math.max(11, size * 0.09)}px">{label}</div>{/if}
     </div>
   </div>
 </div>
