@@ -2,244 +2,243 @@
   import Logo from '$lib/components/brand/logo.svelte';
   import { Button } from '$lib/components/ui/button';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
+  import ScoreRing from '$lib/components/viz/score-ring.svelte';
   import { faceColour } from '$lib/avatars';
   import { reveal } from '$lib/actions/reveal';
-  import {
-    ArrowRight,
-    BriefcaseBusiness,
-    ChartNoAxesCombined,
-    Check,
-    MessageCircleQuestion,
-    Mic,
-    RefreshCw,
-    Sparkles,
-    Timer
-  } from '@lucide/svelte';
+  import { Building2, Check, ChevronDown, MapPin, Mic, Target, User } from '@lucide/svelte';
 
   let { data } = $props();
-  let job = $state('');
 
-  // The job typed in the hero is carried into the "New interviewer" pop-up.
-  const start = $derived.by(() => {
-    const target = `/dashboard/interviewers?new=1${job.trim() ? `&job=${encodeURIComponent(job.trim())}` : ''}`;
-    return data.signedIn ? target : `/auth/sign-up?redirect=${encodeURIComponent(target)}`;
-  });
+  const startHref = $derived(data.signedIn ? '/dashboard/interviews/new' : `/auth/sign-up?redirect=${encodeURIComponent('/dashboard/interviews/new')}`);
 
-  const floaters = [
-    { n: 'sam', say: 'Tell me about a busy shift.', cls: 'left-[4%] top-[18%] size-16 -rotate-6', dur: 5.2, delay: 0 },
-    { n: 'rex', say: '', cls: 'left-[13%] top-[62%] size-11 rotate-6', dur: 4.1, delay: 0.9 },
-    { n: 'juno', say: 'Why this school?', cls: 'right-[5%] top-[14%] size-14 rotate-6', dur: 5.8, delay: 0.5 },
-    { n: 'pip', say: '', cls: 'right-[14%] top-[64%] size-12 -rotate-6', dur: 4.6, delay: 1.4 }
+  const hero = [
+    { name: 'Maya', role: 'Staff Engineer' },
+    { name: 'Ravi', role: 'ML Manager' },
+    { name: 'June', role: 'Product Lead' },
+    { name: 'Omar', role: 'Head of Data' }
   ];
-
-  const features = [
-    { icon: BriefcaseBusiness, title: 'Built from the job advert', body: 'Paste the advert and the questions match the job.' },
-    { icon: Sparkles, title: 'A better answer, every time', body: 'Each question comes back with a stronger version to say next time.' },
-    { icon: MessageCircleQuestion, title: 'Ask the coach', body: 'Chat about your interview afterwards.' },
-    { icon: ChartNoAxesCombined, title: 'Skills you can track', body: 'Five skills scored after every interview.' },
-    { icon: RefreshCw, title: 'Never lose progress', body: 'If the line drops, it picks up where you left off.' },
-    { icon: Timer, title: 'Fits in a break', body: 'Ten minutes is enough for a useful session.' }
+  const agents = [
+    { name: 'Maya', blurb: 'Staff Engineer · tough on trade-offs' },
+    { name: 'Ravi', blurb: 'ML hiring manager · warm, curious' },
+    { name: 'June', blurb: 'Product lead · big on impact' },
+    { name: 'Omar', blurb: 'Head of Data · numbers first' }
   ];
-
-  const faqs = [
-    { q: 'Do I need to install anything?', a: 'No. It runs in your browser. You only need a microphone.' },
-    { q: 'Is it a real voice conversation?', a: 'Yes. You speak, the interviewer answers out loud and asks follow-ups based on what you said.' },
-    { q: 'How is it scored?', a: 'Your answers are scored on five skills against a real hiring bar. 70 is a solid pass.' },
-    { q: 'Is my voice recorded?', a: 'No. Only the text of the interview and your feedback are saved, and you can delete them.' }
+  const anyJob = [
+    { name: 'Maya', tag: 'Engineering' },
+    { name: 'Ravi', tag: 'Sales' },
+    { name: 'June', tag: 'Marketing' },
+    { name: 'Omar', tag: 'Finance' },
+    { name: 'Lea', tag: 'Nursing' }
   ];
+  const skills: [string, number][] = [
+    ['Communication', 84],
+    ['Technical depth', 80],
+    ['Problem solving', 76],
+    ['Answer structure', 62],
+    ['Role fit', 82]
+  ];
+  const bar = (v: number) => (v >= 75 ? 'bg-success' : v >= 60 ? 'bg-warning' : 'bg-destructive');
+  const maya = faceColour('Maya');
+  const wave = [0.35, 0.6, 0.9, 0.5, 1, 0.7, 0.45, 0.85, 0.55, 0.3, 0.65, 0.4];
 </script>
 
 <svelte:head>
-  <title>PrepMe: practise any job interview out loud</title>
+  <title>PrepMe: practise with an AI interviewer for the exact job</title>
 </svelte:head>
 
-<div class="min-h-screen overflow-x-clip bg-card">
-  <!-- Nav -->
-  <header class="mx-auto flex h-14 max-w-[1120px] items-center justify-between px-5">
+{#snippet face(name: string, cls = 'size-7')}<InterviewerAvatar {name} class={cls} />{/snippet}
+
+<div class="min-h-screen overflow-x-clip bg-background">
+  <header class="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5 xl:px-0">
     <a href="/" aria-label="PrepMe home"><Logo /></a>
-    <nav class="flex items-center gap-1" aria-label="Main">
-      <a href="#how" class="hidden rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:block">How it works</a>
-      <a href="#pricing" class="hidden rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:block">Pricing</a>
+    <nav class="flex items-center gap-2" aria-label="Main">
       {#if data.signedIn}
-        <Button href="/dashboard" size="sm" class="ml-2">Open PrepMe</Button>
+        <Button href="/dashboard">Open PrepMe</Button>
       {:else}
-        <Button href="/auth/sign-in" variant="ghost" size="sm">Sign in</Button>
-        <Button href="/auth/sign-up" size="sm">Start free</Button>
+        <a href="/auth/sign-in" class="px-3 text-sm font-semibold text-muted-foreground hover:text-foreground">Log in</a>
+        <Button href="/auth/sign-up" variant="outline">Start free</Button>
       {/if}
     </nav>
   </header>
 
   <!-- Hero -->
-  <section class="relative mx-auto max-w-[1120px] px-5 pt-14 pb-16 text-center sm:pt-20">
-    {#each floaters as f, i}
-      <!-- The outer box pops in once; the inner one keeps bobbing, each at its own pace. -->
-      <div class="absolute hidden animate-pop lg:block {f.cls}" style="animation-delay:{250 + i * 120}ms" aria-hidden="true">
-        <div class="size-full animate-float" style="animation-duration:{f.dur}s;animation-delay:{f.delay}s">
-          <InterviewerAvatar name={f.n} class="size-full shadow-sm transition-[scale,rotate] duration-300 ease-out hover:scale-110 hover:rotate-12" />
-          {#if f.say}
-            <span class="absolute top-full left-1/2 mt-2 -translate-x-1/2 animate-pop rounded-lg border bg-card px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-xs" style="animation-delay:{900 + i * 250}ms">{f.say}</span>
-          {/if}
-        </div>
-      </div>
-    {/each}
-    <h1 class="animate-rise text-[44px] leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-[64px]">
-      Name the interview.<br /><span class="bg-[linear-gradient(transparent_62%,#ffc531_62%,#ffc531_92%,transparent_92%)] bg-no-repeat px-1 [animation:underline-in_0.6s_var(--ease-out)_0.45s_both]">Nail it.</span>
+  <section class="mx-auto max-w-[800px] px-5 pt-16 pb-20 text-center sm:pt-24">
+    <h1 class="animate-rise text-[40px] leading-[1.15] font-extrabold tracking-[-0.03em] text-balance sm:text-[56px]">
+      Practise with an AI interviewer for the exact job.
     </h1>
-    <p class="mx-auto mt-4 max-w-md animate-rise text-[17px] text-muted-foreground [animation-delay:80ms]">Make an interviewer for the job you want. Practise out loud. Get a scorecard.</p>
-    <form class="mx-auto mt-7 flex animate-rise transition-[border-color,box-shadow] [animation-delay:160ms] focus-within:shadow-md max-w-[520px] items-center gap-2 rounded-xl border border-input bg-card p-1.5 shadow-xs focus-within:border-foreground" action={start} onsubmit={(e) => { e.preventDefault(); location.href = start; }}>
-      <input
-        bind:value={job}
-        aria-label="The job you are interviewing for"
-        placeholder="e.g. Staff Nurse at St Thomas'"
-        class="h-10 min-w-0 flex-1 bg-transparent px-2.5 text-[15px] outline-none placeholder:text-faint"
-      />
-      <Button type="submit" size="lg" class="group">Build my interviewer <ArrowRight class="transition-transform group-hover:translate-x-0.5" /></Button>
-    </form>
-    <p class="mt-4 animate-rise text-[13px] text-muted-foreground [animation-delay:240ms]">
-      Works for any job: Nurse · Teacher · Solicitor · Store manager · Chef · Engineer and more.
-    </p>
-  </section>
-
-  <!-- How it works: three small product pictures -->
-  <section id="how" class="bg-primary text-primary-foreground">
-    <div class="mx-auto max-w-[1120px] px-5 py-14">
-      <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">Three steps. Twenty minutes.</h2>
-      <div class="mt-8 grid gap-4 md:grid-cols-3">
-        <!-- 1 Make -->
-        <div use:reveal>
-          <div class="h-[212px] overflow-hidden rounded-xl bg-card p-4 text-left text-foreground">
-            <div class="flex items-center gap-3">
-              <InterviewerAvatar name="pip" size="lg" />
-              <div class="flex-1">
-                <div class="text-xs font-medium text-faint">Name</div>
-                <div class="mt-0.5 rounded-md border border-input px-2 py-1 text-sm font-semibold">Pip</div>
-              </div>
-            </div>
-            <div class="mt-3 text-xs font-medium text-faint">Interviewing you for</div>
-            <div class="mt-0.5 rounded-md border border-input px-2 py-1 text-sm">Staff Nurse, A&E</div>
-            <div class="mt-3 grid grid-cols-3 rounded-lg bg-muted p-[3px] text-center text-xs font-semibold text-muted-foreground">
-              <span class="py-1">Friendly</span><span class="rounded-md bg-card py-1 text-foreground shadow-xs">Realistic</span><span class="py-1">Tough</span>
-            </div>
-          </div>
-          <div class="mt-3 text-sm font-bold">1. Make your interviewer</div>
-          <div class="text-[13px] opacity-80">Name the job. Pick how tough.</div>
-        </div>
-        <!-- 2 Talk -->
-        <div use:reveal={100}>
-          <div class="grid h-[212px] place-items-center overflow-hidden rounded-xl p-4 text-center text-[#18161f]" style="background:{faceColour('pip')}">
-            <div>
-              <span class="relative mx-auto grid size-20 place-items-center">
-                <span class="absolute -inset-4 animate-halo rounded-full bg-white/20"></span>
-                <InterviewerAvatar name="pip" class="relative size-20 ring-4 ring-white" />
-              </span>
-              <div class="mt-6 rounded-lg bg-white/85 px-3 py-1.5 text-[13px] font-medium">Tell me about a time you had to prioritise.</div>
-            </div>
-          </div>
-          <div class="mt-3 text-sm font-bold">2. Talk it through</div>
-          <div class="text-[13px] opacity-80">A real voice conversation, with follow-ups.</div>
-        </div>
-        <!-- 3 Score -->
-        <div use:reveal={200}>
-          <div class="h-[212px] overflow-hidden rounded-xl bg-card p-4 text-left text-foreground">
-            <div class="flex items-center gap-3">
-              <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
-                <circle cx="26" cy="26" r="22" fill="none" stroke="var(--muted)" stroke-width="6" />
-                <circle cx="26" cy="26" r="22" fill="none" stroke="var(--success)" stroke-width="6" stroke-linecap="round" stroke-dasharray="107.8 138.2" transform="rotate(-90 26 26)" />
-                <text x="26" y="31.5" text-anchor="middle" font-size="16" font-weight="800" fill="currentColor">78</text>
-              </svg>
-              <div class="text-sm leading-snug font-bold">Calm and safe. One thing to fix.</div>
-            </div>
-            {#each [['Communication', 80, true], ['Answer structure', 60, false], ['Role fit', 80, true]] as [l, v, ok]}
-              <div class="mt-2.5 flex items-center gap-2 text-xs">
-                <span class="w-28 font-medium">{l}</span>
-                <span class="h-[5px] flex-1 rounded-full bg-muted"><span class="block h-full rounded-full {ok ? 'bg-success' : 'bg-warning'}" style="width:{v}%"></span></span>
-              </div>
-            {/each}
-            <div class="mt-3 border-l-[3px] border-warning pl-2.5 text-xs">
-              <div class="font-semibold text-warning">The one fix</div>
-              <div>Say who you escalate to.</div>
-            </div>
-          </div>
-          <div class="mt-3 text-sm font-bold">3. Get your scorecard</div>
-          <div class="text-[13px] opacity-80">A score, one fix and a better answer for each question.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section class="mx-auto max-w-[1120px] px-5 py-16">
-    <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">More than a mock interview.</h2>
-    <div class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-      {#each features as f, i}
-        <div class="flex gap-3" use:reveal={(i % 3) * 80}>
-          <f.icon class="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.8} />
-          <div>
-            <h3 class="text-[15px] font-bold">{f.title}</h3>
-            <p class="mt-0.5 text-sm text-muted-foreground">{f.body}</p>
-          </div>
+    <p class="mt-4 animate-rise text-base text-muted-foreground [animation-delay:80ms]">Talk it through by voice. Get a score and what to fix.</p>
+    <div class="mt-10 grid grid-cols-4 justify-center gap-2 sm:flex sm:gap-10">
+      {#each hero as h, i (h.name)}
+        <div class="animate-pop" style="animation-delay:{160 + i * 90}ms">
+          <InterviewerAvatar name={h.name} class="mx-auto size-14 transition-transform duration-300 hover:-rotate-6 sm:size-24" />
+          <div class="mt-2 text-sm font-bold">{h.name}</div>
+          <div class="text-xs text-muted-foreground">{h.role}</div>
         </div>
       {/each}
     </div>
+    <Button href={startHref} class="mt-10 h-10 animate-rise px-6 [animation-delay:520ms]"><Mic /> Start free interview</Button>
   </section>
 
-  <!-- Pricing -->
-  <section id="pricing" class="border-t bg-background">
-    <div class="mx-auto max-w-[760px] px-5 py-16">
-      <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">Start free.</h2>
-      <div class="mt-8 grid gap-3 sm:grid-cols-2">
-        <div class="lift flex flex-col rounded-xl border bg-card p-5 hover:shadow-md" use:reveal>
-          <h3 class="font-bold">Free</h3>
-          <div class="mt-1 text-3xl font-extrabold tracking-tight">£0</div>
-          <ul class="mt-4 flex-1 space-y-1.5 text-sm">
-            {#each [`${data.limits.interviews} interviews`, `${data.limits.interviewers} interviewers`, `Up to ${data.limits.maxMinutes} minutes each`, 'Full scorecard and coach'] as b}
-              <li class="flex gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.4} />{b}</li>
+  <!-- Four ways it works, each with a real piece of the app -->
+  <div class="mx-auto grid max-w-[1200px] gap-20 px-5 pb-20 xl:px-0">
+    <!-- 1. Pick -->
+    <section class="grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[1fr_680px] lg:gap-20" use:reveal>
+      <div>
+        <h2 class="text-[28px] leading-[1.2] font-extrabold tracking-[-0.02em] sm:text-4xl">Pick your interviewer</h2>
+        <p class="mt-3 text-base text-muted-foreground">Tough, friendly or neutral. Each one asks like a real panel.</p>
+      </div>
+      <div class="grid sm:min-h-[400px] grid-cols-[minmax(0,1fr)] place-items-center rounded-2xl bg-muted p-6 sm:p-10" aria-hidden="true">
+        <div class="w-full max-w-[440px]">
+          <div class="text-xs font-bold">Interviewer</div>
+          <div class="mt-2 flex h-12 items-center gap-3 rounded-[8px] border-[1.5px] border-foreground bg-card px-3">
+            {@render face('Maya')}
+            <span class="text-sm font-bold">Maya</span>
+            <span class="min-w-0 flex-1 truncate text-sm text-muted-foreground">Staff Engineer · tough on trade-offs</span>
+            <ChevronDown class="size-4 rotate-180 text-muted-foreground" strokeWidth={1.6} />
+          </div>
+          <div class="mt-2 rounded-[10px] border bg-card p-1 shadow-pop">
+            {#each agents as a, i (a.name)}
+              <div class="flex h-12 items-center gap-3 rounded-[6px] px-2.5 text-sm {i === 0 ? 'bg-muted' : ''}">
+                {@render face(a.name)}
+                <span class="font-bold">{a.name}</span>
+                <span class="min-w-0 flex-1 truncate text-muted-foreground">{a.blurb}</span>
+                {#if i === 0}<Check class="size-4" strokeWidth={2} />{/if}
+              </div>
             {/each}
-          </ul>
-          <Button href={data.signedIn ? '/dashboard' : '/auth/sign-up'} variant="outline" class="mt-5">Start free</Button>
-        </div>
-        <div class="lift flex flex-col rounded-xl border-2 border-primary bg-card p-5 hover:shadow-md" use:reveal={100}>
-          <h3 class="font-bold">Pro</h3>
-          <div class="mt-1 text-3xl font-extrabold tracking-tight">Unlimited</div>
-          <ul class="mt-4 flex-1 space-y-1.5 text-sm">
-            {#each ['Unlimited interviews', 'Unlimited interviewers', 'Up to 45 minutes each', 'Everything in Free'] as b}
-              <li class="flex gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.4} />{b}</li>
-            {/each}
-          </ul>
-          <Button href={data.signedIn ? '/dashboard/billing' : '/auth/sign-up?redirect=/dashboard/billing'} class="mt-5">See Pro</Button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- FAQ -->
-  <section class="mx-auto max-w-[760px] px-5 py-16">
-    <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">Questions</h2>
-    <div class="mt-6 divide-y border-y">
-      {#each faqs as f}
-        <details class="group py-3.5">
-          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-semibold">
-            {f.q}<span class="text-xl leading-none font-normal text-faint transition-transform group-open:rotate-45">+</span>
-          </summary>
-          <p class="mt-1.5 text-sm text-muted-foreground">{f.a}</p>
-        </details>
+    <!-- 2. Paste -->
+    <section class="grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[680px_1fr] lg:gap-20" use:reveal>
+      <div class="lg:order-2">
+        <h2 class="text-[28px] leading-[1.2] font-extrabold tracking-[-0.02em] sm:text-4xl">Paste the job, get a tailored interview</h2>
+        <p class="mt-3 text-base text-muted-foreground">PrepMe reads the role, the company and the skills.</p>
+      </div>
+      <div class="grid sm:min-h-[400px] grid-cols-[minmax(0,1fr)] place-items-center rounded-2xl bg-muted p-6 sm:p-10 lg:order-1" aria-hidden="true">
+        <div class="w-full max-w-[480px] rounded-[10px] bg-card p-6 shadow-md">
+          <div class="text-xs font-bold">Job description</div>
+          <div class="mt-2 rounded-[8px] border px-3 py-2.5 text-sm leading-normal text-muted-foreground">
+            <p class="line-clamp-3">We're hiring a Senior AI Engineer to own retrieval and evals for our contract review product. You'll ship LLM features end to end with Python and TypeScript…</p>
+          </div>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {#each [{ icon: User, t: 'Senior AI Engineer' }, { icon: Building2, t: 'Juro' }, { icon: MapPin, t: 'London' }] as c (c.t)}
+              <span class="inline-flex h-7 items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium"><c.icon class="size-4 text-muted-foreground" strokeWidth={1.6} />{c.t}</span>
+            {/each}
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2">
+            {#each ['RAG', 'Evals', 'Python', 'TypeScript', 'LLM APIs'] as s (s)}
+              <span class="inline-flex h-7 items-center rounded-full border px-2.5 text-[13px] font-medium">{s}</span>
+            {/each}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Talk -->
+    <section class="grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[1fr_680px] lg:gap-20" use:reveal>
+      <div>
+        <h2 class="text-[28px] leading-[1.2] font-extrabold tracking-[-0.02em] sm:text-4xl">Talk it through, live</h2>
+        <p class="mt-3 text-base text-muted-foreground">Speak naturally. The transcript keeps up.</p>
+      </div>
+      <div class="grid sm:min-h-[400px] grid-cols-[minmax(0,1fr)] items-center gap-8 rounded-2xl bg-muted p-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-10" aria-hidden="true">
+        <div class="flex flex-col items-center">
+          <div class="relative grid size-[232px] place-items-center">
+            <span class="absolute inset-0 animate-halo rounded-full border-[1.5px]" style="border-color:{maya}26"></span>
+            <span class="absolute inset-4 rounded-full border-2" style="border-color:{maya}59"></span>
+            <span class="absolute inset-7 rounded-full border-[3px]" style="border-color:{maya}"></span>
+            <InterviewerAvatar name="Maya" class="relative size-40" />
+          </div>
+          <div class="mt-3 text-base font-extrabold">Maya</div>
+          <div class="mt-2 flex h-5 items-center gap-1">
+            {#each wave as w, n (n)}
+              <span class="landing-wave w-1 rounded-[2px]" style="background:{maya};height:{Math.round(4 + w * 16)}px;animation-delay:{n * 90}ms"></span>
+            {/each}
+          </div>
+        </div>
+        <ol class="grid gap-4 rounded-[10px] bg-card p-5 shadow-md">
+          {#each [{ who: 'Maya', you: false, t: 'Walk me through how you evaluated the retriever.' }, { who: 'You', you: true, t: 'I built a set of 200 real questions and tracked recall at five.' }, { who: 'Maya', you: false, t: 'What made you trust that set?' }] as l, n (n)}
+            <li>
+              <div class="flex items-center gap-2 text-xs font-bold">
+                {#if l.you}<span class="grid size-6 place-items-center rounded-full bg-track text-[11px]">Y</span>{:else}{@render face('Maya', 'size-6')}{/if}
+                {l.who}
+              </div>
+              <p class="mt-1 text-sm leading-normal {n === 2 ? 'text-muted-foreground italic' : ''}">{l.t}</p>
+            </li>
+          {/each}
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4. Fix -->
+    <section class="grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[680px_1fr] lg:gap-20" use:reveal>
+      <div class="lg:order-2">
+        <h2 class="text-[28px] leading-[1.2] font-extrabold tracking-[-0.02em] sm:text-4xl">See exactly what to fix</h2>
+        <p class="mt-3 text-base text-muted-foreground">A score per skill, and the moments that cost you.</p>
+      </div>
+      <div class="grid sm:min-h-[400px] grid-cols-[minmax(0,1fr)] place-items-center rounded-2xl bg-muted p-6 sm:p-10 lg:order-1" aria-hidden="true">
+        <div class="grid w-full max-w-[560px] grid-cols-[minmax(0,1fr)] gap-6 rounded-[10px] bg-card p-5 shadow-md sm:grid-cols-[auto_minmax(0,1fr)] sm:p-6 sm:gap-8">
+          <ScoreRing score={78} size={128} label="/ 100" class="justify-self-center" />
+          <div class="grid gap-3">
+            {#each skills as [l, v] (l)}
+              <div class="grid grid-cols-[112px_minmax(0,1fr)_24px] items-center gap-3 text-[13px]">
+                <span class="font-semibold">{l}</span>
+                <span class="h-1.5 overflow-hidden rounded-[3px] bg-track"><span class="grow-x block h-full rounded-[3px] {bar(v)}" style="width:{v}%"></span></span>
+                <span class="tabular text-right text-muted-foreground">{v}</span>
+              </div>
+            {/each}
+          </div>
+          <div class="border-t pt-4 sm:col-span-2">
+            <div class="flex items-center gap-2 text-sm font-extrabold"><Target class="size-4" strokeWidth={1.6} /> To improve</div>
+            <ul class="mt-2 grid gap-2 text-sm">
+              <li class="flex items-start gap-2"><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-warning"></span>Lead with the result, then the method.</li>
+              <li class="flex items-start gap-2"><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-warning"></span>Name the trade-off you chose and why.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Any job -->
+  <section class="mx-auto max-w-[1200px] px-5 pb-20 text-center xl:px-0" use:reveal>
+    <h2 class="text-[28px] leading-[1.2] font-extrabold tracking-[-0.02em] sm:text-4xl">An interviewer for any job</h2>
+    <p class="mt-3 text-base text-muted-foreground">Make one for your role in a minute.</p>
+    <div class="mt-10 flex flex-wrap justify-center gap-x-5 gap-y-6 sm:gap-14">
+      {#each anyJob as a (a.name)}
+        <div class="flex flex-col items-center">
+          <InterviewerAvatar name={a.name} class="size-14 transition-transform duration-300 hover:-rotate-6 sm:size-24" />
+          <span class="mt-3 inline-flex h-7 items-center rounded-full border px-2.5 text-[13px] font-medium">{a.tag}</span>
+        </div>
       {/each}
     </div>
   </section>
 
   <!-- CTA -->
-  <section class="bg-primary text-primary-foreground">
-    <div class="mx-auto flex max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-4 px-5 py-10">
-      <div class="flex -space-x-2">
-        {#each ['sam', 'rex', 'juno', 'ivy'] as n, i}<InterviewerAvatar name={n} class="size-11 animate-float ring-2 ring-primary [animation-duration:3.6s]" style="animation-delay:{i * 0.3}s" />{/each}
-      </div>
-      <h2 class="flex-1 text-[26px] leading-tight font-extrabold tracking-[-0.03em]">They're ready when you are.</h2>
-      <Button href={start} size="lg" class="bg-white text-[#18161f] hover:bg-white/90"><Mic /> Start free</Button>
+  <section class="bg-muted">
+    <div class="mx-auto flex min-h-[272px] max-w-[1200px] flex-col items-center justify-center gap-6 px-5 py-14 text-center">
+      <h2 class="text-[28px] leading-[1.2] font-extrabold tracking-[-0.02em] sm:text-4xl">Practise before it counts.</h2>
+      <Button href={startHref} class="h-10 px-6"><Mic /> Start free interview</Button>
     </div>
   </section>
 
-  <footer class="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-[13px] text-muted-foreground">
-    <Logo class="text-[17px]" />
-    <span>© {new Date().getFullYear()} PrepMe</span>
+  <footer class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-[13px] text-muted-foreground xl:px-0">
+    <Logo class="text-base" />
+    <span>Free plan: {data.limits.interviews} interviews a month · © {new Date().getFullYear()} PrepMe</span>
   </footer>
 </div>
+
+<style>
+  .landing-wave {
+    transform-origin: center;
+    animation: landing-wave 1.1s ease-in-out infinite alternate;
+  }
+  @keyframes landing-wave {
+    from { transform: scaleY(0.45); }
+    to { transform: scaleY(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .landing-wave { animation: none; }
+  }
+</style>

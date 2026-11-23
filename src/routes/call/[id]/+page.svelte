@@ -264,9 +264,9 @@
     <!-- ================= LIVE ================= -->
     <div class="flex h-svh">
       <div class="flex min-w-0 flex-1 flex-col">
-        <header class="relative grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-6">
+        <header class="relative grid h-16 shrink-0 grid-cols-[1fr_auto] items-center gap-4 border-b px-4 sm:grid-cols-[1fr_auto_1fr] sm:px-6">
           <div class="flex min-w-0 items-center gap-4">
-            <Logo />
+            <span class="hidden sm:block"><Logo /></span>
             {#if call.phase === 'live'}
               <span class="inline-flex h-6 items-center gap-1.5 rounded-full bg-destructive-soft px-2.5 text-xs font-semibold text-destructive">
                 <span class="size-1.5 animate-onair rounded-full bg-destructive"></span> Recording
@@ -284,12 +284,13 @@
           <span class="absolute bottom-[-1px] left-0 h-0.5 bg-foreground transition-[width] duration-1000" style="width:{progress * 100}%"></span>
         </header>
 
+        <p class="truncate px-4 pt-3 text-center text-sm font-bold sm:hidden">{data.interview.name}</p>
         <main class="relative flex flex-1 flex-col items-center justify-center px-6">
-          <div class="relative grid size-[288px] place-items-center">
+          <div class="relative grid size-[232px] place-items-center sm:size-[288px]">
             <span class="absolute inset-0 rounded-full border-[1.5px] transition-transform duration-150" style="border-color:{stage}26;transform:scale({pulse})"></span>
-            <span class="absolute inset-5 rounded-full border-2 transition-transform duration-100" style="border-color:{stage}59;transform:scale({pulse})"></span>
-            <span class="absolute inset-9 rounded-full border-[3px]" style="border-color:{stage}"></span>
-            <InterviewerAvatar name={data.interviewer.name} class="relative size-48 {call.phase === 'live' ? '' : 'opacity-60'}" />
+            <span class="absolute inset-4 rounded-full border-2 sm:inset-5 transition-transform duration-100" style="border-color:{stage}59;transform:scale({pulse})"></span>
+            <span class="absolute inset-7 rounded-full border-[3px] sm:inset-9" style="border-color:{stage}"></span>
+            <InterviewerAvatar name={data.interviewer.name} class="relative size-40 sm:size-48 {call.phase === 'live' ? '' : 'opacity-60'}" />
           </div>
           <h1 class="mt-4 text-xl font-extrabold">{data.interviewer.name}</h1>
           <div class="mt-2 flex h-5 items-center gap-1" aria-hidden="true">
@@ -303,7 +304,7 @@
             <div class="mt-6 grid min-h-[76px] w-full max-w-[760px] place-items-center text-center" aria-live="polite">
               {#if line}
                 {#if line.speaker === 'interviewer'}
-                  <p class="text-[28px] leading-[1.3] font-extrabold tracking-[-0.01em] text-balance">{line.text}</p>
+                  <p class="text-xl leading-[1.35] font-extrabold sm:text-[28px] sm:leading-[1.3] tracking-[-0.01em] text-balance">{line.text}</p>
                 {:else}
                   <p class="text-base leading-normal text-muted-foreground italic text-balance">{line.text}</p>
                 {/if}
@@ -333,7 +334,7 @@
           {/if}
         </main>
 
-        <footer class="relative flex items-end justify-center gap-8 px-6 pt-4 pb-8">
+        <footer class="relative flex items-end justify-center gap-6 sm:gap-8 px-6 pt-4 pb-8">
           <span class="absolute bottom-10 left-6 hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
             You {#if !call.muted}<LevelMeter level={call.micLevel} />{:else}<MicOff class="size-4" />{/if}
           </span>
