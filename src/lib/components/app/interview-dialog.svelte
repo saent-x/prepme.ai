@@ -6,6 +6,7 @@
   import { Textarea } from '$lib/components/ui/textarea';
   import * as Dialog from '$lib/components/ui/dialog';
   import * as Select from '$lib/components/ui/select';
+  import { Segmented } from '$lib/components/ui/segmented';
   import InterviewerAvatar from './interviewer-avatar.svelte';
   import JobSummaryCard from './job-summary.svelte';
   import { hasJobSummary, MIN_JOB_TEXT, type JobSummary } from '$lib/job-parse';
@@ -24,7 +25,7 @@
   }: { open?: boolean; agents: Option[]; examples: Option[]; maxMinutes: number; agent?: string; focus?: string } = $props();
 
   const all = $derived([...agents, ...examples]);
-  let choice = $state(untrack(() => (all.some((a) => a.id === presetAgent) ? presetAgent : (all[0]?.id ?? ''))));
+  let choice = $state<string | null>(untrack(() => (all.some((a) => a.id === presetAgent) ? presetAgent : (all[0]?.id ?? ''))));
   const chosen = $derived(all.find((a) => a.id === choice));
   let duration = $state(untrack(() => Math.min(20, maxMinutes)));
   let focus = $state(untrack(() => presetFocus));
@@ -109,51 +110,39 @@
       <div class="grid gap-4 px-5 py-4 *:min-w-0">
         <div class="grid grid-cols-[minmax(0,1fr)] gap-1.5">
           <Label id="ni-agent-label">Agent</Label>
-          <input type="hidden" name="interviewer" value={choice} />
+          <input type="hidden" name="interviewer" value={choice ?? ''} />
           {#if all.length}
-            <Select.Root type="single" bind:value={choice}>
-              <Select.Trigger class="h-auto! w-full py-2 text-left" aria-labelledby="ni-agent-label">
+            <Select.Root bind:value={choice}>
+              <Select.Trigger class="h-auto w-full py-2" aria-labelledby="ni-agent-label">
                 {#if chosen}
                   <span class="flex min-w-0 flex-1 items-center gap-2.5">
                     <InterviewerAvatar name={chosen.name} size="sm" />
                     <span class="min-w-0 flex-1">
                       <span class="block truncate font-semibold">{chosen.name}</span>
-                      <span class="block truncate text-xs text-muted-foreground">{chosen.blurb}</span>
+                      <span class="block truncate text-xs font-normal text-muted-foreground">{chosen.blurb}</span>
                     </span>
                   </span>
                 {:else}
                   <span class="text-muted-foreground">Choose an agent</span>
                 {/if}
               </Select.Trigger>
-              <Select.Content class="max-h-72 w-(--bits-select-anchor-width)">
-                {#if agents.length}
-                  <Select.Group>
-                    {#if examples.length}<Select.GroupHeading>Your agents</Select.GroupHeading>{/if}
-                    {#each agents as a (a.id)}
-                      <Select.Item value={a.id} label={a.name} class="py-2">
-                        <InterviewerAvatar name={a.name} size="sm" />
-                        <div class="min-w-0 flex-1">
-                          <div class="truncate font-semibold">{a.name}</div>
-                          <div class="truncate text-xs text-muted-foreground">{a.blurb}</div>
-                        </div>
-                      </Select.Item>
-                    {/each}
-                  </Select.Group>
-                {/if}
-                {#if examples.length}
-                  <Select.Group>
-                    <Select.GroupHeading>Examples</Select.GroupHeading>
-                    {#each examples as a (a.id)}
-                      <Select.Item value={a.id} label={a.name} class="py-2">
-                        <InterviewerAvatar name={a.name} size="sm" />
-                        <div class="min-w-0 flex-1">
-                          <div class="truncate font-semibold">{a.name}</div>
-                          <div class="truncate text-xs text-muted-foreground">{a.blurb}</div>
-                        </div>
-                      </Select.Item>
-                    {/each}
-                  </Select.Group>
-                {/if}
+              <Select.Content class="max-h-72 w-(--anchor-width)">
+                {#each [{ label: 'Your agents', items: agents }, { label: 'Examples', items: examples }] as group (group.label)}
+                  {#if group.items.length}
+                    <Select.Group>
+                      {#if agents.length && examples.length}<Select.GroupLabel>{group.label}</Select.GroupLabel>{/if}
+                      {#each group.items as a (a.id)}
+                        <Select.Item value={a.id} class="py-2">
+                          <InterviewerAvatar name={a.name} size="sm" />
+                          <div class="min-w-0 flex-1">
+                            <Select.ItemText class="block truncate font-semibold">{a.name}</Select.ItemText>
+                            <div class="truncate text-xs text-muted-foreground">{a.blurb}</div>
+                          </div>
+                        </Select.Item>
+                      {/each}
+                    </Select.Group>
+                  {/if}
+                {/each}
               </Select.Content>
             </Select.Root>
           {/if}
@@ -197,21 +186,11 @@
           <div class="grid gap-1.5">
             <Label>Length <span class="font-normal text-faint">(minutes)</span></Label>
             <input type="hidden" name="durationMinutes" value={duration} />
-            <div class="grid grid-cols-5 rounded-lg bg-muted p-[3px]" role="radiogroup" aria-label="Length in minutes">
-              {#each DURATIONS as d}
-                <button
-                  type="button"
-                  role="radio"
-                  disabled={d > maxMinutes}
-                  aria-checked={duration === d}
-                  title={d > maxMinutes ? 'On the Pro plan' : undefined}
-                  onclick={() => (duration = d)}
-                  class="tabular rounded-md py-1.5 text-[13px] font-semibold text-muted-foreground transition-colors disabled:opacity-35 aria-checked:bg-card aria-checked:text-foreground aria-checked:shadow-xs"
-                >
-                  {d}
-                </button>
-              {/each}
-            </div>
+            <Segmented
+              bind:value={duration}
+              aria-label="Length in minutes"
+              options={DURATIONS.map((d) => ({ value: d, label: String(d), disabled: d > maxMinutes, title: d > maxMinutes ? 'On the Pro plan' : undefined }))}
+            />
             {#if maxMinutes < 45}<p class="text-xs text-faint">Up to {maxMinutes} minutes on the free plan.</p>{/if}
           </div>
           <div class="grid content-start gap-1.5">

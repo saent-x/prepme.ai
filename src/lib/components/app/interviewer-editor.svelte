@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Chips } from '$lib/components/ui/chips';
   import { enhance } from '$app/forms';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
@@ -61,19 +62,7 @@
   <div class="grid gap-1.5">
     <span class="text-sm font-medium">Voice</span>
     <input type="hidden" name="voice" value={voice} />
-    <div class="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Voice">
-      {#each VOICES as v}
-        <button
-          type="button"
-          role="radio"
-          aria-checked={voice === v.id}
-          title={v.note}
-          onclick={() => (voice = v.id)}
-          class="rounded-md border px-2.5 py-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground aria-checked:border-primary aria-checked:bg-signal-soft aria-checked:text-primary"
-          >{v.label}</button
-        >
-      {/each}
-    </div>
+    <Chips bind:value={() => [voice], (v) => (voice = v[0] ?? voice)} aria-label="Voice" options={VOICES.map((x) => ({ value: x.id, label: x.label, title: x.note }))} />
   </div>
   {#if error}<p class="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>{/if}
   <div class="flex justify-end border-t pt-3">

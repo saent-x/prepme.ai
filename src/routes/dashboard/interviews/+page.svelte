@@ -3,6 +3,8 @@
   import { page } from '$app/state';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
+  import * as Select from '$lib/components/ui/select';
+  import { Segmented } from '$lib/components/ui/segmented';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
   import InterviewHead from '$lib/components/app/interview-head.svelte';
   import { Plus, Search } from '@lucide/svelte';
@@ -14,6 +16,9 @@
   $effect(() => {
     q = data.filters.q;
   });
+
+  const ALL = 'all';
+  const agentItems = $derived([{ value: ALL, label: 'All agents' }, ...data.interviewers.map((i) => ({ value: i.id, label: i.name }))]);
 
   const statuses = [
     { v: '', label: 'All' },
@@ -52,25 +57,22 @@
     <Search class="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-faint" />
     <Input placeholder="Search by name" class="pl-8" bind:value={q} oninput={onSearch} aria-label="Search interviews" />
   </div>
-  <div class="flex rounded-lg bg-muted p-[3px]" role="group" aria-label="Filter by status">
-    {#each statuses as s}
-      <button
-        class="rounded-md px-2.5 py-1 text-[13px] font-semibold text-muted-foreground transition-colors aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-xs"
-        aria-pressed={(data.filters.status ?? '') === s.v}
-        onclick={() => update({ status: s.v || null })}>{s.label}</button
-      >
-    {/each}
-  </div>
+  <Segmented
+    bind:value={() => data.filters.status ?? '', (v) => update({ status: v || null })}
+    aria-label="Filter by status"
+    options={statuses.map((x) => ({ value: x.v, label: x.label }))}
+    class="[&>*]:px-2.5 [&>*]:py-1"
+  />
   {#if data.interviewers.length > 1}
-    <select
-      class="h-9 rounded-md border border-input bg-card px-2.5 text-sm"
-      aria-label="Filter by agent"
-      value={data.filters.interviewer ?? ''}
-      onchange={(e) => update({ interviewer: e.currentTarget.value || null })}
+    <Select.Root
+      items={agentItems}
+      bind:value={() => data.filters.interviewer ?? ALL, (v) => update({ interviewer: !v || v === ALL ? null : v })}
     >
-      <option value="">All agents</option>
-      {#each data.interviewers as i}<option value={i.id}>{i.name}</option>{/each}
-    </select>
+      <Select.Trigger aria-label="Filter by agent"><Select.Value /></Select.Trigger>
+      <Select.Content>
+        {#each agentItems as a (a.value)}<Select.Item value={a.value}>{a.label}</Select.Item>{/each}
+      </Select.Content>
+    </Select.Root>
   {/if}
 </div>
 

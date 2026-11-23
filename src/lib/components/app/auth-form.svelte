@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { toast } from 'svelte-sonner';
+  import { toast } from '$lib/components/ui/toast';
   import { z } from 'zod';
   import { authClient, type SocialProvider } from '$lib/auth-client';
   import { Button } from '$lib/components/ui/button';

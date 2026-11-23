@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { toast } from 'svelte-sonner';
+  import { toast } from '$lib/components/ui/toast';
   import { authClient } from '$lib/auth-client';
   import { Button } from '$lib/components/ui/button';
   import { Check, LoaderCircle } from '@lucide/svelte';

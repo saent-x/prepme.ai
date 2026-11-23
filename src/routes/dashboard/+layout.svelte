@@ -6,7 +6,7 @@
   import { newInterview, openNewInterview } from '$lib/new-interview.svelte';
   import Logo from '$lib/components/brand/logo.svelte';
   import { Button } from '$lib/components/ui/button';
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import * as Menu from '$lib/components/ui/menu';
   import { authClient } from '$lib/auth-client';
   import UserAvatar from '$lib/components/app/user-avatar.svelte';
   import { toggleMode, mode } from 'mode-watcher';
@@ -20,7 +20,7 @@
     LogOut,
     Moon,
     Sun,
-    Menu,
+    Menu as MenuIcon,
     X
   } from '@lucide/svelte';
 
@@ -137,28 +137,28 @@
           {/if}
         </a>
       {/if}
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger
+      <Menu.Root>
+        <Menu.Trigger
           aria-label="Account menu"
-          class="flex items-center gap-2.5 rounded-lg text-left hover:bg-muted {mini ? 'size-9 justify-center' : 'w-full px-2.5 py-1.5'}"
+          class="flex h-auto items-center justify-start gap-2.5 rounded-lg border-0 bg-transparent text-left font-normal hover:bg-muted {mini ? 'size-9 justify-center px-0' : 'w-full px-2.5 py-1.5'}"
         >
           <UserAvatar name={data.user.name} image={data.user.image} class="size-[26px]" />
           {#if !mini}
             <span class="min-w-0 flex-1 truncate text-sm font-semibold">{data.user.name}</span>
             <Settings class="size-[15px] text-faint" strokeWidth={1.8} />
           {/if}
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="start" class="w-56">
-          <DropdownMenu.Label class="truncate text-xs font-normal text-muted-foreground">{data.user.email}</DropdownMenu.Label>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item onclick={() => goto('/dashboard/billing')}><CreditCard /> Plan and billing</DropdownMenu.Item>
-          <DropdownMenu.Item onclick={toggleMode}>
+        </Menu.Trigger>
+        <Menu.Content align="start" class="w-56">
+          <Menu.Label class="truncate text-xs font-normal text-muted-foreground">{data.user.email}</Menu.Label>
+          <Menu.Separator />
+          <Menu.Item onSelect={() => goto('/dashboard/billing')}><CreditCard /> Plan and billing</Menu.Item>
+          <Menu.Item onSelect={toggleMode}>
             {#if mode.current === 'dark'}<Sun /> Light mode{:else}<Moon /> Dark mode{/if}
-          </DropdownMenu.Item>
-          <DropdownMenu.Separator />
-          <DropdownMenu.Item onclick={signOut}><LogOut /> Sign out</DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
+          </Menu.Item>
+          <Menu.Separator />
+          <Menu.Item onSelect={signOut}><LogOut /> Sign out</Menu.Item>
+        </Menu.Content>
+      </Menu.Root>
     </div>
   </div>
 {/snippet}
@@ -172,7 +172,7 @@
   <!-- Mobile top bar -->
   <header class="sticky top-0 z-30 flex h-12 items-center justify-between border-b bg-card px-4 lg:hidden">
     <a href="/dashboard" aria-label="Home"><Logo /></a>
-    <Button variant="ghost" size="icon" aria-label="Open menu" onclick={() => (mobileOpen = true)}><Menu /></Button>
+    <Button variant="ghost" size="icon" aria-label="Open menu" onclick={() => (mobileOpen = true)}><MenuIcon /></Button>
   </header>
   {#if mobileOpen}
     <div class="fixed inset-0 z-50 lg:hidden">

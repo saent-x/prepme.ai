@@ -3,10 +3,10 @@
   import { format } from 'date-fns';
   import Markdown from 'svelte-exmarkdown';
   import { gfmPlugin } from 'svelte-exmarkdown/gfm';
-  import { Button } from '$lib/components/ui/button';
+  import { Button, buttonVariants } from '$lib/components/ui/button';
   import * as Tabs from '$lib/components/ui/tabs';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import * as Menu from '$lib/components/ui/menu';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
   import StatusBadge from '$lib/components/app/status-badge.svelte';
   import ScorecardView from '$lib/components/results/scorecard-view.svelte';
@@ -25,7 +25,7 @@
   const transcript = $derived(i.transcript ?? []);
   let confirmDelete = $state(false);
   let renaming = $state(false);
-  let tab = $state('scorecard');
+  let tab = $state<string | null>('scorecard');
   const verdictVariant = $derived(
     !i.scorecard ? 'outline' : ['strong_hire', 'hire'].includes(i.scorecard.verdict) ? 'success' : i.scorecard.verdict === 'lean_hire' ? 'warning' : 'destructive'
   );
@@ -72,17 +72,13 @@
         <Button type="submit"><RotateCcw /> Practise again</Button>
       </form>
     {/if}
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        {#snippet child({ props })}
-          <Button {...props} variant="outline" size="icon" aria-label="More actions"><Ellipsis /></Button>
-        {/snippet}
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content align="end">
-        <DropdownMenu.Item onclick={() => (renaming = true)}><Pencil /> Rename</DropdownMenu.Item>
-        <DropdownMenu.Item variant="destructive" onclick={() => (confirmDelete = true)}><Trash2 /> Delete</DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+    <Menu.Root>
+      <Menu.Trigger aria-label="More actions" class={buttonVariants({ variant: 'outline', size: 'icon' })}><Ellipsis /></Menu.Trigger>
+      <Menu.Content align="end">
+        <Menu.Item onSelect={() => (renaming = true)}><Pencil /> Rename</Menu.Item>
+        <Menu.Item variant="destructive" onSelect={() => (confirmDelete = true)}><Trash2 /> Delete</Menu.Item>
+      </Menu.Content>
+    </Menu.Root>
   </div>
 </header>
 {#if i.status === 'completed' && i.scorecard}
@@ -116,13 +112,13 @@
     <p class="rounded-xl border bg-card p-5 text-sm text-muted-foreground">This interview was cancelled.</p>
   {:else}
     <Tabs.Root bind:value={tab}>
-      <Tabs.List class="mb-4 h-auto w-full justify-start gap-5 rounded-none border-b bg-transparent p-0">
-        <Tabs.Trigger value="scorecard" class="h-9 flex-none rounded-none border-0 border-b-2 border-transparent px-0 text-sm font-semibold text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">Scorecard</Tabs.Trigger>
-        {#if i.scorecard}<Tabs.Trigger value="questions" class="h-9 flex-none rounded-none border-0 border-b-2 border-transparent px-0 text-sm font-semibold text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">Question by question</Tabs.Trigger>{/if}
-        <Tabs.Trigger value="transcript" class="h-9 flex-none rounded-none border-0 border-b-2 border-transparent px-0 text-sm font-semibold text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">Transcript</Tabs.Trigger>
-        <Tabs.Trigger value="coach" class="h-9 flex-none rounded-none border-0 border-b-2 border-transparent px-0 text-sm font-semibold text-muted-foreground shadow-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none">Ask the coach</Tabs.Trigger>
+      <Tabs.List class="mb-4" aria-label="Interview results">
+        <Tabs.Tab value="scorecard">Scorecard</Tabs.Tab>
+        {#if i.scorecard}<Tabs.Tab value="questions">Question by question</Tabs.Tab>{/if}
+        <Tabs.Tab value="transcript">Transcript</Tabs.Tab>
+        <Tabs.Tab value="coach">Ask the coach</Tabs.Tab>
       </Tabs.List>
-      <Tabs.Content value="scorecard">
+      <Tabs.Panel value="scorecard">
         {#if i.scorecard}
           <ScorecardView scorecard={i.scorecard} {transcript} />
         {:else}
@@ -135,17 +131,17 @@
             {/if}
           </div>
         {/if}
-      </Tabs.Content>
+      </Tabs.Panel>
       {#if i.scorecard}
-        <Tabs.Content value="questions"><QuestionsView questions={i.scorecard.questions} /></Tabs.Content>
+        <Tabs.Panel value="questions"><QuestionsView questions={i.scorecard.questions} /></Tabs.Panel>
       {/if}
-      <Tabs.Content value="transcript">
+      <Tabs.Panel value="transcript">
         <TranscriptView {transcript} interviewerName={i.agent.name} candidateName="You" title={i.name} />
         {#if !transcript.length && i.transcriptUrl}
           <p class="mt-3 text-sm text-muted-foreground">This interview was recorded with the previous version of PrepMe, so its transcript isn't available here.</p>
         {/if}
-      </Tabs.Content>
-      <Tabs.Content value="coach"><CoachChat interviewId={i.id} initial={data.messages} /></Tabs.Content>
+      </Tabs.Panel>
+      <Tabs.Panel value="coach"><CoachChat interviewId={i.id} initial={data.messages} /></Tabs.Panel>
     </Tabs.Root>
   {/if}
 </div>
@@ -157,7 +153,7 @@
       <AlertDialog.Description>“{i.name}”, its transcript, scorecard and coach chat will be removed. This can't be undone.</AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Close>Cancel</AlertDialog.Close>
       <form method="POST" action="?/delete" use:enhance>
         <Button type="submit" variant="destructive">Delete</Button>
       </form>

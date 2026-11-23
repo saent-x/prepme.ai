@@ -5,6 +5,8 @@
   import { Label } from '$lib/components/ui/label';
   import { Textarea } from '$lib/components/ui/textarea';
   import * as Dialog from '$lib/components/ui/dialog';
+  import { Segmented } from '$lib/components/ui/segmented';
+  import { Chips } from '$lib/components/ui/chips';
   import InterviewerAvatar from './interviewer-avatar.svelte';
   import { VOICES } from '$lib/templates';
   import { composeBrief, FOCUS_AREAS, STYLES, type FocusId, type StyleId } from '$lib/interviewer-brief';
@@ -17,18 +19,17 @@
   let role = $state(untrack(() => presetJob));
   let job = $state('');
   let style = $state<StyleId>('realistic');
-  let focus = $state<FocusId[]>(['experience', 'scenarios']);
+  let focus = $state<string[]>(['experience', 'scenarios']);
   let voice = $state<string>('marin');
   let own = $state(false);
   let ownBrief = $state('');
   let error = $state<string | null>(null);
   let busy = $state<'create' | 'start' | null>(null);
 
-  const brief = $derived(own ? ownBrief : composeBrief({ role, job, style, focus }));
-  const toggle = (id: FocusId) => (focus = focus.includes(id) ? focus.filter((f) => f !== id) : [...focus, id]);
+  const brief = $derived(own ? ownBrief : composeBrief({ role, job, style, focus: focus as FocusId[] }));
 
   function writeOwn() {
-    ownBrief = composeBrief({ role, job, style, focus });
+    ownBrief = composeBrief({ role, job, style, focus: focus as FocusId[] });
     own = true;
   }
 </script>
@@ -85,33 +86,12 @@
 
           <div class="grid gap-1.5">
             <span class="text-sm font-medium">Style</span>
-            <div class="grid grid-cols-3 rounded-lg bg-muted p-[3px]" role="radiogroup" aria-label="Style">
-              {#each STYLES as s}
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={style === s.id}
-                  onclick={() => (style = s.id)}
-                  class="rounded-md py-1.5 text-[13px] font-semibold text-muted-foreground transition-colors aria-checked:bg-card aria-checked:text-foreground aria-checked:shadow-xs"
-                  >{s.label}</button
-                >
-              {/each}
-            </div>
+            <Segmented bind:value={style} aria-label="Style" options={STYLES.map((x) => ({ value: x.id, label: x.label }))} />
           </div>
 
           <div class="grid gap-1.5">
             <span class="text-sm font-medium">Focus on</span>
-            <div class="flex flex-wrap gap-1.5">
-              {#each FOCUS_AREAS as a}
-                <button
-                  type="button"
-                  aria-pressed={focus.includes(a.id)}
-                  onclick={() => toggle(a.id)}
-                  class="rounded-md border px-2.5 py-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground aria-pressed:border-primary aria-pressed:bg-signal-soft aria-pressed:text-primary"
-                  >{a.label}</button
-                >
-              {/each}
-            </div>
+            <Chips multiple bind:value={focus} aria-label="Focus on" options={FOCUS_AREAS.map((x) => ({ value: x.id, label: x.label }))} />
           </div>
         {:else}
           <div class="grid gap-1.5">
@@ -122,19 +102,7 @@
 
         <div class="grid gap-1.5">
           <span class="text-sm font-medium">Voice</span>
-          <div class="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Voice">
-            {#each VOICES as v}
-              <button
-                type="button"
-                role="radio"
-                aria-checked={voice === v.id}
-                title={v.note}
-                onclick={() => (voice = v.id)}
-                class="rounded-md border px-2.5 py-1 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground aria-checked:border-primary aria-checked:bg-signal-soft aria-checked:text-primary"
-                >{v.label}</button
-              >
-            {/each}
-          </div>
+          <Chips bind:value={() => [voice], (v) => (voice = v[0] ?? voice)} aria-label="Voice" options={VOICES.map((x) => ({ value: x.id, label: x.label, title: x.note }))} />
         </div>
 
         <input type="hidden" name="instructions" value={brief} />

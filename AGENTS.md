@@ -6,4 +6,4 @@ Before using ui-sdk, follow the `ui-sdk` skill if it is installed, and read `nod
 
 To build a new component, also search `node_modules/@ui-sdk/svelte/docs/core.md` by heading, and read `rendering.md` next to it.
 
-ui-sdk's default stylesheet (`@ui-sdk/core/web.css`) is deliberately not imported: its `[data-slot]` rules collide with the shadcn-svelte components in `src/lib/components/ui`. Style ui-sdk parts with Tailwind and the tokens in `src/app.css`.
+The whole UI is built on ui-sdk. The styled wrappers live in `src/lib/components/ui` (button, input, textarea, label, dialog, alert-dialog, menu, select, tabs, toast, segmented, chips); use those in pages, and add a new wrapper there when a page needs another ui-sdk component. `@ui-sdk/core/web.css` is imported in `src/app.css` and themed through the `--ui-*` tokens on `:root`, which map to the app's own colour tokens. Do not add shadcn-svelte or bits-ui back.

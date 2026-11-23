@@ -1,10 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { onMount, untrack } from 'svelte';
-  import { toast } from 'svelte-sonner';
+  import { toast } from '$lib/components/ui/toast';
   import Logo from '$lib/components/brand/logo.svelte';
   import { Button } from '$lib/components/ui/button';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
+  import * as Select from '$lib/components/ui/select';
+  import { Label } from '$lib/components/ui/label';
+  import { Toggle } from '@ui-sdk/svelte/toggle';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
   import UserAvatar from '$lib/components/app/user-avatar.svelte';
   import { faceColour } from '$lib/avatars';
@@ -34,6 +37,7 @@
   let micError = $state<string | null>(null);
   let devices = $state<MediaDeviceInfo[]>([]);
   let deviceId = $state<string>('');
+  const micItems = $derived(devices.map((d, n) => ({ value: d.deviceId, label: d.label || `Microphone ${n + 1}` })));
   let lobbyLevel = $state(0);
   let lobbyCtx: AudioContext | null = null;
   let lobbyRaf = 0;
@@ -215,12 +219,15 @@
                 </div>
               </div>
               {#if devices.length > 1}
-                <label class="mt-4 block text-[13px]">
-                  <span class="font-medium">Microphone</span>
-                  <select class="mt-1 h-9 w-full rounded-md border border-input bg-card px-2.5 text-sm" value={deviceId} onchange={(e) => requestMic(e.currentTarget.value)}>
-                    {#each devices as d}<option value={d.deviceId}>{d.label || 'Microphone'}</option>{/each}
-                  </select>
-                </label>
+                <div class="mt-4 grid gap-1.5">
+                  <Label id="mic-label">Microphone</Label>
+                  <Select.Root items={micItems} bind:value={() => deviceId, (v) => v && requestMic(v)}>
+                    <Select.Trigger class="w-full" aria-labelledby="mic-label"><Select.Value /></Select.Trigger>
+                    <Select.Content>
+                      {#each micItems as d (d.value)}<Select.Item value={d.value}>{d.label}</Select.Item>{/each}
+                    </Select.Content>
+                  </Select.Root>
+                </div>
               {/if}
               <ul class="mt-4 grid gap-1.5 text-[13px] text-muted-foreground">
                 <li class="flex gap-2"><Headphones class="mt-0.5 size-3.5 shrink-0" /> Headphones work best.</li>
@@ -256,11 +263,11 @@
               <span class="size-1.5 rounded-full {call.phase === 'live' ? 'animate-onair bg-destructive' : 'bg-warning'}"></span>
               {call.phase === 'live' ? '' : call.phase === 'error' ? 'Paused · ' : 'Connecting · '}{formatClock(call.elapsedMs)} / {call.durationMinutes}:00
             </span>
-            <button
-              class="hidden size-8 place-items-center rounded-md bg-white/70 transition-colors hover:bg-white md:grid"
-              aria-label="Toggle transcript"
-              aria-pressed={showPanel}
-              onclick={() => (showPanel = !showPanel)}><PanelRight class="size-4" /></button
+            <Toggle
+              bind:pressed={showPanel}
+              aria-label="Transcript"
+              class="hidden size-8 rounded-md border-0 bg-white/70 p-0 text-[#18161f] hover:bg-white data-pressed:bg-white md:inline-flex"
+              ><PanelRight class="size-4" /></Toggle
             >
           </div>
         </header>
@@ -314,23 +321,23 @@
             You
             {#if !call.muted}<LevelMeter level={call.micLevel} />{/if}
           </span>
-          <button
-            class="grid size-11 place-items-center rounded-full transition-colors disabled:opacity-50 {call.muted ? 'bg-[#18161f] text-white' : 'bg-white hover:bg-white/80'}"
-            aria-label={call.muted ? 'Unmute (M)' : 'Mute (M)'}
-            aria-pressed={call.muted}
-            onclick={() => call.toggleMute()}
+          <Toggle
+            bind:pressed={() => call.muted, () => call.toggleMute()}
+            aria-label="Mute"
+            title="Mute (M)"
             disabled={call.phase !== 'live'}
+            class="size-11 rounded-full border-0 bg-white p-0 text-[#18161f] hover:bg-white/80 data-disabled:opacity-50 data-pressed:bg-[#18161f] data-pressed:text-white"
           >
             {#if call.muted}<MicOff class="size-[18px]" />{:else}<Mic class="size-[18px]" />{/if}
-          </button>
-          <button
-            class="grid size-11 place-items-center rounded-full bg-white transition-colors hover:bg-white/80"
-            aria-label={showCaptions ? 'Hide captions (C)' : 'Show captions (C)'}
-            aria-pressed={showCaptions}
-            onclick={() => (showCaptions = !showCaptions)}
+          </Toggle>
+          <Toggle
+            bind:pressed={showCaptions}
+            aria-label="Captions"
+            title="Captions (C)"
+            class="size-11 rounded-full border-0 bg-white p-0 text-[#18161f] hover:bg-white/80 data-pressed:bg-white"
           >
             {#if showCaptions}<Captions class="size-[18px]" />{:else}<CaptionsOff class="size-[18px]" />{/if}
-          </button>
+          </Toggle>
           <button
             class="ml-1 flex h-11 items-center gap-2 rounded-lg bg-[#18161f] px-4 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             onclick={() => (confirmEnd = true)}
@@ -370,7 +377,7 @@
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Keep going</AlertDialog.Cancel>
+      <AlertDialog.Close>Keep going</AlertDialog.Close>
       <Button variant="destructive" onclick={hangUp}>End and score</Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>

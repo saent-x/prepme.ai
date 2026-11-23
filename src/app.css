@@ -1,11 +1,6 @@
+@layer ui-sdk;
 @import 'tailwindcss';
-/*
- * ui-sdk's default look (@ui-sdk/core/web.css) is not imported. It styles [data-slot="button"],
- * "dialog-content", "input" and 25 more slot names that the shadcn components in
- * src/lib/components/ui already use, and it underlines every link, so importing it changes
- * every existing page. Style ui-sdk parts with the theme tokens below instead.
- */
-@import 'tw-animate-css';
+@import '@ui-sdk/core/web.css' layer(components);
 
 @custom-variant dark (&:is(.dark *));
 
@@ -52,6 +47,23 @@
   --chart-3: #16a34a;
   --chart-4: #d97706;
   --chart-5: #38bdf8;
+
+  /* ui-sdk's default look (web.css) reads these. They follow the theme above, in light and dark. */
+  color-scheme: light;
+  --ui-background: var(--card);
+  --ui-foreground: var(--foreground);
+  --ui-muted: var(--muted);
+  --ui-muted-foreground: var(--muted-foreground);
+  --ui-border: var(--border);
+  --ui-input: var(--input);
+  --ui-primary: var(--primary);
+  --ui-primary-foreground: var(--primary-foreground);
+  --ui-destructive: var(--destructive);
+  --ui-ring: var(--ring);
+  --ui-ring-border: var(--ring);
+  --ui-radius: 0.5rem;
+  --ui-font-size: 0.875rem;
+  --ui-font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
@@ -84,6 +96,7 @@
   --border: #2b2836;
   --input: #383446;
   --ring: #f1f0f5;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -161,6 +174,11 @@
 }
 
 @layer components {
+  /* web.css underlines every link. Here links are plain unless a class says otherwise. */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
   /* Small uppercase label used for section eyebrows and stat captions. */
   .eyebrow {
     @apply text-xs font-medium text-faint;

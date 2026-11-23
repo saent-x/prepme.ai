@@ -1,6 +1,6 @@
 <script lang="ts">
   import { enhance } from '$app/forms';
-  import { toast } from 'svelte-sonner';
+  import { toast } from '$lib/components/ui/toast';
   import { Button } from '$lib/components/ui/button';
   import * as AlertDialog from '$lib/components/ui/alert-dialog';
   import InterviewerEditor from '$lib/components/app/interviewer-editor.svelte';
@@ -19,7 +19,7 @@
 
 <svelte:head><title>{data.interviewer.name} · PrepMe</title></svelte:head>
 
-<a href="/dashboard/interviewers" class="text-[13px] text-muted-foreground hover:text-foreground">← Interviewers</a>
+<a href="/dashboard/interviewers" class="text-[13px] text-muted-foreground hover:text-foreground">← Agents</a>
 <header class="mt-2 mb-4 flex flex-wrap items-center justify-between gap-4">
   <div class="flex items-center gap-3">
     <InterviewerAvatar name={data.interviewer.name} size="lg" />
@@ -58,7 +58,7 @@
       <AlertDialog.Description>This also deletes its {data.total} interview{data.total === 1 ? '' : 's'} and their feedback. This can't be undone.</AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Close>Cancel</AlertDialog.Close>
       <form method="POST" action="?/delete" use:enhance><Button type="submit" variant="destructive">Delete</Button></form>
     </AlertDialog.Footer>
   </AlertDialog.Content>
