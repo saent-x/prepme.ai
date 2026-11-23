@@ -3,6 +3,7 @@
   import { Button } from '$lib/components/ui/button';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
   import { faceColour } from '$lib/avatars';
+  import { reveal } from '$lib/actions/reveal';
   import {
     ArrowRight,
     BriefcaseBusiness,
@@ -25,10 +26,10 @@
   });
 
   const floaters = [
-    { n: 'sam', say: 'Tell me about a busy shift.', cls: 'left-[4%] top-[18%] size-16 -rotate-6' },
-    { n: 'rex', say: '', cls: 'left-[13%] top-[62%] size-11 rotate-6' },
-    { n: 'juno', say: 'Why this school?', cls: 'right-[5%] top-[14%] size-14 rotate-6' },
-    { n: 'pip', say: '', cls: 'right-[14%] top-[64%] size-12 -rotate-6' }
+    { n: 'sam', say: 'Tell me about a busy shift.', cls: 'left-[4%] top-[18%] size-16 -rotate-6', dur: 5.2, delay: 0 },
+    { n: 'rex', say: '', cls: 'left-[13%] top-[62%] size-11 rotate-6', dur: 4.1, delay: 0.9 },
+    { n: 'juno', say: 'Why this school?', cls: 'right-[5%] top-[14%] size-14 rotate-6', dur: 5.8, delay: 0.5 },
+    { n: 'pip', say: '', cls: 'right-[14%] top-[64%] size-12 -rotate-6', dur: 4.6, delay: 1.4 }
   ];
 
   const features = [
@@ -70,28 +71,31 @@
 
   <!-- Hero -->
   <section class="relative mx-auto max-w-[1120px] px-5 pt-14 pb-16 text-center sm:pt-20">
-    {#each floaters as f}
-      <div class="absolute hidden lg:block {f.cls}" aria-hidden="true">
-        <InterviewerAvatar name={f.n} class="size-full shadow-sm" />
-        {#if f.say}
-          <span class="absolute top-full left-1/2 mt-2 -translate-x-1/2 rotate-0 rounded-lg border bg-card px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-xs">{f.say}</span>
-        {/if}
+    {#each floaters as f, i}
+      <!-- The outer box pops in once; the inner one keeps bobbing, each at its own pace. -->
+      <div class="absolute hidden animate-pop lg:block {f.cls}" style="animation-delay:{250 + i * 120}ms" aria-hidden="true">
+        <div class="size-full animate-float" style="animation-duration:{f.dur}s;animation-delay:{f.delay}s">
+          <InterviewerAvatar name={f.n} class="size-full shadow-sm transition-[scale,rotate] duration-300 ease-out hover:scale-110 hover:rotate-12" />
+          {#if f.say}
+            <span class="absolute top-full left-1/2 mt-2 -translate-x-1/2 animate-pop rounded-lg border bg-card px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-xs" style="animation-delay:{900 + i * 250}ms">{f.say}</span>
+          {/if}
+        </div>
       </div>
     {/each}
-    <h1 class="text-[44px] leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-[64px]">
-      Name the interview.<br /><span class="bg-[linear-gradient(transparent_62%,#ffc531_62%,#ffc531_92%,transparent_92%)] px-1">Nail it.</span>
+    <h1 class="animate-rise text-[44px] leading-[1.02] font-extrabold tracking-[-0.045em] sm:text-[64px]">
+      Name the interview.<br /><span class="bg-[linear-gradient(transparent_62%,#ffc531_62%,#ffc531_92%,transparent_92%)] bg-no-repeat px-1 [animation:underline-in_0.6s_var(--ease-out)_0.45s_both]">Nail it.</span>
     </h1>
-    <p class="mx-auto mt-4 max-w-md text-[17px] text-muted-foreground">Make an interviewer for the job you want. Practise out loud. Get a scorecard.</p>
-    <form class="mx-auto mt-7 flex max-w-[520px] items-center gap-2 rounded-xl border border-input bg-card p-1.5 shadow-xs focus-within:border-foreground" action={start} onsubmit={(e) => { e.preventDefault(); location.href = start; }}>
+    <p class="mx-auto mt-4 max-w-md animate-rise text-[17px] text-muted-foreground [animation-delay:80ms]">Make an interviewer for the job you want. Practise out loud. Get a scorecard.</p>
+    <form class="mx-auto mt-7 flex animate-rise transition-[border-color,box-shadow] [animation-delay:160ms] focus-within:shadow-md max-w-[520px] items-center gap-2 rounded-xl border border-input bg-card p-1.5 shadow-xs focus-within:border-foreground" action={start} onsubmit={(e) => { e.preventDefault(); location.href = start; }}>
       <input
         bind:value={job}
         aria-label="The job you are interviewing for"
         placeholder="e.g. Staff Nurse at St Thomas'"
         class="h-10 min-w-0 flex-1 bg-transparent px-2.5 text-[15px] outline-none placeholder:text-faint"
       />
-      <Button type="submit" size="lg">Build my interviewer <ArrowRight /></Button>
+      <Button type="submit" size="lg" class="group">Build my interviewer <ArrowRight class="transition-transform group-hover:translate-x-0.5" /></Button>
     </form>
-    <p class="mt-4 text-[13px] text-muted-foreground">
+    <p class="mt-4 animate-rise text-[13px] text-muted-foreground [animation-delay:240ms]">
       Works for any job: Nurse · Teacher · Solicitor · Store manager · Chef · Engineer and more.
     </p>
   </section>
@@ -102,7 +106,7 @@
       <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">Three steps. Twenty minutes.</h2>
       <div class="mt-8 grid gap-4 md:grid-cols-3">
         <!-- 1 Make -->
-        <div>
+        <div use:reveal>
           <div class="h-[212px] overflow-hidden rounded-xl bg-card p-4 text-left text-foreground">
             <div class="flex items-center gap-3">
               <InterviewerAvatar name="pip" size="lg" />
@@ -121,11 +125,11 @@
           <div class="text-[13px] opacity-80">Name the job. Pick how tough.</div>
         </div>
         <!-- 2 Talk -->
-        <div>
+        <div use:reveal={100}>
           <div class="grid h-[212px] place-items-center overflow-hidden rounded-xl p-4 text-center text-[#18161f]" style="background:{faceColour('pip')}">
             <div>
               <span class="relative mx-auto grid size-20 place-items-center">
-                <span class="absolute -inset-4 rounded-full bg-white/20"></span>
+                <span class="absolute -inset-4 animate-halo rounded-full bg-white/20"></span>
                 <InterviewerAvatar name="pip" class="relative size-20 ring-4 ring-white" />
               </span>
               <div class="mt-6 rounded-lg bg-white/85 px-3 py-1.5 text-[13px] font-medium">Tell me about a time you had to prioritise.</div>
@@ -135,7 +139,7 @@
           <div class="text-[13px] opacity-80">A real voice conversation, with follow-ups.</div>
         </div>
         <!-- 3 Score -->
-        <div>
+        <div use:reveal={200}>
           <div class="h-[212px] overflow-hidden rounded-xl bg-card p-4 text-left text-foreground">
             <div class="flex items-center gap-3">
               <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
@@ -167,8 +171,8 @@
   <section class="mx-auto max-w-[1120px] px-5 py-16">
     <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">More than a mock interview.</h2>
     <div class="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-      {#each features as f}
-        <div class="flex gap-3">
+      {#each features as f, i}
+        <div class="flex gap-3" use:reveal={(i % 3) * 80}>
           <f.icon class="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.8} />
           <div>
             <h3 class="text-[15px] font-bold">{f.title}</h3>
@@ -184,7 +188,7 @@
     <div class="mx-auto max-w-[760px] px-5 py-16">
       <h2 class="text-center text-[30px] leading-tight font-extrabold tracking-[-0.03em]">Start free.</h2>
       <div class="mt-8 grid gap-3 sm:grid-cols-2">
-        <div class="flex flex-col rounded-xl border bg-card p-5">
+        <div class="lift flex flex-col rounded-xl border bg-card p-5 hover:shadow-md" use:reveal>
           <h3 class="font-bold">Free</h3>
           <div class="mt-1 text-3xl font-extrabold tracking-tight">£0</div>
           <ul class="mt-4 flex-1 space-y-1.5 text-sm">
@@ -194,7 +198,7 @@
           </ul>
           <Button href={data.signedIn ? '/dashboard' : '/auth/sign-up'} variant="outline" class="mt-5">Start free</Button>
         </div>
-        <div class="flex flex-col rounded-xl border-2 border-primary bg-card p-5">
+        <div class="lift flex flex-col rounded-xl border-2 border-primary bg-card p-5 hover:shadow-md" use:reveal={100}>
           <h3 class="font-bold">Pro</h3>
           <div class="mt-1 text-3xl font-extrabold tracking-tight">Unlimited</div>
           <ul class="mt-4 flex-1 space-y-1.5 text-sm">
@@ -227,7 +231,7 @@
   <section class="bg-primary text-primary-foreground">
     <div class="mx-auto flex max-w-[1120px] flex-wrap items-center gap-x-6 gap-y-4 px-5 py-10">
       <div class="flex -space-x-2">
-        {#each ['sam', 'rex', 'juno', 'ivy'] as n}<InterviewerAvatar name={n} class="size-11 ring-2 ring-primary" />{/each}
+        {#each ['sam', 'rex', 'juno', 'ivy'] as n, i}<InterviewerAvatar name={n} class="size-11 animate-float ring-2 ring-primary [animation-duration:3.6s]" style="animation-delay:{i * 0.3}s" />{/each}
       </div>
       <h2 class="flex-1 text-[26px] leading-tight font-extrabold tracking-[-0.03em]">They're ready when you are.</h2>
       <Button href={start} size="lg" class="bg-white text-[#18161f] hover:bg-white/90"><Mic /> Start free</Button>

@@ -73,7 +73,7 @@
   style="background:{faceColour(next.face)}"
   aria-label="Next step"
 >
-  <InterviewerAvatar name={next.face} size="lg" class="ring-2 ring-white/80" />
+  <InterviewerAvatar name={next.face} size="lg" class="animate-float ring-2 ring-white/80 [animation-duration:4s]" />
   <div class="min-w-0 flex-1">
     <div class="text-xs font-semibold opacity-70">{next.label}</div>
     <div class="truncate text-[17px] font-bold">{next.title}</div>
@@ -107,14 +107,14 @@
     <h2 class="text-sm font-bold">Your agents</h2>
     <a href="/dashboard/interviewers" class="text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">Manage</a>
   </div>
-  <div class="mt-2.5 flex gap-5 overflow-x-auto pb-1">
+  <div class="stagger mt-2.5 flex gap-5 overflow-x-auto pt-1 pb-1">
     {#each data.interviewers as i (i.id)}
       <a
         href="/dashboard/interviews/new?interviewer={i.id}"
         title="Start an interview with {i.name}"
         class="group flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
       >
-        <InterviewerAvatar name={i.name} class="size-14 transition-transform group-hover:-translate-y-0.5" />
+        <InterviewerAvatar name={i.name} class="size-14 transition-transform duration-200 ease-out group-hover:-translate-y-1 group-hover:rotate-6" />
         <span class="w-full truncate text-[13px] font-semibold">{i.name}</span>
       </a>
     {/each}
@@ -127,7 +127,7 @@
   </div>
 </section>
 
-<section class="mt-5 overflow-hidden rounded-xl border bg-card">
+<section class="stagger mt-5 overflow-hidden rounded-xl border bg-card">
   <div class="flex items-baseline justify-between px-4 pt-3.5 pb-2.5">
     <h2 class="text-sm font-bold">Recent interviews</h2>
     <a href="/dashboard/interviews" class="text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">See all</a>

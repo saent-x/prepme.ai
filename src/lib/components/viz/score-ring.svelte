@@ -30,7 +30,7 @@
       stroke-linecap="round"
       stroke-dasharray={c}
       stroke-dashoffset={c * (1 - pct)}
-      style="transition: stroke-dashoffset 900ms cubic-bezier(.2,.8,.2,1)"
+      style="--draw-from:{c};transition:stroke-dashoffset 900ms cubic-bezier(.2,.8,.2,1);animation:draw 900ms cubic-bezier(.2,.8,.2,1) 150ms both"
     />
   </svg>
   <div class="absolute inset-0 grid place-items-center text-center">

@@ -33,7 +33,7 @@
 </div>
 
 {#if data.interviewers.length}
-  <div class="mt-4 overflow-hidden rounded-xl border bg-card">
+  <div class="stagger mt-4 overflow-hidden rounded-xl border bg-card">
     <div class="hidden grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)_80px_90px_110px] gap-x-4 border-b px-4 py-2 text-xs font-medium text-faint md:grid">
       <span>Agent</span><span>Brief</span><span>Voice</span><span>Interviews</span><span></span>
     </div>

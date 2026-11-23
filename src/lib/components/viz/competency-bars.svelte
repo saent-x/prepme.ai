@@ -12,7 +12,7 @@
       <div class="flex items-center gap-3">
         <span class="w-36 shrink-0 text-sm font-medium">{label(item.key)}</span>
         <span class="h-[5px] flex-1 rounded-full bg-muted" role="img" aria-label="{label(item.key)}: {item.score} out of {max}">
-          <span class="block h-full rounded-full {colour(item.score)}" style="width:{(item.score / max) * 100}%"></span>
+          <span class="grow-x block h-full rounded-full {colour(item.score)}" style="width:{(item.score / max) * 100}%"></span>
         </span>
         <span class="tabular w-8 text-right text-[13px] font-semibold">{#if item.score}{item.score}<span class="font-normal text-faint">/{max}</span>{:else}<span class="font-normal text-faint">—</span>{/if}</span>
       </div>

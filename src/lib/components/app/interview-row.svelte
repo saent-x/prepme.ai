@@ -22,10 +22,10 @@
 <!-- One table-like row. Column widths match InterviewHead. -->
 <a
   href="/dashboard/interviews/{row.id}"
-  class="grid grid-cols-[1fr_auto] items-center gap-x-4 border-t px-4 py-2.5 text-sm transition-colors first:border-t-0 hover:bg-muted/60 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_84px_64px_92px]"
+  class="group grid grid-cols-[1fr_auto] items-center gap-x-4 border-t px-4 py-2.5 text-sm transition-colors first:border-t-0 hover:bg-muted/60 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_84px_64px_92px]"
 >
   <span class="flex min-w-0 items-center gap-2.5">
-    <AudioLines class="size-4 shrink-0 text-faint" strokeWidth={1.8} />
+    <AudioLines class="size-4 shrink-0 text-faint transition-colors group-hover:text-foreground" strokeWidth={1.8} />
     <span class="truncate font-semibold">{row.name}</span>
   </span>
   <span class="hidden min-w-0 items-center gap-2 text-muted-foreground sm:flex">

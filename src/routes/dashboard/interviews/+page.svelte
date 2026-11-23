@@ -76,7 +76,7 @@
   {/if}
 </div>
 
-<section class="mt-3 overflow-hidden rounded-xl border bg-card">
+<section class="stagger mt-3 overflow-hidden rounded-xl border bg-card">
   {#if data.result.items.length}
     <InterviewHead />
     {#each data.result.items as row (row.id)}<InterviewRow {row} />{/each}

@@ -4,14 +4,16 @@
   let {
     name,
     class: className = '',
-    size = 'md'
-  }: { name: string; class?: string; size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' } = $props();
+    size = 'md',
+    style
+  }: { name: string; class?: string; size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'; style?: string } = $props();
   const src = $derived(interviewerFace(name));
 </script>
 
 <img
   {src}
   alt=""
+  {style}
   class={cn(
     'inline-block shrink-0 rounded-full',
     size === 'xs' && 'size-6',

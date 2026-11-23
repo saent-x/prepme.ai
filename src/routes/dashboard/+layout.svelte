@@ -3,6 +3,8 @@
   import { page } from '$app/state';
   import { goto, invalidateAll, replaceState } from '$app/navigation';
   import InterviewDialog from '$lib/components/app/interview-dialog.svelte';
+  import BillingDialog from '$lib/components/app/billing-dialog.svelte';
+  import { toast } from '$lib/components/ui/toast';
   import { newInterview, openNewInterview } from '$lib/new-interview.svelte';
   import Logo from '$lib/components/brand/logo.svelte';
   import { Button } from '$lib/components/ui/button';
@@ -69,7 +71,13 @@
     const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
     if (!a || a.target) return;
     const u = new URL(a.href, location.href);
-    if (u.origin !== location.origin || u.pathname !== '/dashboard/interviews/new') return;
+    if (u.origin !== location.origin) return;
+    if (u.pathname === '/dashboard/billing') {
+      e.preventDefault();
+      billingOpen = true;
+      return;
+    }
+    if (u.pathname !== '/dashboard/interviews/new') return;
     e.preventDefault();
     open({ agent: u.searchParams.get('interviewer'), focus: u.searchParams.get('focus') });
   }
@@ -83,6 +91,19 @@
         open(preset);
       });
     }
+  });
+
+  // "Plan and billing" is a pop-up too. Old links and the checkout return land on ?billing=1.
+  let billingOpen = $state(false);
+  $effect(() => {
+    const u = page.url;
+    if (u.searchParams.get('billing') !== '1') return;
+    const upgraded = u.searchParams.get('upgraded');
+    setTimeout(() => {
+      replaceState(u.pathname, {});
+      billingOpen = true;
+      if (upgraded) toast.success('Thanks for upgrading. Pro is active.');
+    });
   });
 
   async function signOut() {
@@ -151,7 +172,7 @@
         <Menu.Content align="start" class="w-56">
           <Menu.Label class="truncate text-xs font-normal text-muted-foreground">{data.user.email}</Menu.Label>
           <Menu.Separator />
-          <Menu.Item onSelect={() => goto('/dashboard/billing')}><CreditCard /> Plan and billing</Menu.Item>
+          <Menu.Item onSelect={() => (billingOpen = true)}><CreditCard /> Plan and billing</Menu.Item>
           <Menu.Item onSelect={toggleMode}>
             {#if mode.current === 'dark'}<Sun /> Light mode{:else}<Moon /> Dark mode{/if}
           </Menu.Item>
@@ -184,12 +205,14 @@
     </div>
   {/if}
 
-  <main class="min-w-0">
+  <main class="vt-main min-w-0">
     <div class="mx-auto w-full max-w-[1180px] px-4 py-5 sm:px-8 sm:py-6">
       {@render children()}
     </div>
   </main>
 </div>
+
+<BillingDialog bind:open={billingOpen} usage={data.usage} />
 
 {#key dialogKey}
   <InterviewDialog
