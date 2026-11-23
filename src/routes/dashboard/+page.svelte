@@ -1,15 +1,15 @@
 <script lang="ts">
+  import { format } from 'date-fns';
   import { Button } from '$lib/components/ui/button';
-  import InterviewRow from '$lib/components/app/interview-row.svelte';
-  import InterviewHead from '$lib/components/app/interview-head.svelte';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
-  import { faceColour } from '$lib/avatars';
   import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
-  import { ArrowRight, Plus } from '@lucide/svelte';
+  import ScoreChip from '$lib/components/app/score-chip.svelte';
+  import StatusBadge from '$lib/components/app/status-badge.svelte';
+  import { splitTitle } from '$lib/interviewer-brief';
+  import { ChevronRight, Mic, Plus } from '@lucide/svelte';
 
   let { data } = $props();
   let creating = $state(false);
-  const p = $derived(data.progress);
   const first = $derived(data.user.name.split(' ')[0]);
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -18,126 +18,125 @@
   const last = $derived(data.recent.find((r) => r.status === 'completed' && r.overallScore != null));
 
   // The single next step, picked from what the user has done so far.
-  const next = $derived.by(() => {
+  type Next = { face: string; label: string; title: string; meta: string; cta: string; href: string | null; edit?: string };
+  const next = $derived.by((): Next => {
     if (active)
       return {
         face: active.agent.name,
-        label: 'Interview in progress',
+        label: 'In progress',
         title: active.name,
-        sub: 'Your answers so far are saved.',
+        meta: `${active.agent.name} · your answers so far are saved`,
         cta: 'Rejoin',
         href: `/call/${active.id}`
       };
     if (ready)
       return {
         face: ready.agent.name,
-        label: 'Ready to start',
+        label: 'Next up',
         title: ready.name,
-        sub: `${ready.durationMinutes} minutes with ${ready.agent.name}.`,
-        cta: 'Start interview',
-        href: `/call/${ready.id}`
+        meta: `${ready.agent.name} · ${ready.durationMinutes} min`,
+        cta: 'Start',
+        href: `/call/${ready.id}`,
+        edit: `/dashboard/interviews/${ready.id}`
       };
     if (last)
       return {
         face: last.agent.name,
         label: 'Keep going',
         title: `Another round with ${last.agent.name}`,
-        sub: `You scored ${last.overallScore} last time in "${last.name}".`,
-        cta: 'Practise again',
+        meta: `${last.overallScore} last time · ${last.name}`,
+        cta: 'Start',
         href: `/dashboard/interviews/new?interviewer=${last.agent.id}`
       };
     if (data.interviewers.length)
       return {
         face: data.interviewers[0].name,
-        label: 'Ready when you are',
-        title: `Do your first interview with ${data.interviewers[0].name}`,
-        sub: 'You get a scorecard as soon as it ends.',
+        label: 'Next up',
+        title: `First interview with ${data.interviewers[0].name}`,
+        meta: 'A score per skill as soon as it ends',
         cta: 'Start',
         href: `/dashboard/interviews/new?interviewer=${data.interviewers[0].id}`
       };
-    return { face: 'sam', label: 'Start here', title: 'Make your first agent', sub: 'Name the job. It takes a minute.', cta: 'New agent', href: null };
+    return { face: 'Maya', label: 'Start here', title: 'Make your first agent', meta: 'Name the job. It takes a minute.', cta: 'New agent', href: null };
   });
-  const hours = $derived(p.minutes >= 60 ? `${Math.floor(p.minutes / 60)}h ${p.minutes % 60}m` : `${p.minutes}m`);
 </script>
 
 <svelte:head><title>Home · PrepMe</title></svelte:head>
 
-<div class="flex h-9 items-center justify-between gap-4">
-  <h1 class="text-xl font-bold tracking-tight">{greeting}, {first}</h1>
-  <Button href="/dashboard/interviews/new" variant="outline"><Plus /> New interview</Button>
+<div class="flex h-10 items-center justify-between gap-4">
+  <h1 class="text-[28px] leading-none font-extrabold tracking-[-0.02em]">{greeting}, {first}</h1>
+  <Button href="/dashboard/interviews/new"><Plus /> New interview</Button>
 </div>
 
-<!-- One "what to do next" strip, in the colour of the interviewer it is about. -->
-<section
-  class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl px-5 py-4 text-[#18161f]"
-  style="background:{faceColour(next.face)}"
-  aria-label="Next step"
->
-  <InterviewerAvatar name={next.face} size="lg" class="ring-2 ring-white/80" />
-  <div class="min-w-0 flex-1">
-    <div class="text-xs font-semibold opacity-70">{next.label}</div>
-    <div class="truncate text-[17px] font-bold">{next.title}</div>
-    <div class="text-[13px] opacity-75">{next.sub}</div>
+<!-- The one next step. -->
+<section class="mt-8 flex min-h-24 flex-wrap items-center gap-x-6 gap-y-3 rounded-[10px] bg-muted px-6 py-6" aria-label="Next step">
+  <InterviewerAvatar name={next.face} class="size-12" />
+  <div class="min-w-0 sm:w-[260px]">
+    <div class="text-xs font-semibold text-muted-foreground">{next.label}</div>
+    <div class="truncate text-base font-extrabold">{next.title}</div>
   </div>
-  {#if next.href}
-    <Button href={next.href} class="bg-[#18161f] text-white hover:bg-[#18161f]/90">{next.cta} <ArrowRight /></Button>
-  {:else}
-    <Button onclick={() => (creating = true)} class="bg-[#18161f] text-white hover:bg-[#18161f]/90">{next.cta} <ArrowRight /></Button>
-  {/if}
+  <div class="hidden min-w-0 flex-1 truncate text-sm text-muted-foreground md:block">{next.meta}</div>
+  <div class="ml-auto flex gap-2">
+    {#if next.edit}<Button href={next.edit} variant="outline">Edit</Button>{/if}
+    {#if next.href}
+      <Button href={next.href}>{next.cta}</Button>
+    {:else}
+      <Button onclick={() => (creating = true)}>{next.cta}</Button>
+    {/if}
+  </div>
 </section>
 
-<!-- Stats: one row, no cards. -->
-<section class="mt-3 grid grid-cols-2 rounded-xl border bg-card sm:grid-cols-4" aria-label="Your stats">
-  {#each [
-    { label: 'interviews done', value: p.completedCount },
-    { label: 'average score', value: p.averageScore ?? '—' },
-    { label: 'best score', value: p.best ?? '—' },
-    { label: 'spoken practice', value: hours }
-  ] as s, i}
-    <div class="flex items-baseline gap-2 px-5 py-3.5 {i ? 'sm:border-l' : ''} {i % 2 ? 'border-l' : ''} {i > 1 ? 'border-t sm:border-t-0' : ''}">
-      <span class="tabular text-2xl font-extrabold tracking-tight">{s.value}</span>
-      <span class="text-[13px] text-muted-foreground">{s.label}</span>
+<div class="mt-8 grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
+  <section aria-label="Recent interviews" class="min-w-0">
+    <div class="flex h-8 items-center justify-between">
+      <h2 class="text-base font-bold">Recent interviews</h2>
+      <a href="/dashboard/interviews" class="text-sm font-semibold text-muted-foreground hover:text-foreground">View all</a>
     </div>
-  {/each}
-</section>
+    <div class="stagger mt-2 border-t">
+      {#each data.recent.slice(0, 6) as row (row.id)}
+        {@const t = splitTitle(row.name)}
+        <a
+          href="/dashboard/interviews/{row.id}"
+          class="group grid h-12 grid-cols-[20px_minmax(0,1fr)_auto_20px] items-center gap-4 border-b text-sm transition-colors hover:bg-muted sm:grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_64px_48px_20px]"
+        >
+          <Mic class="size-5 text-muted-foreground" strokeWidth={1.6} />
+          <span class="truncate font-bold">{t.role}</span>
+          <span class="hidden truncate text-muted-foreground sm:block">{t.company || row.agent.name}</span>
+          <span class="hidden text-muted-foreground sm:block">{format(new Date(row.createdAt), 'd MMM')}</span>
+          <span class="flex justify-start">
+            {#if row.status === 'completed'}<ScoreChip score={row.overallScore} />{:else}<StatusBadge status={row.status} />{/if}
+          </span>
+          <ChevronRight class="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" strokeWidth={1.6} />
+        </a>
+      {:else}
+        <p class="border-b py-4 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
+      {/each}
+    </div>
+  </section>
 
-<!-- Interviewers: a row of faces. Click one to start an interview with them. -->
-<section class="mt-5" aria-label="Your agents">
-  <div class="flex items-baseline justify-between">
-    <h2 class="text-sm font-bold">Your agents</h2>
-    <a href="/dashboard/interviewers" class="text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">Manage</a>
-  </div>
-  <div class="stagger mt-2.5 flex gap-5 overflow-x-auto pt-1 pb-1">
-    {#each data.interviewers as i (i.id)}
-      <a
-        href="/dashboard/interviews/new?interviewer={i.id}"
-        title="Start an interview with {i.name}"
-        class="group flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center"
-      >
-        <InterviewerAvatar name={i.name} class="size-14 transition-transform duration-200 ease-out group-hover:-translate-y-1 group-hover:rotate-6" />
-        <span class="w-full truncate text-[13px] font-semibold">{i.name}</span>
-      </a>
-    {/each}
-    <button type="button" class="group flex w-[72px] shrink-0 flex-col items-center gap-1.5 text-center" onclick={() => (creating = true)}>
-      <span class="grid size-14 place-items-center rounded-full border border-dashed border-input text-faint transition-colors group-hover:border-foreground group-hover:text-foreground">
-        <Plus class="size-5" strokeWidth={1.8} />
-      </span>
-      <span class="text-[13px] font-semibold text-muted-foreground group-hover:text-foreground">New</span>
-    </button>
-  </div>
-</section>
-
-<section class="stagger mt-5 overflow-hidden rounded-xl border bg-card">
-  <div class="flex items-baseline justify-between px-4 pt-3.5 pb-2.5">
-    <h2 class="text-sm font-bold">Recent interviews</h2>
-    <a href="/dashboard/interviews" class="text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground">See all</a>
-  </div>
-  {#if data.recent.length}
-    <InterviewHead />
-    {#each data.recent as row (row.id)}<InterviewRow {row} />{/each}
-  {:else}
-    <p class="border-t px-4 py-6 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
-  {/if}
-</section>
+  <section aria-label="Agents" class="min-w-0">
+    <div class="flex h-8 items-center justify-between">
+      <h2 class="text-base font-bold">Agents</h2>
+      <a href="/dashboard/interviewers" class="text-sm font-semibold text-muted-foreground hover:text-foreground">Manage</a>
+    </div>
+    <div class="stagger mt-2 border-t">
+      {#each data.interviewers as i (i.id)}
+        <a
+          href="/dashboard/interviews/new?interviewer={i.id}"
+          title="Start an interview with {i.name}"
+          class="group flex h-12 items-center gap-3 border-b text-sm transition-colors hover:bg-muted"
+        >
+          <InterviewerAvatar name={i.name} class="size-7 transition-transform duration-200 group-hover:-rotate-6" />
+          <span class="min-w-0 flex-1 truncate font-bold">{i.name}</span>
+          {#if i.style}<span class="text-muted-foreground">{i.style}</span>{/if}
+        </a>
+      {/each}
+      <button type="button" class="group flex h-12 w-full items-center gap-3 border-b text-sm text-muted-foreground hover:text-foreground" onclick={() => (creating = true)}>
+        <span class="grid size-7 place-items-center rounded-full border border-input"><Plus class="size-4" strokeWidth={1.6} /></span>
+        New agent
+      </button>
+    </div>
+  </section>
+</div>
 
 <InterviewerDialog bind:open={creating} />

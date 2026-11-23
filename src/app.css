@@ -11,42 +11,48 @@
 :root {
   --radius: 0.625rem;
 
-  --background: #fcfcfd;
-  --foreground: #18161f;
+  /* PrepMe Penpot theme (docs/design/penpot/SPEC.md).
+     The UI is greyscale. Colour comes only from agent faces and from scores. */
+  --background: #ffffff;
+  --foreground: #111114;
   --card: #ffffff;
-  --card-foreground: #18161f;
+  --card-foreground: #111114;
   --popover: #ffffff;
-  --popover-foreground: #18161f;
+  --popover-foreground: #111114;
 
-  /* The accent is ink. Colour comes from the interviewers and from scores, not from the chrome. */
-  --primary: #18161f;
+  --primary: #111114;
   --primary-foreground: #ffffff;
-  --signal: #18161f;
+  --signal: #111114;
   --signal-foreground: #ffffff;
-  --signal-soft: #efedf4;
+  --signal-soft: #f0f0f3;
 
-  --secondary: #f7f6fa;
-  --secondary-foreground: #18161f;
-  --muted: #f7f6fa;
-  --muted-foreground: #5b5870;
-  --faint: #9794a6;
-  --accent: #f7f6fa;
-  --accent-foreground: #18161f;
+  /* surface: grey sections, active nav, side panels, meta chips */
+  --secondary: #f7f7f8;
+  --secondary-foreground: #111114;
+  --muted: #f7f7f8;
+  --muted-foreground: #6b6b76;
+  --faint: #8e8e98;
+  --accent: #f7f7f8;
+  --accent-foreground: #111114;
+  --track: #f0f0f3;
+
   --destructive: #e5484d;
-  --success: #16a34a;
-  --success-soft: #e8f6ee;
-  --warning: #d97706;
-  --warning-soft: #fdf1dc;
+  --destructive-soft: #fde9ea;
+  --success: #22a06b;
+  --success-soft: #e6f6ee;
+  --warning: #e8a317;
+  --warning-text: #9a6a00;
+  --warning-soft: #fdf3dc;
 
-  --border: #e8e6ee;
-  --input: #dcd9e6;
-  --ring: #18161f;
+  --border: #eaeaee;
+  --input: #eaeaee;
+  --ring: #111114;
 
-  --chart-1: #18161f;
-  --chart-2: #18161f;
-  --chart-3: #16a34a;
-  --chart-4: #d97706;
-  --chart-5: #38bdf8;
+  --chart-1: #111114;
+  --chart-2: #111114;
+  --chart-3: #22a06b;
+  --chart-4: #e8a317;
+  --chart-5: #3e9bff;
 
   /* ui-sdk's default look (web.css) reads these. They follow the theme above, in light and dark. */
   color-scheme: light;
@@ -92,6 +98,9 @@
   --success-soft: #16301f;
   --warning: #f0a23a;
   --warning-soft: #3a2a10;
+  --warning-text: #f0b44a;
+  --destructive-soft: #3a1a1c;
+  --track: #2b2836;
 
   --border: #2b2836;
   --input: #383446;
@@ -132,6 +141,13 @@
   --color-faint: var(--faint);
   --color-success-soft: var(--success-soft);
   --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-track: var(--track);
+  --shadow-sm: 0 1px 2px rgb(22 21 15 / 0.06);
+  --shadow-md: 0 4px 16px rgb(22 21 15 / 0.06);
+  --shadow-pop: 0 8px 24px rgb(22 21 15 / 0.12);
+  --shadow-modal: 0 24px 64px rgb(22 21 15 / 0.18);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

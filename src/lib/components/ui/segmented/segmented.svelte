@@ -25,7 +25,7 @@
     const option = options.find((o) => String(o.value) === next);
     if (option) value = option.value;
   }}
-  class={cn('grid auto-cols-fr grid-flow-col gap-0 rounded-lg border-0 bg-muted p-[3px]', className)}
+  class={cn('grid auto-cols-fr grid-flow-col gap-0 h-10 rounded-[8px] border-0 bg-muted p-1', className)}
   {...rest}
 >
   {#each options as o (o.value)}
@@ -33,7 +33,7 @@
       value={String(o.value)}
       disabled={o.disabled}
       title={o.title}
-      class="tabular h-auto cursor-pointer rounded-md border-0 bg-transparent px-2 py-1.5 text-center text-[13px] font-semibold text-muted-foreground transition-colors data-checked:bg-card data-checked:text-foreground data-checked:shadow-xs data-disabled:cursor-not-allowed data-disabled:opacity-35"
+      class="tabular h-auto cursor-pointer h-8 rounded-[6px] border border-transparent bg-transparent px-2 text-center text-sm font-medium text-muted-foreground transition-colors data-checked:border-border data-checked:bg-card data-checked:font-bold data-checked:text-foreground data-checked:shadow-sm data-disabled:cursor-not-allowed data-disabled:opacity-35"
     >
       {o.label}
     </SegmentedControlItem>

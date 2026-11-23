@@ -12,10 +12,10 @@
   let { class: className, showCloseButton = true, children, ...rest }: Props = $props();
 </script>
 
-<DialogBackdrop class="bg-black/40 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+<DialogBackdrop class="bg-[#111114]/40 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
 <DialogContent
   class={cn(
-    'w-full max-w-[calc(100%-2rem)] rounded-xl border bg-card p-6 text-foreground shadow-lg sm:max-w-lg',
+    'w-full max-w-[calc(100%-2rem)] rounded-[10px] border-0 bg-card p-6 text-foreground shadow-modal sm:max-w-lg',
     'transition-[opacity,scale] duration-150 data-ending-style:scale-97 data-ending-style:opacity-0 data-starting-style:scale-97 data-starting-style:opacity-0 motion-reduce:transition-none',
     className
   )}
@@ -25,9 +25,9 @@
   {#if showCloseButton}
     <DialogClose
       aria-label="Close"
-      class="absolute top-3 right-3 size-8 border-0 bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+      class="absolute top-3.5 right-4 size-8 rounded-[8px] border-0 bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
     >
-      <X class="size-4" aria-hidden="true" />
+      <X class="size-5" strokeWidth={1.6} aria-hidden="true" />
     </DialogClose>
   {/if}
 </DialogContent>

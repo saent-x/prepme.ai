@@ -2,7 +2,7 @@
   import { type VariantProps, tv } from 'tailwind-variants';
 
   export const buttonVariants = tv({
-    base: "inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-transparent px-4 text-sm font-semibold whitespace-nowrap no-underline transition-[color,background-color,border-color,scale,box-shadow] duration-150 outline-none active:scale-[0.97] select-none focus-visible:ring-[3px] focus-visible:ring-ring/40 data-disabled:pointer-events-none data-disabled:opacity-50 data-pending:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    base: "inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[8px] border border-transparent px-5 text-sm font-semibold whitespace-nowrap no-underline transition-[color,background-color,border-color,scale,box-shadow] duration-150 outline-none active:scale-[0.97] select-none focus-visible:ring-[3px] focus-visible:ring-ring/40 data-disabled:pointer-events-none data-disabled:opacity-50 data-pending:cursor-progress [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/85',
@@ -13,7 +13,7 @@
         link: 'h-auto bg-transparent px-0 text-foreground underline decoration-input underline-offset-4 hover:bg-transparent hover:decoration-foreground'
       },
       size: {
-        default: 'h-9 px-4 has-[>svg]:px-3',
+        default: 'h-9 px-5 has-[>svg]:px-4',
         sm: 'h-8 gap-1.5 px-3 has-[>svg]:px-2.5',
         lg: 'h-10 px-4 has-[>svg]:px-3.5',
         xl: 'h-11 px-5 text-[15px] has-[>svg]:px-4',

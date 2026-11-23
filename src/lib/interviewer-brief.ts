@@ -1,7 +1,7 @@
 /** Turns the short "New interviewer" form into the written brief the interviewer follows. */
 export const STYLES = [
   { id: 'friendly', label: 'Friendly', line: 'Be warm and encouraging. Put the candidate at ease and give them room to think.' },
-  { id: 'realistic', label: 'Realistic', line: 'Be professional and neutral, like a real interview. Ask follow-ups when an answer is vague.' },
+  { id: 'realistic', label: 'Neutral', line: 'Be professional and neutral, like a real interview. Ask follow-ups when an answer is vague.' },
   { id: 'tough', label: 'Tough', line: 'Be demanding. Challenge weak answers, push for specifics and evidence, and do not fill silences.' }
 ] as const;
 export type StyleId = (typeof STYLES)[number]['id'];
@@ -41,4 +41,23 @@ export function agentBlurb(instructions: string) {
   const first = instructions.split(/\n/)[0]?.trim() ?? '';
   const line = first.replace(/^You are\s+/i, '');
   return line ? line.charAt(0).toUpperCase() + line.slice(1) : '';
+}
+
+/** The style an agent was made with, read back from its brief (Friendly / Neutral / Tough). */
+export function agentStyle(instructions: string) {
+  return STYLES.find((s) => instructions.includes(s.line))?.label ?? null;
+}
+
+/** Splits "Senior AI Engineer · Juro" (or "… at Juro") into role and company for list columns. */
+export function splitTitle(name: string) {
+  const m = name.match(/^(.+?)\s+(?:·|-|–|—|at|@)\s+(.+)$/);
+  return m ? { role: m[1].trim(), company: m[2].trim() } : { role: name, company: '' };
+}
+
+/** The agent's own job ("Staff Engineer"), read from the first line of its brief. */
+export function agentRole(instructions: string) {
+  const who = instructions.match(/^You are\s+(.+?)\s+interviewing\b/i)?.[1];
+  if (!who || /^the hiring manager$/i.test(who)) return null;
+  const s = who.replace(/^(a|an|the)\s+/i, '');
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

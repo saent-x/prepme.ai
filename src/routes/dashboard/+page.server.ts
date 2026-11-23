@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import { agentStyle } from '$lib/interviewer-brief';
 import { getProgress, listInterviewers, listInterviews } from '$lib/server/repo';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -13,6 +14,8 @@ export const load: PageServerLoad = async ({ locals }) => {
     progress,
     recent: recent.items,
     active: active.items,
-    interviewers: interviewers.slice(0, 12).map((i) => ({ id: i.id, name: i.name, interviewCount: i.interviewCount }))
+    interviewers: interviewers
+      .slice(0, 6)
+      .map((i) => ({ id: i.id, name: i.name, interviewCount: i.interviewCount, style: agentStyle(i.instructions) }))
   };
 };
