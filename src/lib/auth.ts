@@ -29,7 +29,8 @@ const socialProviders = {
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL,
+  // Unset on branch previews, where Better Auth reads the URL from the request.
+  baseURL: env.BETTER_AUTH_URL || undefined,
   database: drizzleAdapter(db, {
     provider: 'sqlite',
     schema: {

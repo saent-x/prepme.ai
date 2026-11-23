@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { isVoice } from '$lib/templates';
 
 export const InterviewerForm = z.object({
-  name: z.string().trim().min(2, 'Give the interviewer a name').max(80),
+  name: z.string().trim().min(2, 'Give the agent a name').max(80),
   instructions: z
     .string()
     .trim()

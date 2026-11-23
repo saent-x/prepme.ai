@@ -6,11 +6,11 @@ Practise job interviews out loud. Pick an interviewer, paste the job description
 
 ![PrepMe landing page](docs/landing.png)
 
-| Your interviewers | Your interviews |
+| Home | New interviewer |
 | --- | --- |
-| ![My agents](docs/agents.png) | ![My interviews](docs/interviews.png) |
-| **Pre-call check** | **Live call with the AI interviewer** |
-| ![Ready to join](docs/join-call.png) | ![In-call view](docs/call.png) |
+| ![Home](docs/dashboard.png) | ![New interviewer pop-up](docs/new-interviewer.png) |
+| ![Interviewers](docs/agents.png) | ![Interviews](docs/interviews.png) |
+| ![Microphone check](docs/join-call.png) | ![Scorecard](docs/scorecard.png) |
 
 ## How it works
 

@@ -23,6 +23,12 @@ type ServerEvent = { type: string; [key: string]: unknown };
 const REALTIME_URL = 'https://api.openai.com/v1/realtime/calls';
 const MAX_AUTO_RECONNECTS = 3;
 const SAVE_DEBOUNCE_MS = 1500;
+/** Silence from the candidate before the interviewer checks in out loud. */
+const IDLE_NUDGE_MS = 60_000;
+/** Silence before the "Are you still there?" notice appears. */
+export const IDLE_WARN_MS = 150_000;
+/** Silence before the interview ends by itself and is scored. */
+export const IDLE_END_MS = 240_000;
 
 /**
  * One live interview over WebRTC, straight from the browser to OpenAI Realtime.
@@ -48,6 +54,10 @@ export class InterviewCall {
   interviewerLevel = $state(0);
   micLevel = $state(0);
   reconnects = $state(0);
+  /** How long the candidate has been silent while it was their turn. */
+  idleMs = $state(0);
+  /** Set once the call has been left idle for too long; the page then ends it. */
+  idleExpired = $state(false);
 
   readonly interviewId: string;
   #mic: MediaStream | null = null;
@@ -63,12 +73,26 @@ export class InterviewCall {
   #micMetered = false;
   #wrapUpSent = false;
   #timeUpSent = false;
+  #lastActivity = 0;
+  #idleNudged = false;
   #closingDeliberately = false;
   #lastSavedJson = '';
   #onPageHide = () => this.#beaconSave();
 
   constructor(interviewId: string) {
     this.interviewId = interviewId;
+  }
+
+  /** True while the "Are you still there?" notice should show. */
+  get idleWarning() {
+    return this.phase === 'live' && this.idleMs >= IDLE_WARN_MS;
+  }
+
+  /** The candidate is here: reset the idle clock (speech, or the "I'm here" button). */
+  markActive() {
+    this.#lastActivity = Date.now();
+    this.#idleNudged = false;
+    this.idleMs = 0;
   }
 
   get remainingMs() {
@@ -100,6 +124,7 @@ export class InterviewCall {
 
       await this.#connect(session.clientSecret);
       this.phase = 'live';
+      this.markActive();
       this.#startTicking();
     } catch (e) {
       this.#teardownPeer();
@@ -312,9 +337,11 @@ export class InterviewCall {
       }
       case 'input_audio_buffer.speech_started':
         this.candidateSpeaking = true;
+        this.markActive();
         break;
       case 'input_audio_buffer.speech_stopped':
         this.candidateSpeaking = false;
+        this.markActive();
         break;
       case 'output_audio_buffer.started':
         this.interviewerSpeaking = true;
@@ -406,6 +433,15 @@ export class InterviewCall {
         this.#timeUpSent = true;
         this.#systemNote('Time is up. Thank the candidate warmly and close the interview in one or two sentences.', true);
       }
+
+      // Idle tracking. The clock only runs while it is the candidate's turn.
+      if (this.interviewerSpeaking || this.candidateSpeaking) this.#lastActivity = Date.now();
+      this.idleMs = Date.now() - this.#lastActivity;
+      if (!this.#idleNudged && this.idleMs >= IDLE_NUDGE_MS) {
+        this.#idleNudged = true;
+        this.#systemNote('The candidate has been silent for a minute. Ask briefly whether they are still there or need the question again.', true);
+      }
+      if (this.idleMs >= IDLE_END_MS) this.idleExpired = true;
     }, 1000);
   }
 

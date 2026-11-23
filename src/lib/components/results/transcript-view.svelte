@@ -49,11 +49,11 @@
   }
 </script>
 
-<div class="rounded-3xl border bg-card p-4 sm:p-6">
+<div class="rounded-xl border bg-card p-4 sm:p-5">
   <div class="flex flex-wrap items-center gap-3">
     <div class="relative flex-1">
-      <Search class="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input placeholder="Search the transcript" class="h-10 rounded-full pl-10" bind:value={q} aria-label="Search the transcript" />
+      <Search class="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input placeholder="Search the transcript" class="pl-9" bind:value={q} aria-label="Search the transcript" />
     </div>
     <Button variant="outline" onclick={download} disabled={!transcript.length}><Download /> Download</Button>
   </div>
@@ -64,15 +64,15 @@
     <ol class="mt-6 space-y-5">
       {#each rows as t (t.id)}
         <li class="flex gap-4 {t.speaker === 'candidate' ? 'flex-row-reverse text-right' : ''}">
-          <span class="w-10 shrink-0 pt-1 font-mono text-[11px] text-muted-foreground">{formatClock(t.at)}</span>
+          <span class="w-10 shrink-0 pt-1 tabular text-[11px] text-muted-foreground">{formatClock(t.at)}</span>
           <div class="max-w-[85%]">
             <div class="eyebrow mb-1">{t.speaker === 'interviewer' ? interviewerName : candidateName}</div>
             <p
-              class="inline-block rounded-2xl px-4 py-2.5 text-left text-[15px] leading-relaxed {t.speaker === 'candidate'
-                ? 'bg-foreground text-background'
+              class="inline-block rounded-lg px-3.5 py-2 text-left text-sm leading-relaxed {t.speaker === 'candidate'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-muted'}"
             >
-              {#each mark(t.text) as part}{#if part.hit}<mark class="rounded bg-signal/30 px-0.5 text-inherit">{part.t}</mark>{:else}{part.t}{/if}{/each}
+              {#each mark(t.text) as part}{#if part.hit}<mark class="rounded bg-warning/40 px-0.5 text-inherit">{part.t}</mark>{:else}{part.t}{/if}{/each}
             </p>
           </div>
         </li>

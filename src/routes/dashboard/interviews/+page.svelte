@@ -3,8 +3,11 @@
   import { page } from '$app/state';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
+  import * as Select from '$lib/components/ui/select';
+  import { Segmented } from '$lib/components/ui/segmented';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
-  import { Mic, Search } from '@lucide/svelte';
+  import InterviewHead from '$lib/components/app/interview-head.svelte';
+  import { Plus, Search } from '@lucide/svelte';
   import { untrack } from 'svelte';
 
   let { data } = $props();
@@ -13,6 +16,9 @@
   $effect(() => {
     q = data.filters.q;
   });
+
+  const ALL = 'all';
+  const agentItems = $derived([{ value: ALL, label: 'All agents' }, ...data.interviewers.map((i) => ({ value: i.id, label: i.name }))]);
 
   const statuses = [
     { v: '', label: 'All' },
@@ -41,60 +47,54 @@
 
 <svelte:head><title>Interviews · PrepMe</title></svelte:head>
 
-<div class="flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <p class="eyebrow">Interviews</p>
-    <h1 class="mt-2 text-3xl font-semibold tracking-tight">Your sessions</h1>
-  </div>
-  <Button href="/dashboard/interviews/new" variant="signal" size="lg"><Mic /> New interview</Button>
+<div class="flex h-9 items-center justify-between gap-4">
+  <h1 class="text-xl font-bold tracking-tight">Interviews</h1>
+  <Button href="/dashboard/interviews/new"><Plus /> New interview</Button>
 </div>
 
-<div class="mt-8 flex flex-wrap items-center gap-3">
-  <div class="relative w-full sm:w-72">
-    <Search class="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
-    <Input placeholder="Search by name" class="h-10 rounded-full pl-10" bind:value={q} oninput={onSearch} aria-label="Search interviews" />
+<div class="mt-4 flex flex-wrap items-center gap-2">
+  <div class="relative w-full sm:w-64">
+    <Search class="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-faint" />
+    <Input placeholder="Search by name" class="pl-8" bind:value={q} oninput={onSearch} aria-label="Search interviews" />
   </div>
-  <div class="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
-    {#each statuses as s}
-      <button
-        class="rounded-full border px-3.5 py-1.5 text-sm transition-colors aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background"
-        aria-pressed={(data.filters.status ?? '') === s.v}
-        onclick={() => update({ status: s.v || null })}>{s.label}</button
-      >
-    {/each}
-  </div>
+  <Segmented
+    bind:value={() => data.filters.status ?? '', (v) => update({ status: v || null })}
+    aria-label="Filter by status"
+    options={statuses.map((x) => ({ value: x.v, label: x.label }))}
+    class="[&>*]:px-2.5 [&>*]:py-1"
+  />
   {#if data.interviewers.length > 1}
-    <select
-      class="h-10 rounded-full border bg-background px-4 text-sm"
-      aria-label="Filter by interviewer"
-      value={data.filters.interviewer ?? ''}
-      onchange={(e) => update({ interviewer: e.currentTarget.value || null })}
+    <Select.Root
+      items={agentItems}
+      bind:value={() => data.filters.interviewer ?? ALL, (v) => update({ interviewer: !v || v === ALL ? null : v })}
     >
-      <option value="">All interviewers</option>
-      {#each data.interviewers as i}<option value={i.id}>{i.name}</option>{/each}
-    </select>
+      <Select.Trigger aria-label="Filter by agent"><Select.Value /></Select.Trigger>
+      <Select.Content>
+        {#each agentItems as a (a.value)}<Select.Item value={a.value}>{a.label}</Select.Item>{/each}
+      </Select.Content>
+    </Select.Root>
   {/if}
 </div>
 
-<section class="mt-5 rounded-3xl border bg-card p-2 sm:p-3">
+<section class="stagger mt-3 overflow-hidden rounded-xl border bg-card">
   {#if data.result.items.length}
+    <InterviewHead />
     {#each data.result.items as row (row.id)}<InterviewRow {row} />{/each}
   {:else}
-    <div class="grid place-items-center px-6 py-16 text-center">
-      <div class="grid size-14 place-items-center rounded-2xl bg-signal-soft text-signal"><Mic /></div>
-      <h2 class="mt-4 text-lg font-semibold">{data.filters.q || data.filters.status ? 'Nothing matches' : 'No interviews yet'}</h2>
-      <p class="mt-1 max-w-sm text-muted-foreground">
-        {data.filters.q || data.filters.status ? 'Try a different search or filter.' : 'Start your first mock interview. It takes under a minute to set up.'}
+    <div class="grid place-items-center px-6 py-12 text-center">
+      <h2 class="font-bold">{data.filters.q || data.filters.status ? 'Nothing matches' : 'No interviews yet'}</h2>
+      <p class="mt-1 max-w-sm text-sm text-muted-foreground">
+        {data.filters.q || data.filters.status ? 'Try a different search or filter.' : 'Your first one takes under a minute to set up.'}
       </p>
       {#if !data.filters.q && !data.filters.status}
-        <Button href="/dashboard/interviews/new" class="mt-6">Set up an interview</Button>
+        <Button href="/dashboard/interviews/new" class="mt-4"><Plus /> New interview</Button>
       {/if}
     </div>
   {/if}
 </section>
 
 {#if data.result.totalPages > 1}
-  <nav class="mt-5 flex items-center justify-between text-sm" aria-label="Pagination">
+  <nav class="mt-3 flex items-center justify-between text-[13px]" aria-label="Pagination">
     <span class="text-muted-foreground">Page {data.result.page} of {data.result.totalPages}</span>
     <div class="flex gap-2">
       <Button variant="outline" size="sm" disabled={data.result.page <= 1} onclick={() => update({ page: String(data.result.page - 1) })}>Previous</Button>

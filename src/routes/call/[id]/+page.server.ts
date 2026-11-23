@@ -13,7 +13,7 @@ export const load: PageServerLoad = async (event) => {
   }
   const plan = await getPlan(user.id);
   return {
-    user: { name: user.name },
+    user: { name: user.name, image: user.image ?? null },
     interview: {
       id: interview.id,
       name: interview.name,

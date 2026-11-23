@@ -1,20 +1,11 @@
 <script lang="ts">
-	import { Tabs as TabsPrimitive } from "bits-ui";
-	import { cn } from "$lib/utils.js";
+  import { TabsList } from '@ui-sdk/svelte/tabs';
+  import type { ComponentProps } from 'svelte';
+  import { cn } from '$lib/utils';
 
-	let {
-		ref = $bindable(null),
-		class: className,
-		...restProps
-	}: TabsPrimitive.ListProps = $props();
+  type Props = ComponentProps<typeof TabsList>;
+
+  let { class: className, ...rest }: Props = $props();
 </script>
 
-<TabsPrimitive.List
-	bind:ref
-	data-slot="tabs-list"
-	class={cn(
-		"bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
-		className
-	)}
-	{...restProps}
-/>
+<TabsList class={cn('flex w-full gap-5 border-b', className)} {...rest} />

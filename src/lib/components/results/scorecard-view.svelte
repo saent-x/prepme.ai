@@ -1,94 +1,74 @@
 <script lang="ts">
-  import ScoreRing from '$lib/components/viz/score-ring.svelte';
   import CompetencyBars from '$lib/components/viz/competency-bars.svelte';
-  import { VERDICT_LABELS, transcriptStats, type Scorecard, type TranscriptEntry } from '$lib/interview-types';
-  import { Check, ArrowUpRight } from '@lucide/svelte';
+  import { transcriptStats, type Scorecard, type TranscriptEntry } from '$lib/interview-types';
+  import { ArrowRight, Check } from '@lucide/svelte';
 
   let { scorecard, transcript }: { scorecard: Scorecard; transcript: TranscriptEntry[] } = $props();
   const stats = $derived(transcriptStats(transcript));
-  const verdictTone = $derived(
-    ['strong_hire', 'hire'].includes(scorecard.verdict)
-      ? 'bg-success/12 text-success'
-      : scorecard.verdict === 'lean_hire'
-        ? 'bg-warning/15'
-        : 'bg-signal-soft text-signal'
-  );
+  const [fix, ...others] = $derived(scorecard.improvements);
 </script>
 
-<div class="grid gap-3 lg:grid-cols-[1.25fr_1fr]">
-  <section class="rounded-3xl border bg-card p-6 sm:p-8">
-    <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
-      <ScoreRing score={scorecard.overall_score} size={148} />
-      <div>
-        <span class="inline-block rounded-full px-3 py-1 text-sm font-medium {verdictTone}">{VERDICT_LABELS[scorecard.verdict]}</span>
-        <h2 class="mt-3 text-2xl leading-snug font-semibold tracking-tight text-balance">{scorecard.headline}</h2>
+<!-- One flat sheet: two columns separated by a line, no nested cards. -->
+<div class="grid rounded-xl border bg-card lg:grid-cols-[1.1fr_1fr]">
+  <div class="grid content-start gap-5 px-5 py-4">
+    <p class="text-sm leading-relaxed text-muted-foreground">{scorecard.overview}</p>
+
+    <section>
+      <div class="flex items-baseline gap-2">
+        <h3 class="text-sm font-bold">Skills</h3>
+        <span class="text-xs text-faint">3 meets the bar, 5 is exceptional</span>
       </div>
-    </div>
-    <p class="mt-6 text-[15px] leading-relaxed text-muted-foreground">{scorecard.overview}</p>
+      <div class="mt-3"><CompetencyBars items={scorecard.competencies} /></div>
+    </section>
 
-    <div class="mt-8 grid grid-cols-3 gap-3 border-t pt-6">
-      <div>
-        <div class="eyebrow">You spoke</div>
-        <div class="tabular mt-1 text-2xl font-semibold">{Math.round(stats.candidateShare * 100)}%</div>
-        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-          <div class="h-full rounded-full bg-foreground" style="width:{stats.candidateShare * 100}%"></div>
-        </div>
-      </div>
-      <div>
-        <div class="eyebrow">Pace</div>
-        <div class="tabular mt-1 text-2xl font-semibold">{stats.wordsPerMinute || '—'}</div>
-        <div class="text-xs text-muted-foreground">words / min</div>
-      </div>
-      <div>
-        <div class="eyebrow">Questions</div>
-        <div class="tabular mt-1 text-2xl font-semibold">{scorecard.questions.length}</div>
-        <div class="text-xs text-muted-foreground">scored</div>
-      </div>
-    </div>
-    <p class="mt-4 text-sm text-muted-foreground">{scorecard.talk_ratio_comment}</p>
-  </section>
+    <section class="flex flex-wrap gap-x-6 gap-y-1 border-t pt-3 text-[13px] text-muted-foreground">
+      <span><b class="tabular font-bold text-foreground">{Math.round(stats.candidateShare * 100)}%</b> of the talking was you</span>
+      <span><b class="tabular font-bold text-foreground">{stats.wordsPerMinute || '—'}</b> words a minute</span>
+      <span><b class="tabular font-bold text-foreground">{scorecard.questions.length}</b> questions scored</span>
+    </section>
+  </div>
 
-  <section class="rounded-3xl border bg-card p-6 sm:p-8">
-    <h3 class="font-semibold">Competencies</h3>
-    <p class="text-sm text-muted-foreground">1 = well below the bar · 3 = meets it · 5 = exceptional</p>
-    <div class="mt-6"><CompetencyBars items={scorecard.competencies} /></div>
-  </section>
+  <div class="grid content-start gap-5 border-t px-5 py-4 lg:border-t-0 lg:border-l">
+    {#if fix}
+      <section class="border-l-[3px] border-warning pl-3.5">
+        <h3 class="text-xs font-semibold text-warning">The one fix</h3>
+        <div class="mt-0.5 font-bold">{fix.title}</div>
+        <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{fix.detail}</p>
+      </section>
+    {/if}
 
-  <section class="rounded-3xl border bg-card p-6 sm:p-8">
-    <h3 class="font-semibold">What went well</h3>
-    <ul class="mt-4 space-y-3">
-      {#each scorecard.strengths as s}
-        <li class="flex gap-3 text-[15px]">
-          <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-success/15 text-success"><Check class="size-3" /></span>
-          {s}
-        </li>
-      {/each}
-    </ul>
-  </section>
+    {#if others.length}
+      <section>
+        <h3 class="text-sm font-bold">Also work on</h3>
+        <ul class="mt-2 grid gap-2.5">
+          {#each others as imp}
+            <li class="text-sm">
+              <span class="font-semibold">{imp.title}.</span>
+              <span class="text-muted-foreground">{imp.detail}</span>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
 
-  <section class="rounded-3xl border bg-card p-6 sm:p-8">
-    <h3 class="font-semibold">Three things to change</h3>
-    <ol class="mt-4 space-y-4">
-      {#each scorecard.improvements as imp, i}
-        <li class="flex gap-3">
-          <span class="grid size-6 shrink-0 place-items-center rounded-full bg-signal-soft font-mono text-xs font-semibold text-signal">{i + 1}</span>
-          <div>
-            <div class="font-medium">{imp.title}</div>
-            <p class="mt-0.5 text-sm leading-relaxed text-muted-foreground">{imp.detail}</p>
-          </div>
-        </li>
-      {/each}
-    </ol>
-  </section>
-
-  {#if scorecard.next_practice.length}
-    <section class="rounded-3xl bg-foreground p-6 text-background sm:p-8 lg:col-span-2">
-      <h3 class="font-semibold">Before your next session</h3>
-      <ul class="mt-4 grid gap-3 sm:grid-cols-3">
-        {#each scorecard.next_practice as n}
-          <li class="flex gap-2 rounded-2xl bg-background/8 p-4 text-[15px]"><ArrowUpRight class="mt-0.5 size-4 shrink-0 text-signal" />{n}</li>
+    <section>
+      <h3 class="text-sm font-bold">What went well</h3>
+      <ul class="mt-2 grid gap-1.5">
+        {#each scorecard.strengths as s}
+          <li class="flex gap-2 text-sm"><Check class="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.4} />{s}</li>
         {/each}
       </ul>
     </section>
-  {/if}
+
+    {#if scorecard.next_practice.length}
+      <section class="border-t pt-3">
+        <h3 class="text-sm font-bold">Practise next</h3>
+        <ul class="mt-2 grid gap-1.5">
+          {#each scorecard.next_practice as n}
+            <li class="flex gap-2 text-sm"><ArrowRight class="mt-0.5 size-4 shrink-0 text-primary" />{n}</li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
+  </div>
 </div>

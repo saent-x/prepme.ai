@@ -8,24 +8,20 @@ import { getPlan, limitMessage } from '$lib/server/billing';
 import { FREE_LIMITS } from '$lib/server/config';
 import { DURATIONS, getTemplate } from '$lib/templates';
 
-export const load: PageServerLoad = async ({ locals, url }) => {
-  const userId = locals.user!.id;
-  const [interviewers, plan] = await Promise.all([listInterviewers(userId), getPlan(userId)]);
-  return {
-    interviewers: interviewers.map((i) => ({ id: i.id, name: i.name, template: i.template, voice: i.voice })),
-    preset: {
-      template: url.searchParams.get('template'),
-      interviewer: url.searchParams.get('interviewer'),
-      focus: url.searchParams.get('focus')?.slice(0, 300) ?? '',
-      from: url.searchParams.get('from')
-    },
-    maxMinutes: plan.premium ? 45 : FREE_LIMITS.maxMinutes
-  };
+// The form is a pop-up (see the dashboard layout). This route keeps old links working and handles the submit.
+export const load: PageServerLoad = async ({ url }) => {
+  const q = new URLSearchParams({ new: '1' });
+  const template = url.searchParams.get('template');
+  const agent = url.searchParams.get('interviewer') ?? (template ? `template:${template}` : null);
+  if (agent) q.set('interviewer', agent);
+  const focus = url.searchParams.get('focus')?.slice(0, 300);
+  if (focus) q.set('focus', focus);
+  redirect(303, `/dashboard/interviews?${q}`);
 };
 
 const Form = z.object({
   /** Either an existing interviewer id or "template:<id>". */
-  interviewer: z.string().min(1, 'Choose an interviewer'),
+  interviewer: z.string().min(1, 'Choose an agent'),
   name: z.string().trim().max(120).optional(),
   jobDescription: z.string().trim().max(15_000).optional(),
   focus: z.string().trim().max(500).optional(),
@@ -52,7 +48,7 @@ export const actions: Actions = {
     let agentName: string;
     if (f.interviewer.startsWith('template:')) {
       const t = getTemplate(f.interviewer.slice('template:'.length));
-      if (!t) return fail(400, { error: 'Unknown interviewer template', values: raw });
+      if (!t) return fail(400, { error: 'Unknown example agent', values: raw });
       const existing = (await listInterviewers(user.id)).find((i) => i.template === t.id);
       if (existing) {
         agentId = existing.id;

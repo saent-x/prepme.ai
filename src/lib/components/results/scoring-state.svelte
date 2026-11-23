@@ -31,15 +31,13 @@
   });
 </script>
 
-<div class="grid place-items-center rounded-3xl border bg-card px-6 py-20 text-center">
+<div class="grid place-items-center rounded-xl border bg-card px-6 py-12 text-center">
   {#if error && !running}
-    <span class="grid size-14 place-items-center rounded-2xl bg-signal-soft text-signal"><RotateCcw /></span>
-    <h2 class="mt-5 text-xl font-semibold">Scoring didn't finish</h2>
-    <p class="mt-2 max-w-md text-muted-foreground">Your transcript is saved. {error}</p>
-    <Button class="mt-6" onclick={run}>Try again</Button>
+    <h2 class="font-bold">Scoring didn't finish</h2>
+    <p class="mt-1 max-w-md text-sm text-muted-foreground">Your transcript is saved. {error}</p>
+    <Button class="mt-4" onclick={run}><RotateCcw /> Try again</Button>
   {:else}
-    <LoaderCircle class="size-10 animate-spin text-signal" />
-    <h2 class="mt-5 text-xl font-semibold">Scoring your interview</h2>
-    <p class="mt-2 max-w-md text-muted-foreground">Reading every answer against the role. This usually takes 20 to 60 seconds.</p>
+    <h2 class="flex items-center gap-2 font-bold"><LoaderCircle class="size-4 animate-spin text-primary" /> Scoring your interview</h2>
+    <p class="mt-1 max-w-md text-sm text-muted-foreground">Usually 20 to 60 seconds.</p>
   {/if}
 </div>

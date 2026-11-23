@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { formatDistanceToNow } from 'date-fns';
+  import { format } from 'date-fns';
   import InterviewerAvatar from './interviewer-avatar.svelte';
   import StatusBadge from './status-badge.svelte';
-  import { formatDuration, scoreTone } from '$lib/utils';
+  import ScoreChip from './score-chip.svelte';
+  import { formatDuration } from '$lib/utils';
+  import { AudioLines } from '@lucide/svelte';
   import type { InterviewStatus } from '$lib/db/schema';
 
   type Row = {
@@ -15,31 +17,23 @@
     agent: { name: string };
   };
   let { row }: { row: Row } = $props();
-  const tone = $derived(scoreTone(row.overallScore));
 </script>
 
+<!-- One table-like row. Column widths match InterviewHead. -->
 <a
   href="/dashboard/interviews/{row.id}"
-  class="group flex items-center gap-4 rounded-2xl px-3 py-3 transition-colors hover:bg-accent/60 sm:px-4"
+  class="group grid grid-cols-[1fr_auto] items-center gap-x-4 border-t px-4 py-2.5 text-sm transition-colors first:border-t-0 hover:bg-muted/60 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_84px_64px_92px]"
 >
-  <InterviewerAvatar name={row.agent.name} />
-  <div class="min-w-0 flex-1">
-    <div class="truncate font-medium">{row.name}</div>
-    <div class="truncate text-sm text-muted-foreground">
-      {row.agent.name} · {formatDistanceToNow(new Date(row.createdAt), { addSuffix: true })}
-    </div>
-  </div>
-  <div class="hidden text-sm text-muted-foreground sm:block">{formatDuration(row.duration)}</div>
-  <StatusBadge status={row.status} />
-  <div
-    class="tabular grid w-12 place-items-center rounded-xl py-1.5 font-mono text-sm font-semibold {tone === 'good'
-      ? 'bg-success/12 text-success'
-      : tone === 'ok'
-        ? 'bg-warning/15'
-        : tone === 'low'
-          ? 'bg-signal-soft text-signal'
-          : 'text-muted-foreground'}"
-  >
-    {row.overallScore ?? '—'}
-  </div>
+  <span class="flex min-w-0 items-center gap-2.5">
+    <AudioLines class="size-4 shrink-0 text-faint transition-colors group-hover:text-foreground" strokeWidth={1.8} />
+    <span class="truncate font-semibold">{row.name}</span>
+  </span>
+  <span class="hidden min-w-0 items-center gap-2 text-muted-foreground sm:flex">
+    <InterviewerAvatar name={row.agent.name} class="size-5" /><span class="truncate">{row.agent.name}</span>
+  </span>
+  <span class="hidden text-muted-foreground sm:block">{format(new Date(row.createdAt), 'd MMM')}</span>
+  <span class="tabular hidden text-muted-foreground sm:block">{formatDuration(row.duration)}</span>
+  <span class="flex justify-end">
+    {#if row.status === 'completed'}<ScoreChip score={row.overallScore} />{:else}<StatusBadge status={row.status} />{/if}
+  </span>
 </a>
