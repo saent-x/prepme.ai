@@ -73,7 +73,7 @@
   style="background:{faceColour(next.face)}"
   aria-label="Next step"
 >
-  <InterviewerAvatar name={next.face} size="lg" class="animate-float ring-2 ring-white/80 [animation-duration:4s]" />
+  <InterviewerAvatar name={next.face} size="lg" class="ring-2 ring-white/80" />
   <div class="min-w-0 flex-1">
     <div class="text-xs font-semibold opacity-70">{next.label}</div>
     <div class="truncate text-[17px] font-bold">{next.title}</div>
