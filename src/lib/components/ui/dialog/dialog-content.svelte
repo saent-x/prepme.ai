@@ -25,7 +25,7 @@
   {#if showCloseButton}
     <DialogClose
       aria-label="Close"
-      class="absolute top-3.5 right-4 size-8 rounded-[8px] border-0 bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+      class="absolute top-2.5 right-4 size-8 rounded-[8px] border-0 bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
     >
       <X class="size-5" strokeWidth={1.6} aria-hidden="true" />
     </DialogClose>

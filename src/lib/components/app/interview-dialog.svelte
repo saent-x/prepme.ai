@@ -8,10 +8,9 @@
   import * as Select from '$lib/components/ui/select';
   import { Segmented } from '$lib/components/ui/segmented';
   import InterviewerAvatar from './interviewer-avatar.svelte';
-  import JobSummaryCard from './job-summary.svelte';
-  import { hasJobSummary, MIN_JOB_TEXT, type JobSummary } from '$lib/job-parse';
+    import { hasJobSummary, MIN_JOB_TEXT, type JobSummary } from '$lib/job-parse';
   import { DURATIONS } from '$lib/templates';
-  import { LoaderCircle, Mic, Plus } from '@lucide/svelte';
+  import { Building2, ChevronRight, LoaderCircle, MapPin, Pencil, Plus, User } from '@lucide/svelte';
   import { untrack } from 'svelte';
 
   type Option = { id: string; name: string; blurb: string };
@@ -27,7 +26,9 @@
   const all = $derived([...agents, ...examples]);
   let choice = $state<string | null>(untrack(() => (all.some((a) => a.id === presetAgent) ? presetAgent : (all[0]?.id ?? ''))));
   const chosen = $derived(all.find((a) => a.id === choice));
-  let duration = $state(untrack(() => Math.min(20, maxMinutes)));
+  // The design offers three lengths. Free plans cap the longest.
+  const LENGTHS = $derived(maxMinutes >= 45 ? [15, 30, 45] : DURATIONS.filter((d) => d <= maxMinutes).slice(-3));
+  let duration = $state(untrack(() => (maxMinutes >= 30 ? 30 : Math.min(15, maxMinutes))));
   let focus = $state(untrack(() => presetFocus));
   let name = $state('');
   let error = $state<string | null>(null);
@@ -79,9 +80,9 @@
 
 <Dialog.Root bind:open>
   <Dialog.Content class="max-h-[calc(100svh-2rem)] gap-0 overflow-y-auto p-0 sm:max-w-[560px]">
-    <Dialog.Header class="border-b px-5 py-3.5">
-      <Dialog.Title class="text-base font-bold">New interview</Dialog.Title>
-      <Dialog.Description class="sr-only">Choose an agent, add the job description and pick a length.</Dialog.Description>
+    <Dialog.Header class="flex h-[52px] justify-center border-b px-6">
+      <Dialog.Title class="text-xl font-extrabold tracking-[-0.01em]">New interview</Dialog.Title>
+      <Dialog.Description class="sr-only">Add the job description, choose an agent and pick a length.</Dialog.Description>
     </Dialog.Header>
 
     <form
@@ -107,20 +108,70 @@
         };
       }}
     >
-      <div class="grid gap-4 px-5 py-4 *:min-w-0">
-        <div class="grid grid-cols-[minmax(0,1fr)] gap-1.5">
-          <Label id="ni-agent-label">Agent</Label>
+      <div class="grid gap-5 p-6 *:min-w-0">
+        <div class="grid gap-2">
+          <div class="flex items-center justify-between">
+            <Label for="ni-jd" class="text-xs font-bold">Job description</Label>
+            {#if job && !editing}
+              <button type="button" class="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground" onclick={() => (editing = true)}>
+                <Pencil class="size-3.5" strokeWidth={1.6} /> Edit
+              </button>
+            {/if}
+          </div>
+          <input type="hidden" name="jobDescription" value={jd} />
+          {#if job && !editing}
+            <button
+              type="button"
+              class="line-clamp-2 rounded-[8px] border px-3 py-2.5 text-left text-sm leading-normal text-muted-foreground hover:border-foreground/40"
+              onclick={() => (editing = true)}>{jd}</button
+            >
+          {:else}
+            <div class="relative">
+              <Textarea
+                id="ni-jd"
+                rows={3}
+                class="max-h-48"
+                bind:value={jd}
+                placeholder="Paste the job description. PrepMe reads the role, the company and the skills."
+                onpaste={() => setTimeout(readJob)}
+                onblur={readJob}
+              />
+              {#if reading}
+                <div class="absolute inset-0 grid place-items-center rounded-[8px] bg-card/85 text-[13px] font-semibold">
+                  <span class="flex items-center gap-2"><LoaderCircle class="size-4 animate-spin" /> Reading the job</span>
+                </div>
+              {/if}
+            </div>
+          {/if}
+          {#if job && !editing}
+            <div class="stagger flex flex-wrap gap-2">
+              {#each [{ icon: User, text: job.title }, { icon: Building2, text: job.company }, { icon: MapPin, text: job.location }].filter((c) => c.text) as c}
+                <span class="inline-flex h-7 items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium">
+                  <c.icon class="size-4 text-muted-foreground" strokeWidth={1.6} />{c.text}
+                </span>
+              {/each}
+            </div>
+            {#if job.skills.length}
+              <div class="stagger flex flex-wrap gap-2">
+                {#each job.skills.slice(0, 8) as skill}
+                  <span class="inline-flex h-7 items-center rounded-full border px-2.5 text-[13px] font-medium">{skill}</span>
+                {/each}
+              </div>
+            {/if}
+          {/if}
+        </div>
+
+        <div class="grid grid-cols-[minmax(0,1fr)] gap-2">
+          <Label id="ni-agent-label" class="text-xs font-bold">Interviewer</Label>
           <input type="hidden" name="interviewer" value={choice ?? ''} />
           {#if all.length}
             <Select.Root bind:value={choice}>
-              <Select.Trigger class="h-auto w-full py-2" aria-labelledby="ni-agent-label">
+              <Select.Trigger class="h-12 w-full" aria-labelledby="ni-agent-label">
                 {#if chosen}
-                  <span class="flex min-w-0 flex-1 items-center gap-2.5">
-                    <InterviewerAvatar name={chosen.name} size="sm" />
-                    <span class="min-w-0 flex-1">
-                      <span class="block truncate font-semibold">{chosen.name}</span>
-                      <span class="block truncate text-xs font-normal text-muted-foreground">{chosen.blurb}</span>
-                    </span>
+                  <span class="flex min-w-0 flex-1 items-center gap-3">
+                    <InterviewerAvatar name={chosen.name} class="size-7" />
+                    <span class="shrink-0 font-bold">{chosen.name}</span>
+                    <span class="min-w-0 flex-1 truncate text-muted-foreground">{chosen.blurb}</span>
                   </span>
                 {:else}
                   <span class="text-muted-foreground">Choose an agent</span>
@@ -132,12 +183,10 @@
                     <Select.Group>
                       {#if agents.length && examples.length}<Select.GroupLabel>{group.label}</Select.GroupLabel>{/if}
                       {#each group.items as a (a.id)}
-                        <Select.Item value={a.id} class="py-2">
-                          <InterviewerAvatar name={a.name} size="sm" />
-                          <div class="min-w-0 flex-1">
-                            <Select.ItemText class="block truncate font-semibold">{a.name}</Select.ItemText>
-                            <div class="truncate text-xs text-muted-foreground">{a.blurb}</div>
-                          </div>
+                        <Select.Item value={a.id} class="h-12 gap-3">
+                          <InterviewerAvatar name={a.name} class="size-7" />
+                          <Select.ItemText class="shrink-0 font-bold">{a.name}</Select.ItemText>
+                          <span class="min-w-0 flex-1 truncate text-muted-foreground">{a.blurb}</span>
                         </Select.Item>
                       {/each}
                     </Select.Group>
@@ -146,68 +195,47 @@
               </Select.Content>
             </Select.Root>
           {/if}
-          <a href="/dashboard/interviewers?new=1" class="flex w-fit items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground" onclick={() => (open = false)}>
-            <Plus class="size-3.5" /> New agent
+          <a href="/dashboard/interviewers?new=1" class="flex w-fit items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground" onclick={() => (open = false)}>
+            <Plus class="size-4" strokeWidth={1.6} /> New agent
           </a>
         </div>
 
-        <div class="grid gap-1.5">
-          <Label for="ni-jd">Job description <span class="font-normal text-faint">(optional)</span></Label>
-          <input type="hidden" name="jobDescription" value={jd} />
-          {#if job && !editing}
-            <JobSummaryCard {job} onedit={() => (editing = true)} />
-            <p class="text-xs text-faint">The questions are tailored to this job.</p>
-          {:else}
-            <div class="relative">
-              <Textarea
-                id="ni-jd"
-                rows={5}
-                class="max-h-48"
-                bind:value={jd}
-                placeholder="Paste the job description. We pick out the role, skills and what they ask for."
-                onpaste={() => setTimeout(readJob)}
-                onblur={readJob}
-              />
-              {#if reading}
-                <div class="absolute inset-0 grid place-items-center rounded-md bg-card/85 text-[13px] font-semibold">
-                  <span class="flex items-center gap-2"><LoaderCircle class="size-4 animate-spin" /> Reading the job description</span>
-                </div>
-              {/if}
+        <div class="grid gap-2">
+          <Label class="text-xs font-bold">Length</Label>
+          <input type="hidden" name="durationMinutes" value={duration} />
+          <Segmented
+            bind:value={duration}
+            aria-label="Length in minutes"
+            options={LENGTHS.map((d) => ({ value: d, label: `${d} min` }))}
+          />
+          {#if maxMinutes < 45}<p class="text-xs text-muted-foreground">Up to {maxMinutes} minutes on the free plan. <a href="/dashboard/billing" class="font-semibold text-foreground">Upgrade</a></p>{/if}
+        </div>
+
+        <details class="group">
+          <summary class="flex w-fit cursor-pointer list-none items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
+            <ChevronRight class="size-4 transition-transform group-open:rotate-90" strokeWidth={1.6} /> More options
+          </summary>
+          <div class="mt-3 grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-2">
+              <Label for="ni-focus" class="text-xs font-bold">Focus on</Label>
+              <Input id="ni-focus" name="focus" bind:value={focus} placeholder="e.g. salary, why this employer" autocomplete="off" />
             </div>
-          {/if}
-        </div>
-
-        <div class="grid gap-1.5">
-          <Label for="ni-focus">Anything to focus on? <span class="font-normal text-faint">(optional)</span></Label>
-          <Input id="ni-focus" name="focus" bind:value={focus} placeholder="e.g. a difficult customer, salary, why this employer" autocomplete="off" />
-        </div>
-
-        <div class="grid gap-4 *:min-w-0 sm:grid-cols-2">
-          <div class="grid gap-1.5">
-            <Label>Length <span class="font-normal text-faint">(minutes)</span></Label>
-            <input type="hidden" name="durationMinutes" value={duration} />
-            <Segmented
-              bind:value={duration}
-              aria-label="Length in minutes"
-              options={DURATIONS.map((d) => ({ value: d, label: String(d), disabled: d > maxMinutes, title: d > maxMinutes ? 'On the Pro plan' : undefined }))}
-            />
-            {#if maxMinutes < 45}<p class="text-xs text-faint">Up to {maxMinutes} minutes on the free plan.</p>{/if}
+            <div class="grid gap-2">
+              <Label for="ni-name" class="text-xs font-bold">Name</Label>
+              <Input id="ni-name" bind:value={name} placeholder={autoName || 'e.g. Second round'} autocomplete="off" />
+            </div>
           </div>
-          <div class="grid content-start gap-1.5">
-            <Label for="ni-name">Name <span class="font-normal text-faint">(optional)</span></Label>
-            <input type="hidden" name="name" value={name.trim() || autoName} />
-            <Input id="ni-name" bind:value={name} placeholder={autoName || 'e.g. Second interview practice'} autocomplete="off" />
-          </div>
-        </div>
+        </details>
+        <input type="hidden" name="name" value={name.trim() || autoName} />
 
-        {#if error}<p class="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>{/if}
+        {#if error}<p class="rounded-[8px] bg-destructive-soft px-3 py-2 text-sm text-destructive">{error}</p>{/if}
       </div>
 
-      <div class="flex items-center justify-end gap-2 border-t px-5 py-3">
-        <span class="mr-auto hidden text-xs text-faint sm:block">You check your microphone next.</span>
-        <Button type="button" variant="ghost" class="mr-auto sm:mr-0" onclick={() => (open = false)}>Cancel</Button>
+      <div class="flex items-center justify-end gap-2 border-t px-6 py-4">
+        <span class="mr-auto hidden text-xs text-muted-foreground sm:block">Mic check comes next.</span>
+        <Button type="button" variant="outline" onclick={() => (open = false)}>Cancel</Button>
         <Button type="submit" disabled={busy || reading}>
-          {#if busy}<LoaderCircle class="animate-spin" />{:else}<Mic />{/if}Continue
+          {#if busy}<LoaderCircle class="animate-spin" />{/if}Start
         </Button>
       </div>
     </form>
