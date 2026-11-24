@@ -231,6 +231,7 @@
     agents={data.newInterview.agents}
     examples={data.newInterview.examples}
     maxMinutes={data.newInterview.maxMinutes}
+    lastCv={data.newInterview.lastCv}
     agent={newInterview.agent}
     focus={newInterview.focus}
   />

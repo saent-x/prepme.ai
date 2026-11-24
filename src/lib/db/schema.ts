@@ -139,6 +139,10 @@ export const interviews = sqliteTable(
 
     /** Optional job description the interviewer tailors questions to. */
     jobDescription: text('job_description'),
+    /** Text read from the candidate's CV, so the interviewer can ask about their real experience. */
+    cvText: text('cv_text'),
+    /** The CV's file name, shown as a chip. */
+    cvName: text('cv_name'),
     /** Free-text focus areas, e.g. "system design, leadership". */
     focus: text('focus'),
     /** Target length; the interviewer wraps up near the end. */

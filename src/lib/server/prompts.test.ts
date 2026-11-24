@@ -54,3 +54,24 @@ describe('normaliseScorecard', () => {
     expect(s.questions[0].score).toBe(1);
   });
 });
+
+describe('CV in prompts', () => {
+  it('adds the CV to the interviewer and scoring prompts', async () => {
+    const { buildRealtimeInstructions, buildAnalysisPrompt } = await import('./prompts');
+    const cvText = 'Built a RAG contract search; cut errors by 40%.';
+    const live = buildRealtimeInstructions({
+      agent: { name: 'Maya', instructions: 'Tough staff engineer.' },
+      interview: { ...interview, cvText },
+      candidateName: 'Tor'
+    });
+    expect(live).toContain("# The candidate's CV");
+    expect(live).toContain(cvText);
+    const { user } = buildAnalysisPrompt({
+      agent: { name: 'Maya', instructions: 'x' },
+      interview: { ...interview, cvText },
+      candidateName: 'Tor',
+      transcript: []
+    });
+    expect(user).toContain(cvText);
+  });
+});

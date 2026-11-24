@@ -10,7 +10,7 @@
   import InterviewerAvatar from './interviewer-avatar.svelte';
     import { hasJobSummary, MIN_JOB_TEXT, type JobSummary } from '$lib/job-parse';
   import { DURATIONS } from '$lib/templates';
-  import { Building2, ChevronRight, LoaderCircle, MapPin, Pencil, Plus, User } from '@lucide/svelte';
+  import { Building2, ChevronRight, FileText, LoaderCircle, MapPin, Paperclip, Pencil, Plus, User, X } from '@lucide/svelte';
   import { untrack } from 'svelte';
 
   type Option = { id: string; name: string; blurb: string };
@@ -20,8 +20,17 @@
     examples,
     maxMinutes,
     agent: presetAgent = '',
-    focus: presetFocus = ''
-  }: { open?: boolean; agents: Option[]; examples: Option[]; maxMinutes: number; agent?: string; focus?: string } = $props();
+    focus: presetFocus = '',
+    lastCv = null
+  }: {
+    open?: boolean;
+    agents: Option[];
+    examples: Option[];
+    maxMinutes: number;
+    agent?: string;
+    focus?: string;
+    lastCv?: { from: string; name: string } | null;
+  } = $props();
 
   const all = $derived([...agents, ...examples]);
   let choice = $state<string | null>(untrack(() => (all.some((a) => a.id === presetAgent) ? presetAgent : (all[0]?.id ?? ''))));
@@ -72,6 +81,32 @@
       if (!(e instanceof DOMException && e.name === 'AbortError')) job = null;
     } finally {
       reading = false;
+    }
+  }
+
+  // ---- CV: read on upload, sent as text with the form ----
+  type Cv = { name: string; text?: string; words?: number; from?: string };
+  let cv = $state<Cv | null>(untrack(() => (lastCv ? { name: lastCv.name, from: lastCv.from } : null)));
+  let cvBusy = $state(false);
+  let cvError = $state<string | null>(null);
+  let cvInput = $state<HTMLInputElement>();
+
+  async function uploadCv(file: File | undefined) {
+    if (!file) return;
+    cvError = null;
+    cvBusy = true;
+    try {
+      const body = new FormData();
+      body.set('file', file);
+      const res = await fetch('/api/cv/parse', { method: 'POST', body });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message ?? 'That file could not be read.');
+      cv = { name: data.name, text: data.text, words: data.words };
+    } catch (e) {
+      cvError = e instanceof Error ? e.message : 'That file could not be read.';
+    } finally {
+      cvBusy = false;
+      if (cvInput) cvInput.value = '';
     }
   }
 
@@ -201,6 +236,39 @@
         </div>
 
         <div class="grid gap-2">
+          <span class="text-xs font-bold">CV <span class="font-normal text-muted-foreground">(optional)</span></span>
+          <input type="hidden" name="cvText" value={cv?.text ?? ''} />
+          <input type="hidden" name="cvName" value={cv?.text ? cv.name : ''} />
+          <input type="hidden" name="cvFrom" value={cv?.from ?? ''} />
+          <input bind:this={cvInput} type="file" accept=".pdf,.docx,.txt,.md" class="sr-only" id="ni-cv" onchange={(e) => uploadCv(e.currentTarget.files?.[0])} />
+          {#if cvBusy}
+            <span class="inline-flex h-7 w-fit items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium"><LoaderCircle class="size-4 animate-spin" /> Reading your CV</span>
+          {:else if cv}
+            <span class="inline-flex h-7 w-fit max-w-full animate-pop items-center gap-1.5 rounded-full bg-muted pr-1 pl-2.5 text-[13px] font-medium">
+              <FileText class="size-4 shrink-0 text-muted-foreground" strokeWidth={1.6} />
+              <span class="truncate">{cv.name}</span>
+              <span class="shrink-0 text-muted-foreground">{cv.words ? `· ${cv.words.toLocaleString()} words` : '· last used'}</span>
+              <button type="button" class="grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-card hover:text-foreground" aria-label="Remove CV" onclick={() => (cv = null)}>
+                <X class="size-3.5" strokeWidth={2} />
+              </button>
+            </span>
+          {:else}
+            <label
+              for="ni-cv"
+              class="flex h-10 min-w-0 cursor-pointer items-center gap-2 rounded-[8px] border border-dashed px-3 text-sm text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
+              ondragover={(e) => e.preventDefault()}
+              ondrop={(e) => {
+                e.preventDefault();
+                uploadCv(e.dataTransfer?.files?.[0]);
+              }}
+            >
+              <Paperclip class="size-4 shrink-0" strokeWidth={1.6} /><span class="shrink-0 font-semibold">Add your CV</span><span class="truncate text-xs">PDF, Word or text. The interviewer asks about your experience.</span>
+            </label>
+          {/if}
+          {#if cvError}<p class="text-xs text-destructive">{cvError}</p>{/if}
+        </div>
+
+        <div class="grid gap-2">
           <Label class="text-xs font-bold">Length</Label>
           <input type="hidden" name="durationMinutes" value={duration} />
           <Segmented
@@ -234,7 +302,7 @@
       <div class="flex items-center justify-end gap-2 border-t px-6 py-4">
         <span class="mr-auto hidden text-xs text-muted-foreground sm:block">Mic check comes next.</span>
         <Button type="button" variant="outline" onclick={() => (open = false)}>Cancel</Button>
-        <Button type="submit" disabled={busy || reading}>
+        <Button type="submit" disabled={busy || reading || cvBusy}>
           {#if busy}<LoaderCircle class="animate-spin" />{/if}Start
         </Button>
       </div>

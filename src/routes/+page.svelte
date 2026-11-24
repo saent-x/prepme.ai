@@ -225,7 +225,7 @@
 
   <footer class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-[13px] text-muted-foreground xl:px-0">
     <Logo class="text-base" />
-    <span>Free plan: {data.limits.interviews} interviews a month · © {new Date().getFullYear()} PrepMe</span>
+    <span>Free plan: {data.limits.interviews} interviews · © {new Date().getFullYear()} PrepMe</span>
   </footer>
 </div>
 

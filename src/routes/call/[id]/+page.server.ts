@@ -21,6 +21,7 @@ export const load: PageServerLoad = async (event) => {
       status: interview.status,
       durationMinutes: plan.premium ? interview.durationMinutes : Math.min(interview.durationMinutes, FREE_LIMITS.maxMinutes),
       hasJobDescription: !!interview.jobDescription,
+      hasCv: !!interview.cvText,
       focus: interview.focus,
       savedTurns: interview.transcript?.length ?? 0
     },

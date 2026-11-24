@@ -48,6 +48,8 @@ export const actions: Actions = {
         agentId: prev.agentId,
         name: prev.name.replace(/ · retry$/, '') + ' · retry',
         jobDescription: prev.jobDescription,
+        cvText: prev.cvText,
+        cvName: prev.cvName,
         focus: weak ? `Last time I needed to work on: ${weak}` : prev.focus,
         durationMinutes: prev.durationMinutes
       })

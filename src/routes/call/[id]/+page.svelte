@@ -20,6 +20,7 @@
     Check,
     Clock,
     FileText,
+    Paperclip,
     LoaderCircle,
     Mic,
     MicOff,
@@ -204,6 +205,7 @@
           <div class="mt-4 flex flex-wrap justify-center gap-2">
             <span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Clock class="size-4 text-muted-foreground" strokeWidth={1.6} />{data.interview.durationMinutes} min</span>
             {#if data.interview.hasJobDescription}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><FileText class="size-4 text-muted-foreground" strokeWidth={1.6} />Job</span>{/if}
+            {#if data.interview.hasCv}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Paperclip class="size-4 text-muted-foreground" strokeWidth={1.6} />CV</span>{/if}
             {#if data.interviewer.style}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Target class="size-4 text-muted-foreground" strokeWidth={1.6} />{data.interviewer.style}</span>{/if}
           </div>
         </section>

@@ -80,7 +80,7 @@
           <h3 class="text-base font-extrabold">Free</h3>
           <div class="mt-2"><span class="tabular text-[28px] font-extrabold">£0</span></div>
           <div class="my-4 border-t"></div>
-          {@render checks([`${summary.limits.interviews} interviews a month`, 'All agents', 'Feedback report'])}
+          {@render checks([`${summary.limits.interviews} free interviews`, 'All agents', 'Feedback report'])}
           {#if !plan.premium}
             <div class="mt-auto pt-4">
               <div class="text-xs text-muted-foreground">{meters[0].used} of {meters[0].max} used</div>

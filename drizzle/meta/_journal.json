@@ -8,6 +8,13 @@
       "when": 1795299351726,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1795479993177,
+      "tag": "0001_interview_cv",
+      "breakpoints": true
     }
   ]
 }
