@@ -24,7 +24,7 @@
 <!-- One table-like row. Column widths match InterviewHead. -->
 <a
   href="/dashboard/interviews/{row.id}"
-  class="group grid h-12 grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-x-4 border-b text-sm transition-colors hover:bg-muted sm:grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.8fr)_64px_56px_48px_20px]"
+  class="group grid h-12 grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-x-4 border-b px-3 text-sm transition-colors hover:bg-muted sm:grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.8fr)_64px_56px_48px_20px]"
 >
   <Mic class="size-5 text-muted-foreground" strokeWidth={1.6} />
   <span class="truncate font-bold">{t.role}</span>

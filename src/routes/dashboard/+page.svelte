@@ -97,7 +97,7 @@
         {@const t = splitTitle(row.name)}
         <a
           href="/dashboard/interviews/{row.id}"
-          class="group grid h-12 grid-cols-[20px_minmax(0,1fr)_auto_20px] items-center gap-4 border-b text-sm transition-colors hover:bg-muted sm:grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_64px_48px_20px]"
+          class="group grid h-12 grid-cols-[20px_minmax(0,1fr)_auto_20px] items-center gap-4 border-b px-3 text-sm transition-colors hover:bg-muted sm:grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_64px_48px_20px]"
         >
           <Mic class="size-5 text-muted-foreground" strokeWidth={1.6} />
           <span class="truncate font-bold">{t.role}</span>
@@ -109,7 +109,7 @@
           <ChevronRight class="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" strokeWidth={1.6} />
         </a>
       {:else}
-        <p class="border-b py-4 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
+        <p class="border-b px-3 py-4 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
       {/each}
     </div>
   </section>
@@ -124,14 +124,14 @@
         <a
           href="/dashboard/interviews/new?interviewer={i.id}"
           title="Start an interview with {i.name}"
-          class="group flex h-12 items-center gap-3 border-b text-sm transition-colors hover:bg-muted"
+          class="group flex h-12 items-center gap-3 border-b px-3 text-sm transition-colors hover:bg-muted"
         >
           <InterviewerAvatar name={i.name} class="size-7 transition-transform duration-200 group-hover:-rotate-6" />
           <span class="min-w-0 flex-1 truncate font-bold">{i.name}</span>
           {#if i.style}<span class="text-muted-foreground">{i.style}</span>{/if}
         </a>
       {/each}
-      <button type="button" class="group flex h-12 w-full items-center gap-3 border-b text-sm text-muted-foreground hover:text-foreground" onclick={() => (creating = true)}>
+      <button type="button" class="group flex h-12 w-full items-center gap-3 border-b px-3 text-sm text-muted-foreground hover:text-foreground" onclick={() => (creating = true)}>
         <span class="grid size-7 place-items-center rounded-full border border-input"><Plus class="size-4" strokeWidth={1.6} /></span>
         New agent
       </button>

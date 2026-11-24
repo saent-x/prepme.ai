@@ -34,13 +34,13 @@
 
 {#if data.interviewers.length}
   <div class="mt-8">
-    <div class="hidden h-8 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_80px_36px] items-center gap-x-4 border-b text-xs font-bold text-muted-foreground md:grid">
+    <div class="hidden h-8 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_80px_36px] items-center gap-x-4 border-b px-3 text-xs font-bold text-muted-foreground md:grid">
       <span>Name</span><span>Role</span><span>Style</span><span>Interviews</span><span></span>
     </div>
     <div class="stagger">
       {#each data.interviewers as i (i.id)}
         {@const style = agentStyle(i.instructions)}
-        <div class="grid h-12 grid-cols-[1fr_auto] items-center gap-x-4 border-b text-sm md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_80px_36px]">
+        <div class="grid h-12 grid-cols-[1fr_auto] items-center gap-x-4 border-b px-3 text-sm md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_80px_36px]">
           <a href="/dashboard/interviewers/{i.id}" class="group flex min-w-0 items-center gap-3">
             <InterviewerAvatar name={i.name} class="size-7 transition-transform duration-200 group-hover:-rotate-6" />
             <span class="truncate font-bold group-hover:underline">{i.name}</span>
