@@ -1,5 +1,13 @@
-<div
-  class="hidden h-8 grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.8fr)_64px_56px_48px_20px] items-center gap-x-4 border-b px-3 text-xs font-bold text-muted-foreground sm:grid"
->
-  <span></span><span>Interview</span><span>Company</span><span>Agent</span><span>Date</span><span>Length</span><span>Score</span><span></span>
+<script lang="ts">
+  import { cn } from '$lib/utils';
+  import { INTERVIEW_GRID, TABLE_HEAD, type InterviewCols } from './table';
+  let { cols = 'full' }: { cols?: InterviewCols } = $props();
+</script>
+
+<div class={cn('hidden sm:grid', TABLE_HEAD, INTERVIEW_GRID[cols])}>
+  <span></span><span>Interview</span><span>Company</span>
+  {#if cols === 'full'}<span>Agent</span>{/if}
+  <span>Date</span>
+  {#if cols !== 'home'}<span>Length</span>{/if}
+  <span>Score</span><span></span>
 </div>

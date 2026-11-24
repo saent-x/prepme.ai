@@ -217,7 +217,7 @@
   {/if}
 
   <main class="vt-main min-w-0">
-    <div class="w-full px-4 py-6 sm:px-8 lg:py-8 lg:pl-12 {collapsed ? 'lg:max-w-[1376px] lg:pr-12' : 'lg:max-w-[1208px] lg:pr-[120px]'}">
+    <div class="mx-auto w-full px-4 py-6 sm:px-8 lg:px-12 lg:py-8 {collapsed ? 'lg:max-w-[1376px]' : 'lg:max-w-[1136px]'}">
       {@render children()}
     </div>
   </main>

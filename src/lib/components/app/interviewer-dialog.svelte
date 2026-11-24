@@ -8,7 +8,8 @@
   import { Segmented } from '$lib/components/ui/segmented';
   import { Chips } from '$lib/components/ui/chips';
   import InterviewerAvatar from './interviewer-avatar.svelte';
-  import { VOICES } from '$lib/templates';
+  import { voiceOptions } from '$lib/templates';
+  import { interviewerFace } from '$lib/avatars';
   import { composeBrief, FOCUS_AREAS, STYLES, type FocusId, type StyleId } from '$lib/interviewer-brief';
   import { ChevronRight, LoaderCircle } from '@lucide/svelte';
   import { untrack } from 'svelte';
@@ -111,7 +112,7 @@
             {/if}
             <div class="grid gap-2">
               <span class="text-xs font-bold">Voice</span>
-              <Chips bind:value={() => [voice], (v) => (voice = v[0] ?? voice)} aria-label="Voice" options={VOICES.map((x) => ({ value: x.id, label: x.label, title: x.note }))} />
+              <Chips bind:value={() => [voice], (v) => (voice = v[0] ?? voice)} aria-label="Voice" options={voiceOptions(interviewerFace)} />
             </div>
             {#if !own}
               <button type="button" class="w-fit text-[13px] font-semibold text-muted-foreground hover:text-foreground" onclick={writeOwn}>Write the brief yourself</button>

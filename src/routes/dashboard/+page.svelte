@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { format } from 'date-fns';
-  import { Button } from '$lib/components/ui/button';
+    import { Button } from '$lib/components/ui/button';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
   import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
-  import ScoreChip from '$lib/components/app/score-chip.svelte';
-  import StatusBadge from '$lib/components/app/status-badge.svelte';
-  import { splitTitle } from '$lib/interviewer-brief';
-  import { ChevronRight, Mic, Plus } from '@lucide/svelte';
+  import InterviewHead from '$lib/components/app/interview-head.svelte';
+  import InterviewRow from '$lib/components/app/interview-row.svelte';
+  import { TABLE_HEAD, TABLE_ROW } from '$lib/components/app/table';
+  import { cn } from '$lib/utils';
+  import { Plus } from '@lucide/svelte';
 
   let { data } = $props();
   let creating = $state(false);
@@ -92,25 +92,15 @@
       <h2 class="text-base font-bold">Recent interviews</h2>
       <a href="/dashboard/interviews" class="text-sm font-semibold text-muted-foreground hover:text-foreground">View all</a>
     </div>
-    <div class="stagger mt-2 border-t">
-      {#each data.recent.slice(0, 6) as row (row.id)}
-        {@const t = splitTitle(row.name)}
-        <a
-          href="/dashboard/interviews/{row.id}"
-          class="group grid h-12 grid-cols-[20px_minmax(0,1fr)_auto_20px] items-center gap-4 border-b px-3 text-sm transition-colors hover:bg-muted sm:grid-cols-[20px_minmax(0,1.4fr)_minmax(0,1fr)_64px_48px_20px]"
-        >
-          <Mic class="size-5 text-muted-foreground" strokeWidth={1.6} />
-          <span class="truncate font-bold">{t.role}</span>
-          <span class="hidden truncate text-muted-foreground sm:block">{t.company || row.agent.name}</span>
-          <span class="hidden text-muted-foreground sm:block">{format(new Date(row.createdAt), 'd MMM')}</span>
-          <span class="flex justify-start">
-            {#if row.status === 'completed'}<ScoreChip score={row.overallScore} />{:else}<StatusBadge status={row.status} />{/if}
-          </span>
-          <ChevronRight class="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" strokeWidth={1.6} />
-        </a>
+    <div class="mt-2">
+      {#if data.recent.length}
+        <InterviewHead cols="home" />
+        <div class="stagger">
+          {#each data.recent.slice(0, 6) as row (row.id)}<InterviewRow {row} cols="home" />{/each}
+        </div>
       {:else}
-        <p class="border-b px-3 py-4 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
-      {/each}
+        <p class="border-y px-3 py-4 text-sm text-muted-foreground">Nothing yet. Your interviews and scores will show here.</p>
+      {/if}
     </div>
   </section>
 
@@ -119,19 +109,20 @@
       <h2 class="text-base font-bold">Agents</h2>
       <a href="/dashboard/interviewers" class="text-sm font-semibold text-muted-foreground hover:text-foreground">Manage</a>
     </div>
-    <div class="stagger mt-2 border-t">
+    <div class={cn(TABLE_HEAD, 'mt-2 flex justify-between')}><span>Agent</span><span>Style</span></div>
+    <div class="stagger">
       {#each data.interviewers as i (i.id)}
         <a
           href="/dashboard/interviews/new?interviewer={i.id}"
           title="Start an interview with {i.name}"
-          class="group flex h-12 items-center gap-3 border-b px-3 text-sm transition-colors hover:bg-muted"
+          class={cn(TABLE_ROW, 'flex gap-3')}
         >
           <InterviewerAvatar name={i.name} class="size-7 transition-transform duration-200 group-hover:-rotate-6" />
           <span class="min-w-0 flex-1 truncate font-bold">{i.name}</span>
           {#if i.style}<span class="text-muted-foreground">{i.style}</span>{/if}
         </a>
       {/each}
-      <button type="button" class="group flex h-12 w-full items-center gap-3 border-b px-3 text-sm text-muted-foreground hover:text-foreground" onclick={() => (creating = true)}>
+      <button type="button" class={cn(TABLE_ROW, 'flex w-full gap-3 text-muted-foreground hover:text-foreground')} onclick={() => (creating = true)}>
         <span class="grid size-7 place-items-center rounded-full border border-input"><Plus class="size-4" strokeWidth={1.6} /></span>
         New agent
       </button>
