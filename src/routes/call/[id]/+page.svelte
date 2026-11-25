@@ -137,9 +137,9 @@
     transcriptEl?.scrollTo({ top: transcriptEl.scrollHeight, behavior: 'smooth' });
   });
 
-  // Safety net: if the interviewer has said goodbye and time is well past, end for the user.
+  // Time is up: end once the interviewer has said goodbye, or 90 s past time as a safety net.
   $effect(() => {
-    if (call.phase === 'live' && call.elapsedMs > call.durationMinutes * 60_000 + 90_000) void hangUp();
+    if (call.phase === 'live' && (call.finished || call.elapsedMs > call.durationMinutes * 60_000 + 90_000)) void hangUp();
   });
 
   // Left idle: nobody answered the "still there?" notice, so end and score what was said.

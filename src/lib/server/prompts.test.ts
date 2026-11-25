@@ -25,6 +25,13 @@ describe('realtime instructions', () => {
     expect(s).toContain('[1:01] Tor: I was saying…');
     expect(s).not.toContain('# Opening');
   });
+  it('tells a resumed call how much time is left', () => {
+    const previousTranscript = [{ id: '1', speaker: 'candidate' as const, text: 'Hi', at: 0 }];
+    const s = buildRealtimeInstructions({ agent, interview, candidateName: 'Tor', previousTranscript, minutesLeft: 7 });
+    expect(s).toContain('About 7 minutes of the call remain');
+    const late = buildRealtimeInstructions({ agent, interview, candidateName: 'Tor', previousTranscript, minutesLeft: 1 });
+    expect(late).toContain('Time is nearly up');
+  });
   it('skips blank lines in transcripts', () => {
     expect(formatTranscript([{ id: '1', speaker: 'interviewer', text: '  ', at: 0 }])).toBe('');
   });

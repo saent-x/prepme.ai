@@ -58,6 +58,8 @@ export class InterviewCall {
   idleMs = $state(0);
   /** Set once the call has been left idle for too long; the page then ends it. */
   idleExpired = $state(false);
+  /** Set once the interviewer has finished its closing line after time ran out; the page then ends it. */
+  finished = $state(false);
 
   readonly interviewId: string;
   #mic: MediaStream | null = null;
@@ -76,6 +78,19 @@ export class InterviewCall {
   #lastActivity = 0;
   #idleNudged = false;
   #closingDeliberately = false;
+  /**
+   * Bumped by every start, end and dispose. An async start that wakes up to a
+   * different value was overtaken (the user hung up or left the page while it
+   * was connecting) and must not open a session.
+   */
+  #gen = 0;
+  /** A model response is being generated (response.created → response.done). */
+  #responding = false;
+  /** A response.create is owed once the current response finishes. */
+  #pendingResponse = false;
+  /** The interviewer has started its closing turn after the time-up note. */
+  #closingTurn = false;
+  #liveSince = 0;
   #lastSavedJson = '';
   #onPageHide = () => this.#beaconSave();
 
@@ -101,6 +116,7 @@ export class InterviewCall {
 
   /** Start (or resume) the interview with an already-granted microphone stream. */
   async start(mic: MediaStream) {
+    const gen = ++this.#gen;
     this.#mic = mic;
     this.error = null;
     this.phase = this.reconnects > 0 ? 'reconnecting' : 'connecting';
@@ -114,6 +130,7 @@ export class InterviewCall {
       const res = await fetch(`/api/interviews/${this.interviewId}/session`, { method: 'POST' });
       if (!res.ok) throw new Error(await readError(res));
       const session = (await res.json()) as SessionResponse;
+      if (gen !== this.#gen) return;
 
       this.model = session.model;
       this.durationMinutes = session.durationMinutes;
@@ -122,11 +139,15 @@ export class InterviewCall {
       if (session.transcript.length > this.transcript.length) this.transcript = session.transcript;
       this.#lastSavedJson = JSON.stringify(this.transcript);
 
-      await this.#connect(session.clientSecret);
+      await this.#connect(session.clientSecret, gen);
+      if (gen !== this.#gen) return;
       this.phase = 'live';
+      this.#liveSince = Date.now();
       this.markActive();
       this.#startTicking();
     } catch (e) {
+      // Overtaken by end()/dispose(): they already tore everything down.
+      if (gen !== this.#gen) return;
       this.#teardownPeer();
       this.phase = 'error';
       this.error = e instanceof Error ? e.message : 'Could not start the interview.';
@@ -148,11 +169,18 @@ export class InterviewCall {
   /** Hang up, save the transcript and request the scorecard. Returns when scoring finishes. */
   async end(): Promise<{ ok: boolean; message?: string }> {
     if (this.phase === 'ending' || this.phase === 'ended') return { ok: true };
+    this.#gen++;
     this.phase = 'ending';
     this.#closingDeliberately = true;
+    this.#stopTicking();
+    this.#cancelSave();
+    // Stop listening, then give a just-finished answer a moment to come back
+    // transcribed before the channel closes, so the last answer is scored.
+    this.#mic?.getAudioTracks().forEach((t) => (t.enabled = false));
+    if (this.#audioEl) this.#audioEl.muted = true;
+    await this.#awaitPendingTranscription();
     this.#flushCaption();
     this.#teardownPeer();
-    this.#stopTicking();
     this.#mic?.getTracks().forEach((t) => t.stop());
     window.removeEventListener('pagehide', this.#onPageHide);
 
@@ -173,9 +201,11 @@ export class InterviewCall {
 
   /** Release everything without scoring (e.g. leaving the page before starting). */
   dispose() {
+    this.#gen++;
     this.#closingDeliberately = true;
     this.#teardownPeer();
     this.#stopTicking();
+    this.#cancelSave();
     this.#mic?.getTracks().forEach((t) => t.stop());
     window.removeEventListener('pagehide', this.#onPageHide);
     if (this.transcript.length) this.#beaconSave();
@@ -185,13 +215,16 @@ export class InterviewCall {
   // WebRTC
   // -------------------------------------------------------------------------
 
-  async #connect(clientSecret: string) {
+  async #connect(clientSecret: string, gen: number) {
     this.#closingDeliberately = false;
+    this.#responding = false;
+    this.#pendingResponse = false;
     const pc = new RTCPeerConnection();
     this.#pc = pc;
 
     const audioEl = this.#audioEl ?? new Audio();
     audioEl.autoplay = true;
+    audioEl.muted = false;
     this.#audioEl = audioEl;
     pc.ontrack = (e) => {
       audioEl.srcObject = e.streams[0];
@@ -214,10 +247,13 @@ export class InterviewCall {
         console.warn('[realtime] bad event', err);
       }
     };
+    let openTimer: ReturnType<typeof setTimeout> | undefined;
     const opened = new Promise<void>((resolve, reject) => {
       dc.onopen = () => resolve();
-      setTimeout(() => reject(new Error('Timed out connecting to the interviewer.')), 15_000);
+      openTimer = setTimeout(() => reject(new Error('Timed out connecting to the interviewer.')), 15_000);
     });
+    // If we bail out before awaiting it, don't leave an unhandled rejection behind.
+    opened.catch(() => {});
     dc.onclose = () => this.#onDrop();
 
     pc.onconnectionstatechange = () => {
@@ -232,18 +268,33 @@ export class InterviewCall {
       } else if (s === 'connected') this.#clearDropTimer();
     };
 
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    const sdpRes = await fetch(REALTIME_URL, {
-      method: 'POST',
-      body: offer.sdp,
-      headers: { Authorization: `Bearer ${clientSecret}`, 'Content-Type': 'application/sdp' }
-    });
-    if (!sdpRes.ok) {
-      throw new Error(`OpenAI refused the connection (${sdpRes.status}). ${await sdpRes.text().catch(() => '')}`.trim());
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      const sdpRes = await fetch(REALTIME_URL, {
+        method: 'POST',
+        body: offer.sdp,
+        headers: { Authorization: `Bearer ${clientSecret}`, 'Content-Type': 'application/sdp' }
+      });
+      if (!sdpRes.ok) {
+        throw new Error(`OpenAI refused the connection (${sdpRes.status}). ${await sdpRes.text().catch(() => '')}`.trim());
+      }
+      const answer = await sdpRes.text();
+      // Hung up or left while OpenAI was answering: don't complete the connection,
+      // or the interviewer would start talking on a call nobody is in.
+      if (gen !== this.#gen) {
+        pc.close();
+        return;
+      }
+      await pc.setRemoteDescription({ type: 'answer', sdp: answer });
+      await opened;
+    } finally {
+      clearTimeout(openTimer);
     }
-    await pc.setRemoteDescription({ type: 'answer', sdp: await sdpRes.text() });
-    await opened;
+    if (gen !== this.#gen) {
+      pc.close();
+      return;
+    }
 
     // The interviewer opens the call (or apologises for the drop when resuming).
     this.#send({ type: 'response.create' });
@@ -253,6 +304,9 @@ export class InterviewCall {
     if (this.#closingDeliberately || this.phase !== 'live') return;
     this.#clearDropTimer();
     this.#teardownPeer();
+    // A call that stayed up for a while has earned its automatic retries back;
+    // three drops spread over a long interview shouldn't force a manual reconnect.
+    if (Date.now() - this.#liveSince > 120_000) this.reconnects = 0;
     if (this.reconnects >= MAX_AUTO_RECONNECTS) {
       this.phase = 'error';
       this.error = 'The connection keeps dropping. Check your network, then reconnect or end the interview.';
@@ -261,8 +315,10 @@ export class InterviewCall {
     this.reconnects += 1;
     this.phase = 'reconnecting';
     void this.#save(true);
+    const gen = this.#gen;
     setTimeout(() => {
-      if (this.#mic && this.phase === 'reconnecting') void this.start(this.#mic);
+      // Skip if the user hung up or left the page during the pause.
+      if (gen === this.#gen && this.#mic && this.phase === 'reconnecting') void this.start(this.#mic);
     }, 800);
   }
 
@@ -296,8 +352,19 @@ export class InterviewCall {
     this.#dropTimer = null;
   }
 
+  /** Returns false when there is no open channel (e.g. mid-reconnect), so callers can retry later. */
   #send(event: Record<string, unknown>) {
-    if (this.#dc?.readyState === 'open') this.#dc.send(JSON.stringify(event));
+    if (this.#dc?.readyState !== 'open') return false;
+    this.#dc.send(JSON.stringify(event));
+    return true;
+  }
+
+  /** Ask the interviewer to speak now, or as soon as its current response finishes. */
+  #requestResponse() {
+    if (this.#responding) this.#pendingResponse = true;
+    // While the candidate is talking, the turn detector will start a response
+    // when they stop, and it will see the note we just added.
+    else if (!this.candidateSpeaking) this.#send({ type: 'response.create' });
   }
 
   // -------------------------------------------------------------------------
@@ -346,10 +413,23 @@ export class InterviewCall {
       case 'output_audio_buffer.started':
         this.interviewerSpeaking = true;
         break;
+      case 'response.created':
+        this.#responding = true;
+        if (this.#timeUpSent) this.#closingTurn = true;
+        break;
+      case 'response.done':
+        this.#responding = false;
+        if (this.#pendingResponse) {
+          this.#pendingResponse = false;
+          this.#requestResponse();
+        }
+        break;
       case 'output_audio_buffer.stopped':
       case 'output_audio_buffer.cleared':
         this.interviewerSpeaking = false;
         if (this.caption?.speaker === 'interviewer') this.caption = null;
+        // The closing line after "time is up" has finished playing: the call is over.
+        if (ev.type === 'output_audio_buffer.stopped' && this.#closingTurn && !this.#responding) this.finished = true;
         break;
       case 'error': {
         const err = ev.error as { message?: string; code?: string } | undefined;
@@ -372,10 +452,33 @@ export class InterviewCall {
     if (text) this.#scheduleSave();
   }
 
+  /** Wait (briefly) for a candidate answer whose transcription is still on its way. */
+  async #awaitPendingTranscription(maxMs = 2500) {
+    const pending = () =>
+      this.#dc?.readyState === 'open' &&
+      (this.caption?.speaker === 'candidate' ||
+        this.transcript.some((t) => t.speaker === 'candidate' && !t.text.trim()));
+    const until = Date.now() + maxMs;
+    while (pending() && Date.now() < until) await new Promise((r) => setTimeout(r, 100));
+  }
+
   #flushCaption() {
+    // A candidate caption that never got its final transcription is still their
+    // answer: keep the words we have rather than dropping them.
+    const words = this.caption?.speaker === 'candidate' ? this.caption.text.trim() : '';
+    if (words) {
+      const row = this.transcript.findLast((t) => t.speaker === 'candidate' && !t.text.trim());
+      if (row) row.text = words;
+      else this.transcript.push({ id: `caption-${Date.now()}`, speaker: 'candidate', text: words, at: Math.max(0, Date.now() - this.#startedAt) });
+    }
     // Drop placeholder rows that never got any words.
     this.transcript = this.transcript.filter((t) => t.text.trim());
     this.caption = null;
+  }
+
+  #cancelSave() {
+    if (this.#saveTimer) clearTimeout(this.#saveTimer);
+    this.#saveTimer = null;
   }
 
   // -------------------------------------------------------------------------
@@ -423,23 +526,28 @@ export class InterviewCall {
       const total = this.durationMinutes * 60_000;
       const left = total - this.elapsedMs;
 
+      // Only mark a note as sent once it really went out: during a reconnect there
+      // is no channel, and the note must reach the resumed session instead.
       if (!this.#wrapUpSent && left <= 2 * 60_000) {
-        this.#wrapUpSent = true;
-        this.#systemNote(
+        this.#wrapUpSent = this.#systemNote(
           'Time check: about two minutes are left. Finish the current topic, then invite the candidate to ask you a question.'
         );
       }
       if (!this.#timeUpSent && left <= 0) {
-        this.#timeUpSent = true;
-        this.#systemNote('Time is up. Thank the candidate warmly and close the interview in one or two sentences.', true);
+        this.#timeUpSent = this.#systemNote(
+          'Time is up. Thank the candidate warmly and close the interview in one or two sentences.',
+          true
+        );
       }
 
       // Idle tracking. The clock only runs while it is the candidate's turn.
       if (this.interviewerSpeaking || this.candidateSpeaking) this.#lastActivity = Date.now();
       this.idleMs = Date.now() - this.#lastActivity;
       if (!this.#idleNudged && this.idleMs >= IDLE_NUDGE_MS) {
-        this.#idleNudged = true;
-        this.#systemNote('The candidate has been silent for a minute. Ask briefly whether they are still there or need the question again.', true);
+        this.#idleNudged = this.#systemNote(
+          'The candidate has been silent for a minute. Ask briefly whether they are still there or need the question again.',
+          true
+        );
       }
       if (this.idleMs >= IDLE_END_MS) this.idleExpired = true;
     }, 1000);
@@ -451,11 +559,15 @@ export class InterviewCall {
   }
 
   #systemNote(text: string, respondNow = false) {
-    this.#send({
+    const sent = this.#send({
       type: 'conversation.item.create',
       item: { type: 'message', role: 'system', content: [{ type: 'input_text', text }] }
     });
-    if (respondNow && !this.interviewerSpeaking) this.#send({ type: 'response.create' });
+    // Before, response.create was skipped whenever the interviewer was mid-sentence,
+    // so "time is up" could sit unanswered; and it was sent while a response was
+    // still generating, which the API rejects. Queue it behind the current response.
+    if (sent && respondNow) this.#requestResponse();
+    return sent;
   }
 
   // -------------------------------------------------------------------------

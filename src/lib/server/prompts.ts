@@ -29,8 +29,10 @@ export function buildRealtimeInstructions(opts: {
   candidateName: string;
   /** Present when resuming after a dropped connection. */
   previousTranscript?: TranscriptEntry[];
+  /** Whole minutes left on the clock when resuming; the call keeps its original length. */
+  minutesLeft?: number;
 }) {
-  const { agent, interview, candidateName, previousTranscript } = opts;
+  const { agent, interview, candidateName, previousTranscript, minutesLeft } = opts;
   const parts: string[] = [];
 
   parts.push(`# Role
@@ -74,7 +76,13 @@ The call dropped and has just reconnected. Here is what was said so far:
 """
 ${clip(formatTranscript(previousTranscript.slice(-60), candidateName), 12000)}
 """
-Start by briefly acknowledging the drop ("Sorry, we lost the connection for a moment"), then continue from where you left off. Do not restart the interview.`);
+Start by briefly acknowledging the drop ("Sorry, we lost the connection for a moment"), then continue from where you left off. Do not restart the interview.${
+      minutesLeft === undefined
+        ? ''
+        : minutesLeft <= 2
+          ? '\nTime is nearly up: ask whether the candidate has any questions for you, then thank them and say goodbye.'
+          : `\nAbout ${minutesLeft} minutes of the call remain. Pace the rest of your questions to fit.`
+    }`);
   } else {
     parts.push(`# Opening
 Start by greeting ${candidateName} by first name, introduce yourself in one sentence, explain the format in one sentence, then ask your first question.`);
