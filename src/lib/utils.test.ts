@@ -21,7 +21,8 @@ describe('formatting', () => {
   it('maps scores to tones', () => {
     expect(scoreTone(null)).toBe('none');
     expect(scoreTone(85)).toBe('good');
-    expect(scoreTone(55)).toBe('ok');
+    expect(scoreTone(65)).toBe('ok');
+    expect(scoreTone(55)).toBe('low');
     expect(scoreTone(20)).toBe('low');
   });
 });

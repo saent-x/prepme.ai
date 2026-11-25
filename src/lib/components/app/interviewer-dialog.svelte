@@ -8,9 +8,10 @@
   import { Segmented } from '$lib/components/ui/segmented';
   import { Chips } from '$lib/components/ui/chips';
   import InterviewerAvatar from './interviewer-avatar.svelte';
-  import { VOICES } from '$lib/templates';
+  import { voiceOptions } from '$lib/templates';
+  import { interviewerFace } from '$lib/avatars';
   import { composeBrief, FOCUS_AREAS, STYLES, type FocusId, type StyleId } from '$lib/interviewer-brief';
-  import { LoaderCircle } from '@lucide/svelte';
+  import { ChevronRight, LoaderCircle } from '@lucide/svelte';
   import { untrack } from 'svelte';
 
   let { open = $bindable(false), job: presetJob = '' }: { open?: boolean; job?: string } = $props();
@@ -35,9 +36,9 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="max-h-[calc(100svh-2rem)] gap-0 overflow-y-auto p-0 sm:max-w-[540px]">
-    <Dialog.Header class="border-b px-5 py-3.5">
-      <Dialog.Title class="text-base font-bold">New agent</Dialog.Title>
+  <Dialog.Content class="max-h-[calc(100svh-2rem)] gap-0 overflow-y-auto p-0 sm:max-w-[480px]">
+    <Dialog.Header class="flex h-[52px] justify-center border-b px-6">
+      <Dialog.Title class="text-xl font-extrabold tracking-[-0.01em]">New agent</Dialog.Title>
       <Dialog.Description class="sr-only">Describe who should interview you.</Dialog.Description>
     </Dialog.Header>
 
@@ -46,8 +47,8 @@
       action="/dashboard/interviewers/new"
       use:enhance={({ submitter, cancel }) => {
         error = null;
-        if (!own && !role.trim()) {
-          error = 'Say which job this agent interviews you for.';
+        if (!own && !role.trim() && !job.trim()) {
+          error = 'Give the agent a role, e.g. Design manager.';
           cancel();
           return;
         }
@@ -64,64 +65,71 @@
         };
       }}
     >
-      <div class="grid gap-4 px-5 py-4">
-        <div class="flex items-center gap-3.5">
-          <InterviewerAvatar name={name || 'new agent'} size="xl" />
-          <div class="grid flex-1 gap-1.5">
-            <Label for="iv-name">Name</Label>
-            <Input id="iv-name" name="name" bind:value={name} placeholder="e.g. Pip" autocomplete="off" />
-            <p class="text-xs text-faint">The avatar is made from the name. Change the name to get a new one.</p>
+      <div class="grid gap-5 p-6">
+        <div class="flex items-center gap-4">
+          {#key name}<InterviewerAvatar name={name || 'new agent'} class="size-16 animate-pop" />{/key}
+          <div class="min-w-0">
+            <div class="truncate text-base font-extrabold">{name || 'Your agent'}</div>
+            <div class="text-xs text-muted-foreground">Face made from the name</div>
           </div>
         </div>
 
-        {#if !own}
-          <div class="grid gap-1.5">
-            <Label for="iv-role">Interviewing you for</Label>
-            <Input id="iv-role" bind:value={role} placeholder="e.g. Staff Nurse, A&E at St Thomas'" autocomplete="off" />
-          </div>
-          <div class="grid gap-1.5">
-            <Label for="iv-job">Their job <span class="font-normal text-faint">(optional)</span></Label>
-            <Input id="iv-job" bind:value={job} placeholder="e.g. Ward manager" autocomplete="off" />
-          </div>
+        <div class="grid gap-2">
+          <Label for="iv-name" class="text-xs font-bold">Name</Label>
+          <Input id="iv-name" name="name" bind:value={name} placeholder="e.g. Lea" autocomplete="off" />
+        </div>
 
-          <div class="grid gap-1.5">
-            <span class="text-sm font-medium">Style</span>
+        {#if !own}
+          <div class="grid gap-2">
+            <Label for="iv-job" class="text-xs font-bold">Role</Label>
+            <Input id="iv-job" bind:value={job} placeholder="e.g. Design manager" autocomplete="off" />
+          </div>
+          <div class="grid gap-2">
+            <Label for="iv-role" class="text-xs font-bold">Interviews you for <span class="font-normal text-muted-foreground">(optional)</span></Label>
+            <Input id="iv-role" bind:value={role} placeholder="e.g. Staff Nurse, A&E" autocomplete="off" />
+          </div>
+          <div class="grid gap-2">
+            <span class="text-xs font-bold">Style</span>
             <Segmented bind:value={style} aria-label="Style" options={STYLES.map((x) => ({ value: x.id, label: x.label }))} />
           </div>
-
-          <div class="grid gap-1.5">
-            <span class="text-sm font-medium">Focus on</span>
-            <Chips multiple bind:value={focus} aria-label="Focus on" options={FOCUS_AREAS.map((x) => ({ value: x.id, label: x.label }))} />
-          </div>
         {:else}
-          <div class="grid gap-1.5">
-            <Label for="iv-brief">Brief</Label>
+          <div class="grid gap-2">
+            <Label for="iv-brief" class="text-xs font-bold">Brief</Label>
             <Textarea id="iv-brief" bind:value={ownBrief} rows={7} placeholder="Who the interviewer is, which job this is for, what to cover and how hard to push." />
           </div>
         {/if}
 
-        <div class="grid gap-1.5">
-          <span class="text-sm font-medium">Voice</span>
-          <Chips bind:value={() => [voice], (v) => (voice = v[0] ?? voice)} aria-label="Voice" options={VOICES.map((x) => ({ value: x.id, label: x.label, title: x.note }))} />
-        </div>
+        <details class="group">
+          <summary class="flex w-fit cursor-pointer list-none items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
+            <ChevronRight class="size-4 transition-transform group-open:rotate-90" strokeWidth={1.6} /> More options
+          </summary>
+          <div class="mt-3 grid gap-4">
+            {#if !own}
+              <div class="grid gap-2">
+                <span class="text-xs font-bold">Focus on</span>
+                <Chips multiple bind:value={focus} aria-label="Focus on" options={FOCUS_AREAS.map((x) => ({ value: x.id, label: x.label }))} />
+              </div>
+            {/if}
+            <div class="grid gap-2">
+              <span class="text-xs font-bold">Voice</span>
+              <Chips bind:value={() => [voice], (v) => (voice = v[0] ?? voice)} aria-label="Voice" options={voiceOptions(interviewerFace)} />
+            </div>
+            {#if !own}
+              <button type="button" class="w-fit text-[13px] font-semibold text-muted-foreground hover:text-foreground" onclick={writeOwn}>Write the brief yourself</button>
+            {/if}
+          </div>
+        </details>
 
         <input type="hidden" name="instructions" value={brief} />
         <input type="hidden" name="voice" value={voice} />
         <input type="hidden" name="template" value="" />
-
-        {#if !own}
-          <button type="button" class="w-fit text-[13px] font-semibold underline decoration-input underline-offset-4 hover:decoration-foreground" onclick={writeOwn}>Write the brief yourself</button>
-        {/if}
-        {#if error}<p class="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>{/if}
+        {#if error}<p class="rounded-[8px] bg-destructive-soft px-3 py-2 text-sm text-destructive">{error}</p>{/if}
       </div>
 
-      <div class="flex items-center justify-end gap-2 border-t px-5 py-3">
-        <Button type="button" variant="ghost" class="mr-auto" onclick={() => (open = false)}>Cancel</Button>
-        <Button type="submit" name="then" value="list" variant="outline" disabled={busy !== null}>
+      <div class="flex items-center justify-end gap-2 border-t px-6 py-4">
+        <Button type="button" variant="outline" onclick={() => (open = false)}>Cancel</Button>
+        <Button type="submit" name="then" value="list" disabled={busy !== null}>
           {#if busy === 'create'}<LoaderCircle class="animate-spin" />{/if}Create
-        </Button>
-        <Button type="submit" name="then" value="start" disabled={busy !== null}>
-          {#if busy === 'start'}<LoaderCircle class="animate-spin" />{/if}Create and start
         </Button>
       </div>
     </form>

@@ -4,6 +4,7 @@ import { requireUserPage } from '$lib/server/guard';
 import { getInterviewOwned } from '$lib/server/repo';
 import { getPlan } from '$lib/server/billing';
 import { FREE_LIMITS } from '$lib/server/config';
+import { agentBlurb, agentRole, agentStyle } from '$lib/interviewer-brief';
 
 export const load: PageServerLoad = async (event) => {
   const user = requireUserPage(event);
@@ -20,9 +21,15 @@ export const load: PageServerLoad = async (event) => {
       status: interview.status,
       durationMinutes: plan.premium ? interview.durationMinutes : Math.min(interview.durationMinutes, FREE_LIMITS.maxMinutes),
       hasJobDescription: !!interview.jobDescription,
+      hasCv: !!interview.cvText,
       focus: interview.focus,
       savedTurns: interview.transcript?.length ?? 0
     },
-    interviewer: { name: interview.agent.name, voice: interview.agent.voice }
+    interviewer: {
+      name: interview.agent.name,
+      voice: interview.agent.voice,
+      role: agentRole(interview.agent.instructions) ?? agentBlurb(interview.agent.instructions),
+      style: agentStyle(interview.agent.instructions)
+    }
   };
 };

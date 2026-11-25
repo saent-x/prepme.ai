@@ -81,7 +81,7 @@ export async function createRealtimeClientSecret(opts: { instructions: string; v
 /** Produce the structured scorecard plus a short markdown summary. */
 export async function analyseInterview(opts: {
   agent: Pick<Agent, 'name' | 'instructions'>;
-  interview: Pick<Interview, 'name' | 'jobDescription' | 'focus'>;
+  interview: Pick<Interview, 'name' | 'jobDescription' | 'focus' | 'cvText'>;
   candidateName: string;
   transcript: TranscriptEntry[];
 }): Promise<{ scorecard: Scorecard; summary: string }> {

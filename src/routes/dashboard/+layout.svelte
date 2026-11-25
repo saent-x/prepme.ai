@@ -14,11 +14,12 @@
   import { toggleMode, mode } from 'mode-watcher';
   import {
     House,
-    Mic,
-    Bot,
+    List,
+    Users,
     CreditCard,
-    Settings,
-    PanelLeft,
+    Ellipsis,
+    PanelLeftClose,
+    PanelLeftOpen,
     LogOut,
     Moon,
     Sun,
@@ -49,8 +50,8 @@
 
   const nav = [
     { href: '/dashboard', label: 'Home', icon: House, exact: true },
-    { href: '/dashboard/interviews', label: 'Interviews', icon: Mic },
-    { href: '/dashboard/interviewers', label: 'Agents', icon: Bot }
+    { href: '/dashboard/interviews', label: 'Interviews', icon: List },
+    { href: '/dashboard/interviewers', label: 'Agents', icon: Users }
   ];
   const active = (href: string, exact = false) =>
     exact ? page.url.pathname === href : page.url.pathname === href || page.url.pathname.startsWith(href + '/');
@@ -117,62 +118,72 @@
 </script>
 
 {#snippet sidebar(mini: boolean)}
-  <div class="flex h-full flex-col gap-4 py-4 {mini ? 'items-center px-2' : 'px-3'}">
-    <div class="flex h-7 items-center {mini ? '' : 'justify-between px-2.5'}">
-      {#if !mini}<a href="/dashboard" aria-label="Home"><Logo /></a>{/if}
-      <button
-        type="button"
-        class="hidden size-7 place-items-center rounded-md text-faint transition-colors hover:bg-muted hover:text-foreground lg:grid"
-        aria-label={mini ? 'Expand sidebar' : 'Collapse sidebar'}
-        aria-expanded={!mini}
-        title={mini ? 'Expand sidebar' : 'Collapse sidebar'}
-        onclick={toggleSidebar}><PanelLeft class="size-4" strokeWidth={1.8} /></button
-      >
+  <div class="flex h-full flex-col {mini ? 'items-center px-3' : 'px-4'}">
+    <div class="flex h-[72px] shrink-0 items-center {mini ? 'justify-center' : 'justify-between pl-2'}">
+      <a href="/dashboard" aria-label="Home"><Logo mark={mini} /></a>
+      {#if !mini}
+        <button
+          type="button"
+          class="hidden size-8 place-items-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:grid"
+          aria-label="Collapse sidebar"
+          aria-expanded="true"
+          title="Collapse sidebar"
+          onclick={toggleSidebar}><PanelLeftClose class="size-5" strokeWidth={1.6} /></button
+        >
+      {/if}
     </div>
-    <nav class="grid gap-0.5 {mini ? '' : 'w-full'}" aria-label="Main">
+    <nav class="grid gap-1 {mini ? '' : 'w-full'}" aria-label="Main">
       {#each nav as item}
         <a
           href={item.href}
-          title={mini ? item.label : undefined}
           aria-label={mini ? item.label : undefined}
           aria-current={active(item.href, item.exact) ? 'page' : undefined}
-          class="flex items-center gap-2.5 rounded-lg text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted aria-[current=page]:font-semibold aria-[current=page]:text-foreground {mini
-            ? 'size-9 justify-center'
-            : 'px-2.5 py-[7px]'}"
+          class="group/nav relative flex h-9 items-center gap-3 rounded-[8px] text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:text-foreground {mini
+            ? 'w-10 justify-center'
+            : 'px-3'}"
         >
-          <item.icon class="size-4" strokeWidth={1.8} />
-          {#if !mini}{item.label}{/if}
+          <item.icon class="size-5" strokeWidth={1.6} />
+          {#if !mini}{item.label}{:else}
+            <span
+              role="tooltip"
+              class="pointer-events-none absolute top-1/2 left-[calc(100%+12px)] z-50 -translate-y-1/2 rounded-[6px] bg-foreground px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap text-background opacity-0 shadow-pop transition-opacity duration-150 group-hover/nav:opacity-100 group-focus-visible/nav:opacity-100"
+              >{item.label}</span
+            >
+          {/if}
         </a>
       {/each}
     </nav>
 
-    <div class="mt-auto grid gap-2.5 border-t pt-3 {mini ? 'justify-items-center' : 'w-full'}">
-      {#if !mini}
-        <a href="/dashboard/billing" class="flex justify-between px-2.5 text-[13px] text-muted-foreground hover:text-foreground">
-          {#if free}
-            <span>Free plan</span>
-            <span class="tabular text-faint">{used} of {data.usage.limits.interviews} used</span>
-          {:else}
-            <span>Pro plan</span>
-            <span class="text-faint">Unlimited</span>
-          {/if}
-        </a>
+    <div class="mt-auto grid w-full gap-3 pb-4 {mini ? 'justify-items-center' : ''}">
+      {#if mini}
+        <button
+          type="button"
+          class="hidden size-10 place-items-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:grid"
+          aria-label="Expand sidebar"
+          aria-expanded="false"
+          title="Expand sidebar"
+          onclick={toggleSidebar}><PanelLeftOpen class="size-5" strokeWidth={1.6} /></button
+        >
       {/if}
+      <div class="border-t {mini ? '-mx-3 self-stretch' : '-mx-4'}"></div>
       <Menu.Root>
         <Menu.Trigger
           aria-label="Account menu"
-          class="flex h-auto items-center justify-start gap-2.5 rounded-lg border-0 bg-transparent text-left font-normal hover:bg-muted {mini ? 'size-9 justify-center px-0' : 'w-full px-2.5 py-1.5'}"
+          class="flex h-auto items-center justify-start gap-3 rounded-[8px] border-0 bg-transparent text-left font-normal hover:bg-muted {mini ? 'size-10 justify-center px-0' : 'w-full px-2 py-1.5'}"
         >
-          <UserAvatar name={data.user.name} image={data.user.image} class="size-[26px]" />
+          <UserAvatar name={data.user.name} image={data.user.image} />
           {#if !mini}
-            <span class="min-w-0 flex-1 truncate text-sm font-semibold">{data.user.name}</span>
-            <Settings class="size-[15px] text-faint" strokeWidth={1.8} />
+            <span class="grid min-w-0 flex-1 leading-tight">
+              <span class="truncate text-sm font-bold">{data.user.name.split(' ')[0]}</span>
+              <span class="truncate text-xs text-muted-foreground">{free ? 'Free plan' : 'Pro plan'}</span>
+            </span>
+            <Ellipsis class="size-5 text-muted-foreground" strokeWidth={1.6} />
           {/if}
         </Menu.Trigger>
         <Menu.Content align="start" class="w-56">
           <Menu.Label class="truncate text-xs font-normal text-muted-foreground">{data.user.email}</Menu.Label>
           <Menu.Separator />
-          <Menu.Item onSelect={() => (billingOpen = true)}><CreditCard /> Plan and billing</Menu.Item>
+          <Menu.Item onSelect={() => (billingOpen = true)}><CreditCard /> Plan &amp; billing</Menu.Item>
           <Menu.Item onSelect={toggleMode}>
             {#if mode.current === 'dark'}<Sun /> Light mode{:else}<Moon /> Dark mode{/if}
           </Menu.Item>
@@ -185,8 +196,8 @@
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div onclick={onLinkClick} class="min-h-svh transition-[grid-template-columns] duration-150 lg:grid {collapsed ? 'lg:grid-cols-[56px_1fr]' : 'lg:grid-cols-[216px_1fr]'}">
-  <aside class="sticky top-0 hidden h-svh overflow-hidden border-r bg-card lg:block">
+<div onclick={onLinkClick} class="min-h-svh transition-[grid-template-columns] duration-150 lg:grid {collapsed ? 'lg:grid-cols-[64px_1fr]' : 'lg:grid-cols-[232px_1fr]'}">
+  <aside class="sticky top-0 z-20 hidden h-svh border-r bg-card lg:block {collapsed ? 'overflow-visible' : 'overflow-hidden'}">
     {@render sidebar(collapsed)}
   </aside>
 
@@ -206,7 +217,7 @@
   {/if}
 
   <main class="vt-main min-w-0">
-    <div class="mx-auto w-full max-w-[1180px] px-4 py-5 sm:px-8 sm:py-6">
+    <div class="mx-auto w-full px-4 py-6 sm:px-8 lg:px-12 lg:py-8 {collapsed ? 'lg:max-w-[1376px]' : 'lg:max-w-[1136px]'}">
       {@render children()}
     </div>
   </main>
@@ -220,6 +231,7 @@
     agents={data.newInterview.agents}
     examples={data.newInterview.examples}
     maxMinutes={data.newInterview.maxMinutes}
+    lastCv={data.newInterview.lastCv}
     agent={newInterview.agent}
     focus={newInterview.focus}
   />

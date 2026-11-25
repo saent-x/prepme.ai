@@ -1,9 +1,8 @@
 <script lang="ts">
   import Markdown from 'svelte-exmarkdown';
   import { gfmPlugin } from 'svelte-exmarkdown/gfm';
-  import { Button } from '$lib/components/ui/button';
-  import { Textarea } from '$lib/components/ui/textarea';
-  import { ArrowUp } from '@lucide/svelte';
+    import { Textarea } from '$lib/components/ui/textarea';
+  import { Send, Sparkles } from '@lucide/svelte';
   import { tick, untrack } from 'svelte';
 
   type Msg = { id: string; role: 'user' | 'assistant'; content: string };
@@ -63,52 +62,73 @@
   }
 </script>
 
-<div class="flex h-[min(70vh,680px)] flex-col overflow-hidden rounded-xl border bg-card">
-  <div bind:this={list} class="flex-1 space-y-5 overflow-y-auto p-5 sm:p-6" aria-live="polite">
+<div class="flex h-full min-h-[480px] flex-col overflow-hidden rounded-[10px] bg-muted">
+  <div class="flex h-16 shrink-0 items-center gap-2 border-b px-6">
+    <Sparkles class="size-5" strokeWidth={1.6} />
+    <h2 class="text-base font-extrabold">Coach</h2>
+  </div>
+  <div bind:this={list} class="flex-1 space-y-5 overflow-y-auto px-6 py-5" aria-live="polite">
     {#if !messages.length}
-      <div class="grid h-full place-items-center text-center">
-        <div class="max-w-md">
-          <h3 class="font-bold">Ask your coach</h3>
-          <p class="mt-1 text-sm text-muted-foreground">It has read your transcript and scorecard.</p>
-          <div class="mt-6 grid gap-2">
-            {#each suggestions as s}
-              <button class="rounded-lg border px-4 py-3 text-left text-sm transition-colors hover:bg-accent" onclick={() => send(s)}>{s}</button>
-            {/each}
-          </div>
+      <div>
+        <p class="text-sm text-muted-foreground">It has read your transcript and scores. Ask anything.</p>
+        <div class="stagger mt-4 grid gap-2">
+          {#each suggestions as s}
+            <button class="rounded-[8px] border bg-card px-3 py-2.5 text-left text-sm transition-colors hover:border-foreground/40" onclick={() => send(s)}>{s}</button>
+          {/each}
         </div>
       </div>
     {:else}
       {#each messages as m (m.id)}
-        {#if m.role === 'user'}
-          <div class="flex justify-end"><p class="max-w-[85%] rounded-lg bg-primary px-3.5 py-2 text-sm text-primary-foreground">{m.content}</p></div>
-        {:else}
-          <div class="prose-lite max-w-[92%]">
-            {#if m.content}<Markdown md={m.content} {plugins} />{:else}<span class="inline-flex gap-1"><span class="size-1.5 animate-bounce rounded-full bg-muted-foreground"></span><span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:120ms]"></span><span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:240ms]"></span></span>{/if}
+        <div class="animate-rise">
+          <div class="flex items-center gap-2">
+            {#if m.role === 'user'}
+              <span class="grid size-6 place-items-center rounded-full bg-track text-[11px] font-bold">Y</span>
+              <span class="text-xs font-bold">You</span>
+            {:else}
+              <span class="grid size-6 place-items-center rounded-full bg-foreground text-background"><Sparkles class="size-3.5" strokeWidth={1.8} /></span>
+              <span class="text-xs font-bold">Coach</span>
+            {/if}
           </div>
-        {/if}
+          <div class="mt-1.5 pl-8 text-sm leading-normal">
+            {#if m.role === 'user'}
+              <p>{m.content}</p>
+            {:else if m.content}
+              <div class="prose-lite text-sm"><Markdown md={m.content} {plugins} /></div>
+            {:else}
+              <span class="inline-flex gap-1"><span class="size-1.5 animate-bounce rounded-full bg-muted-foreground"></span><span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:120ms]"></span><span class="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:240ms]"></span></span>
+            {/if}
+          </div>
+        </div>
       {/each}
     {/if}
   </div>
   <form
-    class="flex items-end gap-2 border-t p-3"
+    class="p-6 pt-3"
     onsubmit={(e) => {
       e.preventDefault();
       send();
     }}
   >
-    <Textarea
-      bind:value={draft}
-      rows={1}
-      placeholder="Ask about your interview…"
-      class="max-h-40 min-h-11 resize-none rounded-lg"
-      aria-label="Message"
-      onkeydown={(e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          send();
-        }
-      }}
-    />
-    <Button type="submit" size="icon" class="size-11 shrink-0" disabled={busy || !draft.trim()} aria-label="Send"><ArrowUp /></Button>
+    <div class="relative">
+      <Textarea
+        bind:value={draft}
+        rows={1}
+        placeholder="Ask a follow-up"
+        class="max-h-40 min-h-10 resize-none py-2 pr-11"
+        aria-label="Message"
+        onkeydown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            send();
+          }
+        }}
+      />
+      <button
+        type="submit"
+        class="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-[6px] text-muted-foreground hover:text-foreground disabled:opacity-40"
+        disabled={busy || !draft.trim()}
+        aria-label="Send"><Send class="size-4" strokeWidth={1.6} /></button
+      >
+    </div>
   </form>
 </div>

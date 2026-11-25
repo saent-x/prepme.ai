@@ -47,21 +47,20 @@
 
 <svelte:head><title>Interviews · PrepMe</title></svelte:head>
 
-<div class="flex h-9 items-center justify-between gap-4">
-  <h1 class="text-xl font-bold tracking-tight">Interviews</h1>
+<div class="flex h-10 items-center justify-between gap-4">
+  <h1 class="text-[28px] leading-none font-extrabold tracking-[-0.02em]">Interviews</h1>
   <Button href="/dashboard/interviews/new"><Plus /> New interview</Button>
 </div>
 
-<div class="mt-4 flex flex-wrap items-center gap-2">
+<div class="mt-8 flex flex-wrap items-center gap-2">
   <div class="relative w-full sm:w-64">
-    <Search class="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-faint" />
-    <Input placeholder="Search by name" class="pl-8" bind:value={q} oninput={onSearch} aria-label="Search interviews" />
+    <Search class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.6} />
+    <Input placeholder="Search by name" class="pl-9" bind:value={q} oninput={onSearch} aria-label="Search interviews" />
   </div>
   <Segmented
     bind:value={() => data.filters.status ?? '', (v) => update({ status: v || null })}
     aria-label="Filter by status"
     options={statuses.map((x) => ({ value: x.v, label: x.label }))}
-    class="[&>*]:px-2.5 [&>*]:py-1"
   />
   {#if data.interviewers.length > 1}
     <Select.Root
@@ -76,12 +75,12 @@
   {/if}
 </div>
 
-<section class="stagger mt-3 overflow-hidden rounded-xl border bg-card">
+<section class="stagger mt-6">
   {#if data.result.items.length}
     <InterviewHead />
     {#each data.result.items as row (row.id)}<InterviewRow {row} />{/each}
   {:else}
-    <div class="grid place-items-center px-6 py-12 text-center">
+    <div class="grid place-items-center rounded-[10px] bg-muted px-6 py-12 text-center">
       <h2 class="font-bold">{data.filters.q || data.filters.status ? 'Nothing matches' : 'No interviews yet'}</h2>
       <p class="mt-1 max-w-sm text-sm text-muted-foreground">
         {data.filters.q || data.filters.status ? 'Try a different search or filter.' : 'Your first one takes under a minute to set up.'}

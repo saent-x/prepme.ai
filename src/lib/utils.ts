@@ -44,8 +44,8 @@ export function hueFrom(seed: string) {
 
 export function scoreTone(score: number | null | undefined): 'good' | 'ok' | 'low' | 'none' {
   if (score == null) return 'none';
-  if (score >= 70) return 'good';
-  if (score >= 50) return 'ok';
+  if (score >= 75) return 'good';
+  if (score >= 60) return 'ok';
   return 'low';
 }
 

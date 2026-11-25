@@ -1,8 +1,17 @@
 import { createAvatar } from '@dicebear/core';
 import { funEmoji, openPeeps } from '@dicebear/collection';
 
-/** Interviewer colours. The avatar picks one from the name, so it never changes for a given interviewer. */
-export const FACE_COLOURS = ['ff7a66', '38bdf8', '34d399', 'ffc531', 'ff9f43', 'f9a8d4'] as const;
+/** Agent colours (coral, sky, mint, sun, lilac). The avatar picks one from the name, so it never changes for a given agent. */
+export const FACE_COLOURS = ['ff6b6b', '3e9bff', '2bc6a4', 'ffc53d', '9b7bff'] as const;
+
+/** Faces pinned in the design (docs/design/penpot/SPEC.md), so the sample agents look the same everywhere. */
+const PINNED: Record<string, { eyes: string; mouth: string; colour: string }> = {
+  maya: { eyes: 'glasses', mouth: 'lilSmile', colour: 'ff6b6b' },
+  ravi: { eyes: 'cute', mouth: 'wideSmile', colour: '3e9bff' },
+  june: { eyes: 'wink', mouth: 'smileTeeth', colour: '2bc6a4' },
+  omar: { eyes: 'plain', mouth: 'cute', colour: 'ffc53d' },
+  lea: { eyes: 'closed', mouth: 'smileLol', colour: '9b7bff' }
+};
 
 function hash(seed: string) {
   // FNV-1a: spreads short names evenly across the colours.
@@ -18,6 +27,8 @@ const cache = new Map<string, string>();
 
 /** Colour tied to an interviewer's name, as a CSS hex value. */
 export function faceColour(name: string) {
+  const pin = PINNED[name.trim().toLowerCase()];
+  if (pin) return '#' + pin.colour;
   return '#' + FACE_COLOURS[hash(name.trim().toLowerCase() || 'prepme') % FACE_COLOURS.length];
 }
 
@@ -26,12 +37,13 @@ export function interviewerFace(name: string) {
   const seed = name.trim().toLowerCase() || 'prepme';
   const hit = cache.get('f:' + seed);
   if (hit) return hit;
+  const pin = PINNED[seed];
   const uri = createAvatar(funEmoji, {
     seed,
     backgroundColor: [faceColour(name).slice(1)],
     // Friendly expressions only: an interviewer should not look sad or sick.
-    eyes: ['cute', 'wink', 'wink2', 'plain', 'glasses', 'closed', 'stars', 'shades', 'closed2'],
-    mouth: ['plain', 'lilSmile', 'cute', 'wideSmile', 'smileTeeth', 'smileLol']
+    eyes: (pin ? [pin.eyes] : ['cute', 'wink', 'wink2', 'plain', 'glasses', 'closed', 'stars', 'shades', 'closed2']) as never,
+    mouth: (pin ? [pin.mouth] : ['plain', 'lilSmile', 'cute', 'wideSmile', 'smileTeeth', 'smileLol']) as never
   }).toDataUri();
   cache.set('f:' + seed, uri);
   return uri;

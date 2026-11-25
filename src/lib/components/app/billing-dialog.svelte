@@ -67,64 +67,84 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="max-h-[calc(100svh-2rem)] gap-0 overflow-y-auto p-0 sm:max-w-[560px]">
-    <Dialog.Header class="flex-row items-center gap-2.5 border-b px-5 py-3.5">
-      <Dialog.Title class="text-base font-bold">Plan and billing</Dialog.Title>
-      <span class="rounded-md bg-signal-soft px-2 py-0.5 text-xs font-semibold text-primary">{plan.premium ? (plan.productName ?? 'Pro') : 'Free'}</span>
+  <Dialog.Content class="max-h-[calc(100svh-2rem)] gap-0 overflow-y-auto p-0 sm:max-w-[912px]">
+    <Dialog.Header class="flex h-[52px] justify-center border-b px-6">
+      <Dialog.Title class="text-xl font-extrabold tracking-[-0.01em]">Plan &amp; billing</Dialog.Title>
       <Dialog.Description class="sr-only">Your plan, what you have used and how to upgrade.</Dialog.Description>
     </Dialog.Header>
 
-    <div class="grid gap-4 px-5 py-4">
-      <section class="grid rounded-xl border sm:grid-cols-2" aria-label="Usage">
-        {#each meters as u, i (u.label)}
-          <div class="px-4 py-3 {i ? 'border-t sm:border-t-0 sm:border-l' : ''}">
-            <div class="flex items-baseline gap-2">
-              <span class="tabular text-2xl font-extrabold tracking-tight">{u.used}</span>
-              <span class="text-[13px] text-muted-foreground">{plan.premium ? `${u.label}, unlimited` : `of ${u.max} ${u.label}`}</span>
-            </div>
-            {#if !plan.premium}
-              <div class="mt-2 h-[5px] overflow-hidden rounded-full bg-muted">
-                <div class="grow-x h-full rounded-full {u.used >= u.max ? 'bg-warning' : 'bg-primary'}" style="width:{Math.min(100, (u.used / u.max) * 100)}%"></div>
+    <div class="p-6">
+      <div class="stagger grid gap-6 md:grid-cols-3">
+        <!-- Free -->
+        <article class="flex min-h-[360px] flex-col rounded-[10px] border p-6 {plan.premium ? '' : 'border-foreground/0'}">
+          <h3 class="text-base font-extrabold">Free</h3>
+          <div class="mt-2"><span class="tabular text-[28px] font-extrabold">£0</span></div>
+          <div class="my-4 border-t"></div>
+          {@render checks([`${summary.limits.interviews} free interviews`, 'All agents', 'Feedback report'])}
+          {#if !plan.premium}
+            <div class="mt-auto pt-4">
+              <div class="text-xs text-muted-foreground">{meters[0].used} of {meters[0].max} used</div>
+              <div class="mt-2 h-1.5 overflow-hidden rounded-[3px] bg-track">
+                <div class="grow-x h-full rounded-[3px] bg-foreground" style="width:{Math.min(100, (meters[0].used / meters[0].max) * 100)}%"></div>
               </div>
-            {/if}
-          </div>
-        {/each}
-      </section>
+            </div>
+          {/if}
+          <Button variant="outline" class="mt-4 w-full text-muted-foreground" disabled>{plan.premium ? 'Free' : 'Current plan'}</Button>
+        </article>
 
-      {#if plan.premium}
-        {#if plan.billingEnabled}
-          <Button class="w-fit" variant="outline" onclick={portal} disabled={busy === 'portal'}>
-            {#if busy === 'portal'}<LoaderCircle class="animate-spin" />{/if} Manage subscription
-          </Button>
+        {#if plan.premium}
+          <article class="flex min-h-[360px] flex-col rounded-[10px] border-[1.5px] border-foreground p-6 md:col-span-2">
+            <h3 class="text-base font-extrabold">{plan.productName ?? 'Pro'}</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Your plan. Unlimited interviews and agents.</p>
+            <div class="my-4 border-t"></div>
+            {@render checks(['Unlimited interviews', 'Coach chat', 'Calls up to 45 minutes'])}
+            {#if plan.billingEnabled}
+              <Button class="mt-auto w-fit" variant="outline" onclick={portal} disabled={busy === 'portal'}>
+                {#if busy === 'portal'}<LoaderCircle class="animate-spin" />{/if} Manage subscription
+              </Button>
+            {/if}
+          </article>
+        {:else if products && products.length}
+          {#each products.slice(0, 2) as p, i (p.id)}
+            <article class="flex min-h-[360px] flex-col rounded-[10px] p-6 {i === 0 ? 'border-[1.5px] border-foreground' : 'border'}">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-extrabold">{p.name}</h3>
+                {#if i === 0 && products.length > 1}<span class="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-xs font-semibold">Most picked</span>{/if}
+              </div>
+              <div class="mt-2"><span class="tabular text-[28px] font-extrabold">{fmt(p.amount, p.currency)}</span> <span class="text-xs text-muted-foreground">{p.interval === 'one_time' ? 'one-off' : `per ${p.interval}`}</span></div>
+              <div class="my-4 border-t"></div>
+              {@render checks(p.benefits.length ? p.benefits.slice(0, 3) : ['Unlimited interviews', 'Coach chat', 'Calls up to 45 minutes'])}
+              <Button class="mt-auto w-full" variant={i === 0 ? 'default' : 'outline'} onclick={() => checkout(p.id)} disabled={busy === p.id}>
+                {#if busy === p.id}<LoaderCircle class="animate-spin" />{/if} Get {p.name}
+              </Button>
+            </article>
+          {/each}
+        {:else}
+          {#each [{ name: 'Sprint', period: 'one-off · 14 days', items: ['Unlimited interviews', 'Coach chat', 'For one job hunt'] }, { name: 'Pro', period: 'per month', items: ['Unlimited interviews', 'Coach chat', 'Priority voice'] }] as p, i (p.name)}
+            <article class="flex min-h-[360px] flex-col rounded-[10px] p-6 {i === 0 ? 'border-[1.5px] border-foreground' : 'border'}">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-extrabold">{p.name}</h3>
+                {#if i === 0}<span class="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-xs font-semibold">Most picked</span>{/if}
+              </div>
+              <div class="mt-2"><span class="tabular text-[28px] font-extrabold">£—</span> <span class="text-xs text-muted-foreground">{p.period}</span></div>
+              <div class="my-4 border-t"></div>
+              {@render checks(p.items)}
+              <Button class="mt-auto w-full" variant={i === 0 ? 'default' : 'outline'} disabled>
+                {#if products === null && plan.billingEnabled}<LoaderCircle class="animate-spin" /> Loading{:else}Coming soon{/if}
+              </Button>
+            </article>
+          {/each}
         {/if}
-      {:else if !plan.billingEnabled}
-        <p class="rounded-xl border px-4 py-3 text-sm text-muted-foreground">Billing isn't set up on this deployment yet.</p>
-      {:else if products === null}
-        <p class="flex items-center gap-2 text-sm text-muted-foreground"><LoaderCircle class="size-4 animate-spin" /> Loading plans</p>
-      {:else if products.length}
-        <section aria-label="Upgrade">
-          <h3 class="text-sm font-bold">Upgrade</h3>
-          <div class="stagger mt-2 grid gap-3 {products.length > 1 ? 'sm:grid-cols-2' : ''}">
-            {#each products as p (p.id)}
-              <article class="flex flex-col rounded-xl border p-4">
-                <h4 class="font-bold">{p.name}</h4>
-                {#if p.description}<p class="mt-1 text-sm text-muted-foreground">{p.description}</p>{/if}
-                <div class="mt-3"><span class="tabular text-3xl font-extrabold tracking-tight">{fmt(p.amount, p.currency)}</span><span class="text-muted-foreground"> / {p.interval}</span></div>
-                <ul class="mt-3 flex-1 space-y-1.5 text-sm">
-                  {#each p.benefits.length ? p.benefits : ['Unlimited interviews', 'Unlimited agents', 'Calls up to 45 minutes'] as b (b)}
-                    <li class="flex gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" />{b}</li>
-                  {/each}
-                </ul>
-                <Button class="mt-4" onclick={() => checkout(p.id)} disabled={busy === p.id}>
-                  {#if busy === p.id}<LoaderCircle class="animate-spin" />{/if} Upgrade
-                </Button>
-              </article>
-            {/each}
-          </div>
-        </section>
-      {:else}
-        <p class="rounded-xl border px-4 py-3 text-sm text-muted-foreground">Plans are unavailable right now. Try again shortly.</p>
-      {/if}
+      </div>
+      <p class="mt-4 text-xs text-muted-foreground">Prices in GBP. Cancel any time.</p>
     </div>
   </Dialog.Content>
 </Dialog.Root>
+
+{#snippet checks(items: string[])}
+  <ul class="grid gap-3 text-sm">
+    {#each items as b (b)}
+      <li class="flex items-start gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2} />{b}</li>
+    {/each}
+  </ul>
+{/snippet}

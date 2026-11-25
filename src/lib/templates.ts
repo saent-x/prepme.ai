@@ -19,6 +19,10 @@ export const VOICES = [
 
 export type Voice = (typeof VOICES)[number]['id'];
 
+/** Voice options with a face each, for voice pickers. */
+export const voiceOptions = (face: (seed: string) => string) =>
+  VOICES.map((x) => ({ value: x.id as string, label: x.label, title: x.note, image: face(`voice ${x.id}`) }));
+
 export const isVoice = (v: string): v is Voice => VOICES.some((x) => x.id === v);
 
 export const TEMPLATES: InterviewerTemplate[] = [

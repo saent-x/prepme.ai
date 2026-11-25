@@ -10,7 +10,7 @@
 
 <SelectTrigger
   class={cn(
-    'flex h-9 w-fit min-w-0 items-center justify-between gap-2 rounded-md border-input bg-card px-3 text-left text-sm shadow-xs data-disabled:opacity-50 data-placeholder:text-muted-foreground',
+    'flex h-10 w-fit min-w-0 items-center justify-between gap-2 rounded-[8px] border-border bg-card px-3 text-left text-sm shadow-none data-popup-open:border-foreground data-disabled:opacity-50 data-placeholder:text-muted-foreground',
     className
   )}
   {...rest}

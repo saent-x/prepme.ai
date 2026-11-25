@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '$lib/db/index.server';
 import { agents, interviews } from '$lib/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { getInterviewerOwned, listInterviewers } from '$lib/server/repo';
 import { getPlan, limitMessage } from '$lib/server/billing';
 import { FREE_LIMITS } from '$lib/server/config';
@@ -25,6 +26,10 @@ const Form = z.object({
   name: z.string().trim().max(120).optional(),
   jobDescription: z.string().trim().max(15_000).optional(),
   focus: z.string().trim().max(500).optional(),
+  cvText: z.string().trim().max(25_000).optional(),
+  cvName: z.string().trim().max(120).optional(),
+  /** Reuse the CV from one of the user's earlier interviews. */
+  cvFrom: z.string().max(64).optional(),
   durationMinutes: z.coerce.number().refine((n) => (DURATIONS as readonly number[]).includes(n), 'Pick a length')
 });
 
@@ -70,6 +75,17 @@ export const actions: Actions = {
       agentName = owned.name;
     }
 
+    let cvText = f.cvText || null;
+    let cvName = cvText ? f.cvName || 'CV' : null;
+    if (!cvText && f.cvFrom) {
+      const [prev] = await db
+        .select({ cvText: interviews.cvText, cvName: interviews.cvName })
+        .from(interviews)
+        .where(and(eq(interviews.id, f.cvFrom), eq(interviews.userId, user.id)));
+      cvText = prev?.cvText ?? null;
+      cvName = cvText ? prev?.cvName ?? 'CV' : null;
+    }
+
     const [interview] = await db
       .insert(interviews)
       .values({
@@ -78,6 +94,8 @@ export const actions: Actions = {
         name: f.name || `${agentName} practice`,
         jobDescription: f.jobDescription || null,
         focus: f.focus || null,
+        cvText,
+        cvName,
         durationMinutes
       })
       .returning({ id: interviews.id });
