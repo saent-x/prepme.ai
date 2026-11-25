@@ -8,8 +8,8 @@ export const config = {
     baseURL: () => env.OPENAI_BASE_URL || undefined,
     realtimeModel: () => env.OPENAI_REALTIME_MODEL || 'gpt-realtime-mini',
     transcribeModel: () => env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe',
-    analysisModel: () => env.OPENAI_ANALYSIS_MODEL || 'gpt-5.6-luna',
-    chatModel: () => env.OPENAI_CHAT_MODEL || 'gpt-5.6-luna'
+    analysisModel: () => env.OPENAI_ANALYSIS_MODEL || 'gpt-6-luna',
+    chatModel: () => env.OPENAI_CHAT_MODEL || 'gpt-6-luna'
   },
   polar: {
     accessToken: () => env.POLAR_ACCESS_TOKEN ?? '',

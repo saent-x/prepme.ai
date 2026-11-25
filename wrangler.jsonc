@@ -25,8 +25,8 @@
     "BETTER_AUTH_URL": "https://prepme.stbrn.studio",
     "OPENAI_REALTIME_MODEL": "gpt-realtime-mini",
     "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
-    "OPENAI_ANALYSIS_MODEL": "gpt-5.6-luna",
-    "OPENAI_CHAT_MODEL": "gpt-5.6-luna",
+    "OPENAI_ANALYSIS_MODEL": "gpt-6-luna",
+    "OPENAI_CHAT_MODEL": "gpt-6-luna",
     "POLAR_SERVER": "production",
     "UNLIMITED_USAGE": "false"
   },
@@ -39,8 +39,8 @@
       "BETTER_AUTH_URL": "",
       "OPENAI_REALTIME_MODEL": "gpt-realtime-mini",
       "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
-      "OPENAI_ANALYSIS_MODEL": "gpt-5.6-luna",
-      "OPENAI_CHAT_MODEL": "gpt-5.6-luna",
+      "OPENAI_ANALYSIS_MODEL": "gpt-6-luna",
+      "OPENAI_CHAT_MODEL": "gpt-6-luna",
       "POLAR_SERVER": "sandbox",
       "UNLIMITED_USAGE": "false"
     },
