@@ -23,7 +23,7 @@
   // and in .dev.vars for local development.
   "vars": {
     "BETTER_AUTH_URL": "https://prepme.stbrn.studio",
-    "OPENAI_REALTIME_MODEL": "gpt-realtime-mini",
+    "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1-mini",
     "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
     "OPENAI_ANALYSIS_MODEL": "gpt-6-luna",
     "OPENAI_CHAT_MODEL": "gpt-6-luna",
@@ -37,7 +37,7 @@
     "vars": {
       // Empty on purpose: each preview has its own URL, so auth reads it from the request.
       "BETTER_AUTH_URL": "",
-      "OPENAI_REALTIME_MODEL": "gpt-realtime-mini",
+      "OPENAI_REALTIME_MODEL": "gpt-realtime-2.1-mini",
       "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
       "OPENAI_ANALYSIS_MODEL": "gpt-6-luna",
       "OPENAI_CHAT_MODEL": "gpt-6-luna",

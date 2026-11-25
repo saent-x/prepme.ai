@@ -15,7 +15,7 @@ Practise job interviews out loud. Pick an interviewer, paste the job description
 ## How it works
 
 ```
- browser ──WebRTC audio──► OpenAI Realtime (gpt-realtime-mini)
+ browser ──WebRTC audio──► OpenAI Realtime (gpt-realtime-2.1-mini)
     │  ▲                         ▲
     │  └── ephemeral key ────────┤  POST /api/interviews/:id/session
     │                            │  (server mints a 2-minute client secret)
