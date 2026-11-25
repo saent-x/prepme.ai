@@ -18,6 +18,7 @@
     plan: { premium: boolean; productName: string | null; billingEnabled: boolean };
     usage: { interviews: number; interviewers: number };
     limits: { interviews: number; interviewers: number };
+    minutes: { free: number; pro: number };
   }
   interface Props {
     open: boolean;
@@ -80,7 +81,7 @@
           <h3 class="text-base font-extrabold">Free</h3>
           <div class="mt-2"><span class="tabular text-[28px] font-extrabold">£0</span></div>
           <div class="my-4 border-t"></div>
-          {@render checks([`${summary.limits.interviews} free interviews`, 'All agents', 'Feedback report'])}
+          {@render checks([`${summary.limits.interviews} free interviews`, `${summary.minutes.free}-minute calls`, 'Feedback report'])}
           {#if !plan.premium}
             <div class="mt-auto pt-4">
               <div class="text-xs text-muted-foreground">{meters[0].used} of {meters[0].max} used</div>
@@ -97,7 +98,7 @@
             <h3 class="text-base font-extrabold">{plan.productName ?? 'Pro'}</h3>
             <p class="mt-2 text-sm text-muted-foreground">Your plan. Unlimited interviews and agents.</p>
             <div class="my-4 border-t"></div>
-            {@render checks(['Unlimited interviews', 'Coach chat', 'Calls up to 45 minutes'])}
+            {@render checks(['Unlimited interviews', 'Coach chat', `${summary.minutes.pro}-minute calls`])}
             {#if plan.billingEnabled}
               <Button class="mt-auto w-fit" variant="outline" onclick={portal} disabled={busy === 'portal'}>
                 {#if busy === 'portal'}<LoaderCircle class="animate-spin" />{/if} Manage subscription
@@ -113,7 +114,7 @@
               </div>
               <div class="mt-2"><span class="tabular text-[28px] font-extrabold">{fmt(p.amount, p.currency)}</span> <span class="text-xs text-muted-foreground">{p.interval === 'one_time' ? 'one-off' : `per ${p.interval}`}</span></div>
               <div class="my-4 border-t"></div>
-              {@render checks(p.benefits.length ? p.benefits.slice(0, 3) : ['Unlimited interviews', 'Coach chat', 'Calls up to 45 minutes'])}
+              {@render checks(p.benefits.length ? p.benefits.slice(0, 3) : ['Unlimited interviews', 'Coach chat', `${summary.minutes.pro}-minute calls`])}
               <Button class="mt-auto w-full" variant={i === 0 ? 'default' : 'outline'} onclick={() => checkout(p.id)} disabled={busy === p.id}>
                 {#if busy === p.id}<LoaderCircle class="animate-spin" />{/if} Get {p.name}
               </Button>

@@ -7,7 +7,7 @@ import { getInterviewOwned } from './repo';
 import { analyseInterview, createRealtimeClientSecret } from './openai';
 import { buildRealtimeInstructions } from './prompts';
 import { getPlan } from './billing';
-import { FREE_LIMITS } from './config';
+import { callMinutes, RESUME_GRACE_MINUTES } from './config';
 
 /** Interviews in these states can (re)start a live session. */
 const JOINABLE = ['upcoming', 'active'] as const;
@@ -22,9 +22,12 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
   }
 
   const plan = await getPlan(user.id);
-  const durationMinutes = plan.premium
-    ? interview.durationMinutes
-    : Math.min(interview.durationMinutes, FREE_LIMITS.maxMinutes);
+  // The plan sets the length. Older interviews saved with a longer one are capped too.
+  const durationMinutes = Math.min(interview.durationMinutes, callMinutes(plan.premium));
+  if (interview.startedAt) {
+    const overMs = Date.now() - interview.startedAt.getTime() - (durationMinutes + RESUME_GRACE_MINUTES) * 60_000;
+    if (overMs > 0) error(409, { message: "Time is up for this interview. End it to get your score." });
+  }
 
   const previous = interview.transcript ?? [];
   const instructions = buildRealtimeInstructions({

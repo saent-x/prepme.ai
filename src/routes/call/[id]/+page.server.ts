@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { requireUserPage } from '$lib/server/guard';
 import { getInterviewOwned } from '$lib/server/repo';
 import { getPlan } from '$lib/server/billing';
-import { FREE_LIMITS } from '$lib/server/config';
+import { callMinutes } from '$lib/server/config';
 import { agentBlurb, agentRole, agentStyle } from '$lib/interviewer-brief';
 
 export const load: PageServerLoad = async (event) => {
@@ -19,7 +19,7 @@ export const load: PageServerLoad = async (event) => {
       id: interview.id,
       name: interview.name,
       status: interview.status,
-      durationMinutes: plan.premium ? interview.durationMinutes : Math.min(interview.durationMinutes, FREE_LIMITS.maxMinutes),
+      durationMinutes: Math.min(interview.durationMinutes, callMinutes(plan.premium)),
       hasJobDescription: !!interview.jobDescription,
       hasCv: !!interview.cvText,
       focus: interview.focus,

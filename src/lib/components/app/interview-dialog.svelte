@@ -6,19 +6,19 @@
   import { Textarea } from '$lib/components/ui/textarea';
   import * as Dialog from '$lib/components/ui/dialog';
   import * as Select from '$lib/components/ui/select';
-  import { Segmented } from '$lib/components/ui/segmented';
   import InterviewerAvatar from './interviewer-avatar.svelte';
     import { hasJobSummary, MIN_JOB_TEXT, type JobSummary } from '$lib/job-parse';
-  import { DURATIONS } from '$lib/templates';
   import { Building2, ChevronRight, FileText, LoaderCircle, MapPin, Paperclip, Pencil, Plus, User, X } from '@lucide/svelte';
   import { untrack } from 'svelte';
+  import { PLAN_MINUTES } from '$lib/plans';
 
   type Option = { id: string; name: string; blurb: string };
   let {
     open = $bindable(false),
     agents,
     examples,
-    maxMinutes,
+    minutes,
+    premium = false,
     agent: presetAgent = '',
     focus: presetFocus = '',
     lastCv = null
@@ -26,7 +26,8 @@
     open?: boolean;
     agents: Option[];
     examples: Option[];
-    maxMinutes: number;
+    minutes: number;
+    premium?: boolean;
     agent?: string;
     focus?: string;
     lastCv?: { from: string; name: string } | null;
@@ -35,9 +36,6 @@
   const all = $derived([...agents, ...examples]);
   let choice = $state<string | null>(untrack(() => (all.some((a) => a.id === presetAgent) ? presetAgent : (all[0]?.id ?? ''))));
   const chosen = $derived(all.find((a) => a.id === choice));
-  // The design offers three lengths. Free plans cap the longest.
-  const LENGTHS = $derived(maxMinutes >= 45 ? [15, 30, 45] : DURATIONS.filter((d) => d <= maxMinutes).slice(-3));
-  let duration = $state(untrack(() => (maxMinutes >= 30 ? 30 : Math.min(15, maxMinutes))));
   let focus = $state(untrack(() => presetFocus));
   let name = $state('');
   let error = $state<string | null>(null);
@@ -268,16 +266,10 @@
           {#if cvError}<p class="text-xs text-destructive">{cvError}</p>{/if}
         </div>
 
-        <div class="grid gap-2">
-          <Label class="text-xs font-bold">Length</Label>
-          <input type="hidden" name="durationMinutes" value={duration} />
-          <Segmented
-            bind:value={duration}
-            aria-label="Length in minutes"
-            options={LENGTHS.map((d) => ({ value: d, label: `${d} min` }))}
-          />
-          {#if maxMinutes < 45}<p class="text-xs text-muted-foreground">Up to {maxMinutes} minutes on the free plan. <a href="/dashboard/billing" class="font-semibold text-foreground">Upgrade</a></p>{/if}
-        </div>
+        <p class="text-xs text-muted-foreground">
+          {minutes}-minute interview on the {premium ? 'Pro' : 'free'} plan.
+          {#if !premium}<a href="/dashboard/billing" class="font-semibold text-foreground">Upgrade</a> for {PLAN_MINUTES.pro} minutes.{/if}
+        </p>
 
         <details class="group">
           <summary class="flex w-fit cursor-pointer list-none items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
