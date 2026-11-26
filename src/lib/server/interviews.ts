@@ -15,6 +15,17 @@ const JOINABLE = ['upcoming', 'active'] as const;
 /** Under this many candidate words there is nothing meaningful to score. */
 const MIN_CANDIDATE_WORDS = 25;
 
+/**
+ * How long past its set length an interview can still open a live session.
+ * Covers the client's own wrap-up window (it hangs up 90 s after time is up)
+ * plus a reconnect, but stops anyone minting fresh realtime keys for an
+ * interview whose time ran out long ago.
+ */
+const SESSION_GRACE_MS = 5 * 60_000;
+
+/** Fresh realtime keys one interview can mint (first start + reconnects + reloads). */
+const MAX_SESSIONS_PER_INTERVIEW = 15;
+
 export async function startRealtimeSession(user: { id: string; name: string }, interviewId: string) {
   const interview = await getInterviewOwned(user.id, interviewId);
   if (!(JOINABLE as readonly string[]).includes(interview.status)) {
@@ -29,12 +40,27 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
     if (overMs > 0) error(409, { message: "Time is up for this interview. End it to get your score." });
   }
 
+  // The client keeps time, but the server is what stops a call from running on:
+  // without this, reloading the page (or calling this endpoint directly) mints a
+  // fresh OpenAI session for an interview whose time ran out long ago.
+  const now = Date.now();
+  const elapsedMs = interview.startedAt ? now - interview.startedAt.getTime() : 0;
+  if (elapsedMs > durationMinutes * 60_000 + SESSION_GRACE_MS) {
+    error(409, { message: "This interview's time is up. End it to get your score." });
+  }
+  if (interview.sessionCount >= MAX_SESSIONS_PER_INTERVIEW) {
+    error(429, { message: 'This interview has reconnected too many times. End it to get your score.' });
+  }
+
   const previous = interview.transcript ?? [];
   const instructions = buildRealtimeInstructions({
     agent: interview.agent,
     interview: { ...interview, durationMinutes },
     candidateName: user.name.split(' ')[0] || user.name,
-    previousTranscript: previous.length ? previous : undefined
+    previousTranscript: previous.length ? previous : undefined,
+    minutesLeft: interview.startedAt
+      ? Math.max(0, Math.round((durationMinutes * 60_000 - elapsedMs) / 60_000))
+      : undefined
   });
 
   const secret = await createRealtimeClientSecret({
