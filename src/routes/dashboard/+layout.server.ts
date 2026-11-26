@@ -3,6 +3,7 @@ import { requireUserPage } from '$lib/server/guard';
 import { getUsageSummary } from '$lib/server/billing';
 import { listInterviewers, listInterviews } from '$lib/server/repo';
 import { callMinutes } from '$lib/server/config';
+import { isAdmin } from '$lib/server/usage';
 import { agentBlurb } from '$lib/interviewer-brief';
 import { TEMPLATES } from '$lib/templates';
 import { db } from '$lib/db/index.server';
@@ -28,6 +29,8 @@ export const load: LayoutServerLoad = async (event) => {
   const used = new Set(agents.map((a) => a.template).filter(Boolean));
   return {
     user: { id: user.id, name: user.name, email: user.email, image: user.image ?? null },
+    /** Shows the link to the cost page; the page checks again for itself. */
+    admin: isAdmin(user.email),
     usage,
     // For the Cmd+K palette.
     search: {

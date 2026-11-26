@@ -1,4 +1,6 @@
 import type { TranscriptEntry } from '$lib/interview-types';
+import { addRealtimeResponse, addTranscription, isEmptyUsage, newVoiceUsage, type VoiceUsage } from '$lib/usage';
+import { buildRecapNote, contextWasTrimmed } from './context';
 
 export type CallPhase =
   | 'idle'
@@ -16,6 +18,10 @@ type SessionResponse = {
   startedAt: string;
   resumed: boolean;
   transcript: TranscriptEntry[];
+  /** Which live session of the interview this key opens (1 = first, 2+ = reconnects). */
+  session: number;
+  /** Old turns are trimmed on this call (see ./context). */
+  trimming: boolean;
 };
 
 type ServerEvent = { type: string; [key: string]: unknown };
@@ -23,6 +29,8 @@ type ServerEvent = { type: string; [key: string]: unknown };
 const REALTIME_URL = 'https://api.openai.com/v1/realtime/calls';
 const MAX_AUTO_RECONNECTS = 3;
 const SAVE_DEBOUNCE_MS = 1500;
+/** The usage so far rides along with a transcript save at most this often. */
+const USAGE_REPORT_MS = 20_000;
 /** Silence from the candidate before the interviewer checks in out loud. */
 const IDLE_NUDGE_MS = 60_000;
 /** Silence before the "Are you still there?" notice appears. */
@@ -92,6 +100,19 @@ export class InterviewCall {
   #closingTurn = false;
   #liveSince = 0;
   #lastSavedJson = '';
+  /**
+   * What each live session used (tokens and connected time), read from OpenAI's
+   * own events. Sent to the server as running totals so the real cost of an
+   * interview can be worked out.
+   */
+  #usage: VoiceUsage[] = [];
+  #sessionUsage: VoiceUsage | null = null;
+  /** When the current session went live; 0 while not connected. */
+  #usageLiveSince = 0;
+  #lastUsageReport = 0;
+  #trimming = false;
+  /** Input tokens the previous reply read, to notice when old turns are dropped. */
+  #lastInputTokens = 0;
   #onPageHide = () => this.#beaconSave();
 
   constructor(interviewId: string) {
@@ -138,11 +159,16 @@ export class InterviewCall {
       // Keep whatever we already have locally if it is longer (e.g. last save was in flight).
       if (session.transcript.length > this.transcript.length) this.transcript = session.transcript;
       this.#lastSavedJson = JSON.stringify(this.transcript);
+      this.#sessionUsage = newVoiceUsage(session.session);
+      this.#usage.push(this.#sessionUsage);
+      this.#trimming = session.trimming;
+      this.#lastInputTokens = 0;
 
       await this.#connect(session.clientSecret, gen);
       if (gen !== this.#gen) return;
       this.phase = 'live';
       this.#liveSince = Date.now();
+      this.#usageLiveSince = this.#liveSince;
       this.markActive();
       this.#startTicking();
     } catch (e) {
@@ -188,7 +214,7 @@ export class InterviewCall {
       const res = await fetch(`/api/interviews/${this.interviewId}/complete`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ transcript: this.transcript })
+        body: JSON.stringify({ transcript: this.transcript, usage: this.#usageReport() })
       });
       this.phase = 'ended';
       if (!res.ok) return { ok: false, message: await readError(res) };
@@ -324,6 +350,11 @@ export class InterviewCall {
 
   #teardownPeer() {
     this.#clearDropTimer();
+    // Bank the connected time of the session that is closing.
+    if (this.#sessionUsage && this.#usageLiveSince) {
+      this.#sessionUsage.seconds += Math.round((Date.now() - this.#usageLiveSince) / 1000);
+    }
+    this.#usageLiveSince = 0;
     if (this.#dc) {
       this.#dc.onclose = null;
       this.#dc.onmessage = null;
@@ -389,6 +420,7 @@ export class InterviewCall {
       case 'conversation.item.input_audio_transcription.completed': {
         this.#upsert(String(ev.item_id), 'candidate', String(ev.transcript ?? '').trim());
         if (this.caption?.speaker === 'candidate') this.caption = null;
+        if (this.#sessionUsage) addTranscription(this.#sessionUsage, ev.usage);
         break;
       }
       case 'response.output_audio_transcript.delta': {
@@ -419,6 +451,7 @@ export class InterviewCall {
         break;
       case 'response.done':
         this.#responding = false;
+        this.#countResponse((ev.response as { usage?: unknown } | undefined)?.usage);
         if (this.#pendingResponse) {
           this.#pendingResponse = false;
           this.#requestResponse();
@@ -439,6 +472,25 @@ export class InterviewCall {
         break;
       }
     }
+  }
+
+  /** Add a finished reply to the usage totals and, on trimmed calls, keep the interviewer's memory topped up. */
+  #countResponse(usage: unknown) {
+    if (!this.#sessionUsage || !usage) return;
+    const inputTokens = addRealtimeResponse(this.#sessionUsage, usage);
+    if (this.#trimming && contextWasTrimmed(this.#lastInputTokens, inputTokens)) {
+      const recap = buildRecapNote(this.transcript);
+      if (recap) this.#systemNote(recap);
+    }
+    this.#lastInputTokens = inputTokens;
+  }
+
+  /** Running usage totals for every session of this page load, with the open session's time so far. */
+  #usageReport(): VoiceUsage[] {
+    const live = this.#usageLiveSince ? Math.round((Date.now() - this.#usageLiveSince) / 1000) : 0;
+    return this.#usage
+      .map((u) => (u === this.#sessionUsage ? { ...u, seconds: u.seconds + live } : u))
+      .filter((u) => !isEmptyUsage(u));
   }
 
   /** Create or fill a transcript entry, keeping conversation order. */
@@ -494,13 +546,18 @@ export class InterviewCall {
     const transcript = this.transcript.filter((t) => t.text.trim());
     const json = JSON.stringify(transcript);
     if (!force && json === this.#lastSavedJson) return;
+    // Usage goes with a save now and then, not with every one: it is two more writes each time.
+    const withUsage = force || Date.now() - this.#lastUsageReport >= USAGE_REPORT_MS;
     try {
       const res = await fetch(`/api/interviews/${this.interviewId}/transcript`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ transcript })
+        body: JSON.stringify(withUsage ? { transcript, usage: this.#usageReport() } : { transcript })
       });
-      if (res.ok) this.#lastSavedJson = json;
+      if (res.ok) {
+        this.#lastSavedJson = json;
+        if (withUsage) this.#lastUsageReport = Date.now();
+      }
     } catch {
       // The next save (or the final one on hang-up) covers it.
     }
@@ -511,7 +568,7 @@ export class InterviewCall {
     if (!transcript.length || this.phase === 'ended' || this.phase === 'ending') return;
     navigator.sendBeacon(
       `/api/interviews/${this.interviewId}/transcript`,
-      new Blob([JSON.stringify({ transcript })], { type: 'text/plain' })
+      new Blob([JSON.stringify({ transcript, usage: this.#usageReport() })], { type: 'text/plain' })
     );
   }
 

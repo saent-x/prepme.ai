@@ -19,6 +19,7 @@
     List,
     Users,
     CreditCard,
+    ChartNoAxesColumn,
     Ellipsis,
     PanelLeftClose,
     PanelLeftOpen,
@@ -223,6 +224,7 @@
           <Menu.Label class="truncate text-xs font-normal text-muted-foreground">{data.user.email}</Menu.Label>
           <Menu.Separator />
           <Menu.Item onSelect={() => (billingOpen = true)}><CreditCard /> Plan &amp; billing</Menu.Item>
+          {#if data.admin}<Menu.Item onSelect={() => goto('/dashboard/costs')}><ChartNoAxesColumn /> AI cost</Menu.Item>{/if}
           <Menu.Item onSelect={toggleMode}>
             {#if mode.current === 'dark'}<Sun /> Light mode{:else}<Moon /> Dark mode{/if}
           </Menu.Item>
