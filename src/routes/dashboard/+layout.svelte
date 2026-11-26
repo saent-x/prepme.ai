@@ -19,7 +19,6 @@
     List,
     Users,
     CreditCard,
-    ChartNoAxesColumn,
     Ellipsis,
     PanelLeftClose,
     PanelLeftOpen,
@@ -224,7 +223,13 @@
           <Menu.Label class="truncate text-xs font-normal text-muted-foreground">{data.user.email}</Menu.Label>
           <Menu.Separator />
           <Menu.Item onSelect={() => (billingOpen = true)}><CreditCard /> Plan &amp; billing</Menu.Item>
-          {#if data.admin}<Menu.Item onSelect={() => goto('/dashboard/costs')}><ChartNoAxesColumn /> AI cost</Menu.Item>{/if}
+          {#if data.admin}
+            <Menu.Item onSelect={() => goto('/dashboard/costs')}>
+              <!-- Drawn here, not imported, so this line does not depend on which icon set the app uses. -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 20v-6M12 20V4M18 20v-10" /></svg>
+              AI cost
+            </Menu.Item>
+          {/if}
           <Menu.Item onSelect={toggleMode}>
             {#if mode.current === 'dark'}<Sun /> Light mode{:else}<Moon /> Dark mode{/if}
           </Menu.Item>
