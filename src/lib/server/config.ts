@@ -21,10 +21,11 @@ export const config = {
 
 export const FREE_LIMITS = {
   interviews: 5,
-  interviewers: 3,
-  /** Longest call a free user can start, in minutes. */
-  maxMinutes: 20
+  interviewers: 3
 } as const;
+
+export { PLAN_MINUTES, callMinutes } from '$lib/plans';
+
 
 /** Social providers whose credentials are configured. The sign-in page only shows these. */
 export function configuredSocialProviders() {

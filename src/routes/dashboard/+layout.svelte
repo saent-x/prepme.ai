@@ -4,6 +4,8 @@
   import { goto, invalidateAll, replaceState } from '$app/navigation';
   import InterviewDialog from '$lib/components/app/interview-dialog.svelte';
   import BillingDialog from '$lib/components/app/billing-dialog.svelte';
+  import CommandPalette from '$lib/components/app/command-palette.svelte';
+  import { useShortcut, useShortcutHint } from '@ui-sdk/svelte/shortcuts';
   import { toast } from '$lib/components/ui/toast';
   import { newInterview, openNewInterview } from '$lib/new-interview.svelte';
   import Logo from '$lib/components/brand/logo.svelte';
@@ -20,6 +22,7 @@
     Ellipsis,
     PanelLeftClose,
     PanelLeftOpen,
+    Search,
     LogOut,
     Moon,
     Sun,
@@ -47,6 +50,14 @@
       /* ignore */
     }
   }
+
+  let paletteOpen = $state(false);
+  // Below lg the sidebar is a slide-in menu, so the shortcut opens that instead.
+  const sidebarKey = () => (matchMedia('(min-width: 1024px)').matches ? toggleSidebar() : (mobileOpen = !mobileOpen));
+  useShortcut('mod+b', sidebarKey, { description: 'Toggle sidebar' });
+  useShortcut('mod+k', () => (paletteOpen = !paletteOpen), { description: 'Search', allowInInput: true });
+  const searchHint = useShortcutHint('mod+k');
+  const sidebarHint = useShortcutHint('mod+b');
 
   const nav = [
     { href: '/dashboard', label: 'Home', icon: House, exact: true },
@@ -127,11 +138,25 @@
           class="hidden size-8 place-items-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:grid"
           aria-label="Collapse sidebar"
           aria-expanded="true"
-          title="Collapse sidebar"
+          title="Collapse sidebar ({sidebarHint.text})"
+          aria-keyshortcuts={sidebarHint.ariaKeyshortcuts}
           onclick={toggleSidebar}><PanelLeftClose class="size-5" strokeWidth={1.6} /></button
         >
       {/if}
     </div>
+    <button
+      type="button"
+      onclick={() => (paletteOpen = true)}
+      aria-label={mini ? 'Search' : undefined}
+      aria-keyshortcuts={searchHint.ariaKeyshortcuts}
+      title={mini ? `Search (${searchHint.text})` : undefined}
+      class="mb-3 flex h-9 items-center gap-3 rounded-[8px] border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground {mini
+        ? 'w-10 justify-center border-transparent'
+        : 'w-full px-3'}"
+    >
+      <Search class="size-[18px]" strokeWidth={1.6} />
+      {#if !mini}<span class="flex-1 text-left">Search</span><kbd class="text-[11px] font-semibold">{searchHint.text}</kbd>{/if}
+    </button>
     <nav class="grid gap-1 {mini ? '' : 'w-full'}" aria-label="Main">
       {#each nav as item}
         <a
@@ -161,7 +186,8 @@
           class="hidden size-10 place-items-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:grid"
           aria-label="Expand sidebar"
           aria-expanded="false"
-          title="Expand sidebar"
+          title="Expand sidebar ({sidebarHint.text})"
+          aria-keyshortcuts={sidebarHint.ariaKeyshortcuts}
           onclick={toggleSidebar}><PanelLeftOpen class="size-5" strokeWidth={1.6} /></button
         >
       {/if}
@@ -225,12 +251,24 @@
 
 <BillingDialog bind:open={billingOpen} usage={data.usage} />
 
+<CommandPalette
+  bind:open={paletteOpen}
+  interviews={data.search.interviews}
+  agents={data.search.agents}
+  onNewInterview={() => open({})}
+  onBilling={() => (billingOpen = true)}
+  onToggleSidebar={sidebarKey}
+  onToggleTheme={toggleMode}
+  onSignOut={signOut}
+/>
+
 {#key dialogKey}
   <InterviewDialog
     bind:open={newInterview.open}
     agents={data.newInterview.agents}
     examples={data.newInterview.examples}
-    maxMinutes={data.newInterview.maxMinutes}
+    minutes={data.newInterview.minutes}
+    premium={data.usage.plan.premium}
     lastCv={data.newInterview.lastCv}
     agent={newInterview.agent}
     focus={newInterview.focus}

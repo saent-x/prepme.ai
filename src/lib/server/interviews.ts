@@ -7,7 +7,7 @@ import { getInterviewOwned } from './repo';
 import { analyseInterview, createRealtimeClientSecret } from './openai';
 import { buildRealtimeInstructions } from './prompts';
 import { getPlan } from './billing';
-import { FREE_LIMITS } from './config';
+import { callMinutes } from './config';
 
 /** Interviews in these states can (re)start a live session. */
 const JOINABLE = ['upcoming', 'active'] as const;
@@ -33,9 +33,8 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
   }
 
   const plan = await getPlan(user.id);
-  const durationMinutes = plan.premium
-    ? interview.durationMinutes
-    : Math.min(interview.durationMinutes, FREE_LIMITS.maxMinutes);
+  // The plan sets the length. Older interviews saved with a longer one are capped too.
+  const durationMinutes = Math.min(interview.durationMinutes, callMinutes(plan.premium));
 
   // The client keeps time, but the server is what stops a call from running on:
   // without this, reloading the page (or calling this endpoint directly) mints a

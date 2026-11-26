@@ -6,8 +6,8 @@ import { agents, interviews } from '$lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { getInterviewerOwned, listInterviewers } from '$lib/server/repo';
 import { getPlan, limitMessage } from '$lib/server/billing';
-import { FREE_LIMITS } from '$lib/server/config';
-import { DURATIONS, getTemplate } from '$lib/templates';
+import { callMinutes } from '$lib/server/config';
+import { getTemplate } from '$lib/templates';
 
 // The form is a pop-up (see the dashboard layout). This route keeps old links working and handles the submit.
 export const load: PageServerLoad = async ({ url }) => {
@@ -29,8 +29,7 @@ const Form = z.object({
   cvText: z.string().trim().max(25_000).optional(),
   cvName: z.string().trim().max(120).optional(),
   /** Reuse the CV from one of the user's earlier interviews. */
-  cvFrom: z.string().max(64).optional(),
-  durationMinutes: z.coerce.number().refine((n) => (DURATIONS as readonly number[]).includes(n), 'Pick a length')
+  cvFrom: z.string().max(64).optional()
 });
 
 export const actions: Actions = {
@@ -46,7 +45,8 @@ export const actions: Actions = {
     const limit = await limitMessage(user.id, 'interview');
     if (limit) return fail(403, { error: limit, limit: true, values: raw });
     const plan = await getPlan(user.id);
-    const durationMinutes = plan.premium ? f.durationMinutes : Math.min(f.durationMinutes, FREE_LIMITS.maxMinutes);
+    // The length comes from the plan, not the form.
+    const durationMinutes = callMinutes(plan.premium);
 
     // Resolve the interviewer, creating it from a template on first use.
     let agentId: string;

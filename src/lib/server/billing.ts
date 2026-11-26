@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { count, eq } from 'drizzle-orm';
 import { db } from '$lib/db/index.server';
 import { agents, interviews } from '$lib/db/schema';
-import { config, FREE_LIMITS } from './config';
+import { config, FREE_LIMITS, PLAN_MINUTES } from './config';
 import { polarClient } from './polar';
 
 export type Plan = {
@@ -50,7 +50,7 @@ export async function getUsage(userId: string) {
 
 export async function getUsageSummary(userId: string) {
   const [plan, usage] = await Promise.all([getPlan(userId), getUsage(userId)]);
-  return { plan, usage, limits: FREE_LIMITS };
+  return { plan, usage, limits: FREE_LIMITS, minutes: PLAN_MINUTES };
 }
 
 /** Returns a user-facing message when the free plan limit is reached, otherwise null. */
