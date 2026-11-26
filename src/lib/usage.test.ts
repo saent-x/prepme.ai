@@ -335,6 +335,16 @@ describe('the cost report', () => {
     expect(withRedo.split.find((s) => s.key === 'redo')?.micros).toBe(6300);
   });
 
+  it('shows question bank work as its own line outside any interview', () => {
+    const withBank = buildCostReport([
+      ...rows,
+      row({ interviewId: null, kind: 'bank', model: 'gpt-6-luna', session: null, costMicros: 900 })
+    ]);
+    expect(withBank.interviews).toHaveLength(2);
+    expect(withBank.totals.total).toBe(report.totals.total + 900);
+    expect(withBank.split.find((s) => s.key === 'bank')?.micros).toBe(900);
+  });
+
   it('keeps the split equal to what was stored, even after a price change', () => {
     // Stored at half of what today's prices would give.
     const voice = row({ inputAudio: 1000, outputAudio: 1000, costMicros: 15_000 });

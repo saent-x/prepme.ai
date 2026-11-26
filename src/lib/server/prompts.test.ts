@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildRealtimeInstructions, buildRedoPrompt, formatTranscript } from './prompts';
+import {
+  buildDrillPrompt,
+  buildRealtimeInstructions,
+  buildRedoPrompt,
+  formatTranscript
+} from './prompts';
 import { normaliseScorecard } from './openai';
 import type { Scorecard } from '$lib/interview-types';
 
@@ -124,5 +129,33 @@ describe('buildRedoPrompt', () => {
   it('names the round when the interview was for a saved job', () => {
     const { user } = buildRedoPrompt({ ...base, spoken: true, round: { name: 'Hiring manager', focus: 'ownership' } });
     expect(user).toContain('Round: Hiring manager (tests: ownership)');
+  });
+});
+
+describe('buildDrillPrompt', () => {
+  const base = {
+    job: { title: 'Senior AI Engineer', company: 'Northwind Labs', advert: 'We need evals and RAG.', cvText: 'Built a RAG assistant.' },
+    question: { question: 'How do you evaluate a RAG system?', why: 'The advert stresses evals.' },
+    answer: 'I start with a small eval set drawn from real traffic.',
+    spoken: true
+  };
+
+  it('gives the model the job, the question and the answer', () => {
+    const { system, user } = buildDrillPrompt(base);
+    expect(system).toContain('title: 2 to 6 words');
+    expect(system).not.toContain('best answer so far');
+    expect(user).toContain('Job: Senior AI Engineer at Northwind Labs');
+    expect(user).toContain('We need evals and RAG.');
+    expect(user).toContain('Built a RAG assistant.');
+    expect(user).toContain('Question: How do you evaluate a RAG system?');
+    expect(user).toContain('Why it is likely to be asked: The advert stresses evals.');
+    expect(user).toContain('I start with a small eval set');
+  });
+
+  it('compares with the best answer so far when there is one', () => {
+    const { system, user } = buildDrillPrompt({ ...base, best: { score: 62, feedback: 'No result.' }, round: { name: 'Technical', focus: 'depth' } });
+    expect(system).toContain('stronger than their best answer so far');
+    expect(user).toContain('Their best answer so far scored 62 out of 100. Feedback on it: No result.');
+    expect(user).toContain('Round: Technical (tests: depth)');
   });
 });

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { nanoid } from 'nanoid';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { Scorecard, TranscriptEntry } from '$lib/interview-types';
@@ -273,6 +273,8 @@ export const answerRedos = sqliteTable(
     score: integer('score').notNull(),
     feedback: text('feedback').notNull(),
     tip: text('tip').notNull(),
+    /** A few words naming the story told, used if the answer is kept as a story. */
+    title: text('title').notNull().default(''),
     /** True when it was said out loud, false when typed. */
     spoken: integer('spoken', { mode: 'boolean' }).notNull().default(true),
     /** Seconds of speaking, 0 when typed. */
@@ -287,12 +289,112 @@ export const answerRedos = sqliteTable(
   ]
 );
 
-export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat', 'fit', 'redo'] as const;
+/**
+ * A job's question bank: the questions its interviews are most likely to ask,
+ * built from the advert and the CV.
+ */
+export const jobQuestions = sqliteTable(
+  'job_questions',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    targetId: text('target_id')
+      .notNull()
+      .references(() => jobTargets.id, { onDelete: 'cascade' }),
+    /** The round it is most likely to come up in (a Round id), if known. */
+    roundId: text('round_id'),
+    question: text('question').notNull(),
+    /** Why it is likely, or what it tests. */
+    why: text('why').notNull().default(''),
+    /** Order in the bank, most likely first. */
+    position: integer('position').notNull().default(0),
+    createdAt: ts('created_at')
+      .notNull()
+      .$defaultFn(() => new Date())
+  },
+  (t) => [index('job_questions_target_id_idx').on(t.targetId)]
+);
+
+/** One scored practice answer to a bank question. The best one is "your best answer so far". */
+export const questionAnswers = sqliteTable(
+  'question_answers',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    questionId: text('question_id')
+      .notNull()
+      .references(() => jobQuestions.id, { onDelete: 'cascade' }),
+    answer: text('answer').notNull(),
+    /** Out of 100. */
+    score: integer('score').notNull(),
+    feedback: text('feedback').notNull(),
+    tip: text('tip').notNull(),
+    /** A few words naming the story told, used if the answer is kept as a story. */
+    title: text('title').notNull().default(''),
+    spoken: integer('spoken', { mode: 'boolean' }).notNull().default(true),
+    seconds: integer('seconds').notNull().default(0),
+    createdAt: ts('created_at')
+      .notNull()
+      .$defaultFn(() => new Date())
+  },
+  (t) => [
+    index('question_answers_question_id_idx').on(t.questionId),
+    index('question_answers_user_id_idx').on(t.userId)
+  ]
+);
+
+/**
+ * The story bank: strong answers the candidate chose to keep, to reuse for any
+ * job. A story is a copy, so it outlives the interview, the question and the
+ * job it came from.
+ */
+export const stories = sqliteTable(
+  'stories',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** The job it was first told for. Deleting the job keeps the story. */
+    targetId: text('target_id').references(() => jobTargets.id, { onDelete: 'set null' }),
+    title: text('title').notNull(),
+    /** The question it answered. */
+    question: text('question').notNull(),
+    text: text('text').notNull(),
+    /** The answer's score when it was kept, out of 100. */
+    score: integer('score').notNull(),
+    /** Where it came from ("redo:<id>" or "answer:<id>"), so one answer is kept once. */
+    source: text('source').notNull(),
+    createdAt: ts('created_at')
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: ts('updated_at')
+      .notNull()
+      .$defaultFn(() => new Date())
+      .$onUpdate(() => new Date())
+  },
+  (t) => [
+    index('stories_user_id_idx').on(t.userId),
+    uniqueIndex('stories_user_source_idx').on(t.userId, t.source)
+  ]
+);
+
+export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat', 'fit', 'redo', 'bank'] as const;
 
 /**
  * What each interview cost in AI usage: one row per live voice session, per
  * session's transcription, per scoring run and per coach chat reply. Fit checks
- * for a job (no interview) and answer redos are recorded here too.
+ * for a job (no interview), answer redos and question bank work are recorded here too.
  *
  * `interviewId` is deliberately not a foreign key: the money was spent even if
  * the interview is deleted later, so the row has to outlive it.
@@ -345,6 +447,8 @@ export type JobTarget = InferSelectModel<typeof jobTargets>;
 export type Interview = InferSelectModel<typeof interviews>;
 export type InterviewMessage = InferSelectModel<typeof interviewMessages>;
 export type AnswerRedo = InferSelectModel<typeof answerRedos>;
+export type JobQuestion = InferSelectModel<typeof jobQuestions>;
+export type StoryRow = InferSelectModel<typeof stories>;
 export type UsageEvent = InferSelectModel<typeof usageEvents>;
 export type UsageKind = (typeof USAGE_KINDS)[number];
 export type InterviewStatus = (typeof INTERVIEW_STATUSES)[number];

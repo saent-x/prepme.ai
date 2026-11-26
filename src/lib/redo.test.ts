@@ -8,7 +8,7 @@ import {
   gainLabel,
   nextToRedo,
   redosByQuestion,
-  RedoModelSchema,
+  AnswerModelSchema,
   type Redo
 } from './redo';
 import type { Scorecard } from './interview-types';
@@ -27,6 +27,7 @@ const redo = (
   score,
   feedback: 'Better.',
   tip: 'End on the result.',
+  title: 'The cost cap',
   spoken: true,
   seconds: 60,
   createdAt: new Date(Date.UTC(2026, 10, 26, 12, 0) - minutesAgo * 60_000)
@@ -60,9 +61,13 @@ describe('scores', () => {
   });
 
   it('accepts only whole scores from the model', () => {
-    expect(RedoModelSchema.safeParse({ score: 77, feedback: 'a', tip: 'b' }).success).toBe(true);
-    expect(RedoModelSchema.safeParse({ score: 101, feedback: 'a', tip: 'b' }).success).toBe(false);
-    expect(RedoModelSchema.safeParse({ score: 77, feedback: 'a' }).success).toBe(false);
+    expect(
+      AnswerModelSchema.safeParse({ score: 77, feedback: 'a', tip: 'b', title: 'c' }).success
+    ).toBe(true);
+    expect(
+      AnswerModelSchema.safeParse({ score: 101, feedback: 'a', tip: 'b', title: 'c' }).success
+    ).toBe(false);
+    expect(AnswerModelSchema.safeParse({ score: 77, feedback: 'a', tip: 'b' }).success).toBe(false);
   });
 });
 

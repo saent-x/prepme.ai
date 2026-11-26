@@ -15,6 +15,7 @@
   import UserAvatar from '$lib/components/app/user-avatar.svelte';
   import { toggleMode, mode } from 'mode-watcher';
   import {
+    BookOpen,
     Briefcase,
     House,
     List,
@@ -77,6 +78,7 @@
     { href: '/dashboard', label: 'Home', icon: House, exact: true },
     { href: '/dashboard/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/dashboard/interviews', label: 'Interviews', icon: List },
+    { href: '/dashboard/stories', label: 'Stories', icon: BookOpen },
     { href: '/dashboard/interviewers', label: 'Agents', icon: Users }
   ];
   const active = (href: string, exact = false) =>

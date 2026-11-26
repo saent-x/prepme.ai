@@ -65,11 +65,21 @@ A job target is a job someone is preparing for: the advert, their CV and the int
 
 ### Redo an answer
 
-On a scorecard, every question has a Redo button. The candidate answers it again, out loud for up to two minutes (or typed), and sees the new score next to the first one with what changed and one thing to fix next time. The logic lives in [src/lib/redo.ts](./src/lib/redo.ts) and [src/lib/server/redo.ts](./src/lib/server/redo.ts).
+On a scorecard, every question has a Redo button. The candidate answers it again, out loud for up to two minutes (or typed), and sees the new score next to the first one with what changed and one thing to fix next time. The logic lives in [src/lib/redo.ts](./src/lib/redo.ts) and [src/lib/server/redo.ts](./src/lib/server/redo.ts); the pop-up is [answer-dialog.svelte](./src/lib/components/results/answer-dialog.svelte).
 
-- **How it works.** The browser records the answer and posts it to `/api/interviews/:id/redo`. The server transcribes it with the transcription model, scores it with the analysis model against the first answer, and stores the attempt in `answer_redos`. The recording itself is not kept.
+- **How it works.** The browser records the answer and posts it to `/api/interviews/:id/redo`. The server ([src/lib/server/answers.ts](./src/lib/server/answers.ts), shared with the question bank) transcribes it with the transcription model, scores it with the analysis model against the first answer, and stores the attempt in `answer_redos`. The recording itself is not kept.
 - **Limits.** The free plan includes 3 redos; paid plans have no limit. Anyone is capped at 40 a day so a stuck script cannot run up a bill.
 - **Cost.** Well under a penny each. Redos show as their own line on the cost page and are not added to the cost of the interview they follow.
+
+### Question bank and stories
+
+Each job has a question bank: the questions its interviews are most likely to ask, each with the candidate's best answer so far. The logic lives in [src/lib/bank.ts](./src/lib/bank.ts) and [src/lib/server/bank.ts](./src/lib/server/bank.ts); the section is on the job page.
+
+- **Building it.** "Build the question bank" has the chat model read the advert, the CV, the rounds and the gaps from the fit check and list 12 questions (10 builds a day per person). Without an API key, or if the model fails, a rule-based list stands in. Building again keeps every question that has an answer. People can add their own questions too.
+- **Practising.** A bank question is answered the same way as a redo: out loud for up to two minutes, or typed, then scored out of 100. The best answer is kept next to the question.
+- **Stories.** An answer that scores 75 or more (from the bank or a redo) can be kept as a story. `/dashboard/stories` lists them, strongest first, to reuse for any job. A story is a copy, so it outlives the job and the interview it came from.
+- **Limits.** The free plan shows the first 5 questions of a bank and includes 5 scored bank answers. Paid plans show everything.
+- **Cost.** Pennies per job. Bank builds and bank answers show as "Question bank" on the cost page.
 
 ### Deploying
 
@@ -80,7 +90,7 @@ Or connect the repository in the Cloudflare dashboard (Workers Builds) with buil
 
 ### What interviews cost
 
-Every interview records what it used at OpenAI (voice, live transcript, scoring and coach chat, plus fit checks and answer redos) in the `usage_events` table, priced with the table in [src/lib/usage.ts](./src/lib/usage.ts). The voice figures are read from OpenAI's own events in the browser, so they are for working out costs, not for billing.
+Every interview records what it used at OpenAI (voice, live transcript, scoring and coach chat, plus fit checks, answer redos and the question bank) in the `usage_events` table, priced with the table in [src/lib/usage.ts](./src/lib/usage.ts). The voice figures are read from OpenAI's own events in the browser, so they are for working out costs, not for billing.
 
 - **Cost page.** `/dashboard/costs` shows the cost per interview and per voice minute, where the money goes, and what the planned plans would cost. Only the accounts listed in the `ADMIN_EMAILS` secret can open it: `bunx wrangler secret put ADMIN_EMAILS` (comma-separated sign-in emails). List only addresses that already have an account here: sign-up does not check that an email is real, so an unused address could be claimed by whoever signs up with it first.
 - **Trimming long calls.** `OPENAI_REALTIME_CONTEXT_TOKENS` in `wrangler.jsonc` is `"0"` (off). Set it to a number such as `"8000"` and OpenAI drops the oldest half of a call once it passes that many tokens, while the app reminds the interviewer which questions it already asked. Each drop makes OpenAI re-read the rest of the call at full price once, so trimming is not always cheaper: the cost page compares trimmed calls with untrimmed ones.
