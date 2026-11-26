@@ -12,6 +12,8 @@
 				destructive: "text-destructive",
 				signal: "text-spark-ink before:bg-spark",
 				success: "text-success-text before:bg-success",
+				// Ready to start: neutral text, green dot.
+				ready: "text-muted-foreground before:bg-success",
 				warning: "text-warning-text before:bg-warning",
 				gold: "text-gold-text before:bg-gold",
 				flame: "text-flame-text before:bg-flame",
