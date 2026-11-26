@@ -16,7 +16,9 @@
   import { COMPETENCY_LABELS } from '$lib/interview-types';
   import { jobName } from '$lib/jobs';
   import { answerScore, gainLabel, nextToRedo, redosByQuestion } from '$lib/redo';
-  import RedoDialog, { type RedoQuestion } from '$lib/components/results/redo-dialog.svelte';
+  import AnswerDialog, { type AnswerTarget } from '$lib/components/results/answer-dialog.svelte';
+  import KeepStory from '$lib/components/app/keep-story.svelte';
+  import { STORY_SCORE } from '$lib/bank';
   import { Check, ChevronDown, ChevronRight, Ellipsis, Mic, Pencil, Redo, RotateCcw, Target, Trash2 } from '$lib/icons';
 
   let { data, form } = $props();
@@ -30,11 +32,16 @@
   const redone = $derived(redosByQuestion(data.redos));
   const suggested = $derived(sc ? nextToRedo(sc.questions, data.redos) : null);
   let redoOpen = $state(false);
-  let redoing = $state<RedoQuestion | null>(null);
+  let redoing = $state<AnswerTarget | null>(null);
   function redo(index: number) {
     const q = sc?.questions[index];
     if (!q) return;
-    redoing = { index, question: q.question, score: answerScore(q), feedback: q.feedback };
+    redoing = {
+      endpoint: `/api/interviews/${i.id}/redo`,
+      fields: { question: String(index) },
+      question: q.question,
+      before: { score: answerScore(q), note: q.feedback }
+    };
     redoOpen = true;
   }
 </script>
@@ -181,6 +188,9 @@
                         <span class="tabular font-bold">{r.best.previousScore} to {r.best.score}.</span>
                         <span class="text-muted-foreground">{r.best.feedback} Next time: {r.best.tip}</span>
                       </p>
+                      {#if r.best.score >= STORY_SCORE}
+                        <p><KeepStory source="redo:{r.best.id}" kept={data.keptStories.includes(`redo:${r.best.id}`)} refresh="app:interview" /></p>
+                      {/if}
                     {/if}
                   </div>
                 </details>
@@ -225,7 +235,7 @@
   {/if}
 </div>
 
-<RedoDialog bind:open={redoOpen} interviewId={i.id} question={redoing} left={data.redosLeft} />
+<AnswerDialog bind:open={redoOpen} kind="redo" target={redoing} left={data.redosLeft} refresh="app:interview" />
 
 <AlertDialog.Root bind:open={confirmDelete}>
   <AlertDialog.Content>

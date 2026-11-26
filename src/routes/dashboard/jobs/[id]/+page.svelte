@@ -11,13 +11,14 @@
   import FitView from '$lib/components/app/fit-view.svelte';
   import InterviewHead from '$lib/components/app/interview-head.svelte';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
+  import QuestionBank from '$lib/components/app/question-bank.svelte';
   import RoundsPath, { type PathStep } from '$lib/components/app/rounds-path.svelte';
   import Ring from '$lib/components/viz/ring.svelte';
   import { formatDay, jobName, PASS_MARK, whenLine } from '$lib/jobs';
   import { scoreTone } from '$lib/utils';
   import { ChevronRight, Ellipsis, LoaderCircle, Mic, Pencil, Sparkles, Trash2 } from '$lib/icons';
 
-  let { data } = $props();
+  let { data, form } = $props();
   const job = $derived(data.job);
   const r = $derived(data.readiness);
 
@@ -182,6 +183,10 @@
       {/if}
     </div>
   </section>
+</div>
+
+<div class="mt-8">
+  <QuestionBank jobId={job.id} bank={data.bank} rounds={r.rounds.map((p) => p.round)} left={data.bankAnswersLeft} kept={data.keptStories} error={form?.bankError} />
 </div>
 
 <details class="group mt-8 border-t pt-4">

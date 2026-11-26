@@ -17,16 +17,20 @@ export const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
 export const FREE_REDOS = 3;
 /** Redos one person can run in a day on any plan, so a stuck script cannot run up a bill. */
 export const REDOS_PER_DAY = 40;
-/** Paid-for model calls behind redos in a day, counting attempts that failed and were never stored. */
-export const REDO_CALLS_PER_DAY = 120;
+/** Paid-for model calls behind practised answers in a day, counting attempts that failed and were never stored. */
+export const ANSWER_CALLS_PER_DAY = 120;
 
-/** What the scoring model returns for a redo. Every field is required for strict structured output. */
-export const RedoModelSchema = z.object({
+/**
+ * What the scoring model returns for one practised answer (a redo, or an answer
+ * to a bank question). Every field is required for strict structured output.
+ */
+export const AnswerModelSchema = z.object({
   score: z.number().int().min(0).max(100),
   feedback: z.string(),
-  tip: z.string()
+  tip: z.string(),
+  title: z.string()
 });
-export type RedoModel = z.infer<typeof RedoModelSchema>;
+export type AnswerModel = z.infer<typeof AnswerModelSchema>;
 
 /** A stored redo as the scorecard page shows it. */
 export type Redo = {
@@ -37,6 +41,8 @@ export type Redo = {
   score: number;
   feedback: string;
   tip: string;
+  /** A few words naming the story told. */
+  title: string;
   spoken: boolean;
   seconds: number;
   createdAt: Date;

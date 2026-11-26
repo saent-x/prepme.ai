@@ -17,7 +17,7 @@
   import ScoreChip from './score-chip.svelte';
   import StatusBadge from './status-badge.svelte';
   import { mode } from 'mode-watcher';
-  import { Briefcase, CreditCard, House, List, LogOut, Moon, PanelLeft, Plus, Search, Sun, Users } from '$lib/icons';
+  import { BookOpen, Briefcase, CreditCard, House, List, LogOut, Moon, PanelLeft, Plus, Search, Sun, Users } from '$lib/icons';
   import type { InterviewStatus } from '$lib/db/schema';
   import { jobName } from '$lib/jobs';
 
@@ -62,6 +62,7 @@
     { value: 'go:home', label: 'Home', icon: House, href: '/dashboard' },
     { value: 'go:jobs', label: 'Jobs', icon: Briefcase, href: '/dashboard/jobs' },
     { value: 'go:interviews', label: 'Interviews', icon: List, href: '/dashboard/interviews' },
+    { value: 'go:stories', label: 'Stories', icon: BookOpen, href: '/dashboard/stories' },
     { value: 'go:agents', label: 'Agents', icon: Users, href: '/dashboard/interviewers' }
   ];
 

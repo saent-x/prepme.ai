@@ -54,7 +54,7 @@ const larger = (column: SQLiteColumn): SQL =>
 function upsert(row: Row) {
   const seconds = row.seconds ?? 0;
   // Only transcription is ever billed by length; a voice row's seconds are time connected.
-  const billedByLength = row.kind === 'transcription' || row.kind === 'redo';
+  const billedByLength = row.kind !== 'voice';
   const cost = costMicros(row.model, row, billedByLength ? seconds : 0);
   const u = usageEvents;
   return db
@@ -139,11 +139,11 @@ export async function recordVoiceUsage(opts: {
   await Promise.all(writes);
 }
 
-/** Store what one scoring run, coach chat reply or fit check used. A fit check has no interview. */
+/** Store what one scoring run, coach chat reply, fit check or question bank build used. Fit checks and bank builds have no interview. */
 export async function recordTextUsage(opts: {
   userId: string;
   interviewId: string | null;
-  kind: 'scoring' | 'chat' | 'fit';
+  kind: 'scoring' | 'chat' | 'fit' | 'bank';
   model: string;
   responseId: string;
   usage: unknown;
@@ -161,25 +161,28 @@ export async function recordTextUsage(opts: {
 }
 
 /**
- * Store what one answer redo used: the scoring reply, and the transcription
- * when the answer was spoken. Both are kind "redo", so the cost page shows
- * redos as their own line and an interview's own cost stays what the call cost.
+ * Store what one practised answer used: the scoring reply, and the
+ * transcription when the answer was spoken. A redo is kind "redo" and an
+ * answer to a bank question is kind "bank", so the cost page shows each as its
+ * own line and an interview's own cost stays what the call cost.
  */
-export async function recordRedoUsage(opts: {
+export async function recordAnswerUsage(opts: {
   userId: string;
-  interviewId: string;
-  redoId: string;
+  interviewId: string | null;
+  kind: 'redo' | 'bank';
+  /** The stored attempt's id, or any unique value when nothing was stored. */
+  key: string;
   scoring: { model: string; usage: unknown };
   transcription: { model: string; usage: unknown } | null;
 }) {
-  const base = { userId: opts.userId, interviewId: opts.interviewId, kind: 'redo' as const };
+  const base = { userId: opts.userId, interviewId: opts.interviewId, kind: opts.kind };
   const writes = [];
   if (opts.scoring.usage) {
     writes.push(
       upsert({
         ...base,
         ...tokensFromResponse(opts.scoring.usage),
-        key: `${opts.redoId}:redo:score`,
+        key: `${opts.key}:${opts.kind}:score`,
         model: opts.scoring.model,
         responses: 1
       })
@@ -194,7 +197,7 @@ export async function recordRedoUsage(opts: {
         inputText: t.inputText,
         inputAudio: t.inputAudio,
         outputText: t.outputText,
-        key: `${opts.redoId}:redo:transcribe`,
+        key: `${opts.key}:${opts.kind}:transcribe`,
         model: opts.transcription.model,
         seconds: t.seconds,
         responses: 0

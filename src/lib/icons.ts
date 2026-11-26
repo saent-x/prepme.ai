@@ -54,3 +54,6 @@ export { default as Info } from 'phosphor-svelte/lib/Info';
 export { default as Redo } from 'phosphor-svelte/lib/ArrowClockwise';
 export { default as Keyboard } from 'phosphor-svelte/lib/Keyboard';
 export { default as Stop } from 'phosphor-svelte/lib/Stop';
+export { default as BookmarkSimple } from 'phosphor-svelte/lib/BookmarkSimple';
+export { default as BookOpen } from 'phosphor-svelte/lib/BookOpenText';
+export { default as Lock } from 'phosphor-svelte/lib/LockSimple';

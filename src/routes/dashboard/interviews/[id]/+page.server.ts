@@ -7,6 +7,7 @@ import { interviews, jobTargets } from '$lib/db/schema';
 import { getInterviewOwned, listMessages } from '$lib/server/repo';
 import { limitMessage } from '$lib/server/billing';
 import { freeRedosLeft, listRedos } from '$lib/server/redo';
+import { keptSources } from '$lib/server/bank';
 
 export const load: PageServerLoad = async ({ locals, params, depends, parent }) => {
   depends('app:interview');
@@ -30,6 +31,11 @@ export const load: PageServerLoad = async ({ locals, params, depends, parent }) 
     job: job ?? null,
     redos,
     redosLeft,
+    /** Redos already kept as stories ("redo:<id>"). */
+    keptStories: await keptSources(
+      locals.user!.id,
+      redos.map((r) => `redo:${r.id}`)
+    ),
     messages: messages.map((m) => ({ id: m.id, role: m.role, content: m.content }))
   };
 };

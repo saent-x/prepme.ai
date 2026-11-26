@@ -7,12 +7,25 @@ import { jobTargets } from '$lib/db/schema';
 import { DateSchema } from '$lib/jobs';
 import { checkFit, getJobOwned, getJobWithReadiness, resolveCv } from '$lib/server/jobs';
 import { listInterviews } from '$lib/server/repo';
+import {
+  addOwnQuestion,
+  buildBank,
+  freeBankAnswersLeft,
+  keptSources,
+  listBank,
+  removeQuestion
+} from '$lib/server/bank';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, depends, parent }) => {
+  depends('app:job');
   const userId = locals.user!.id;
-  const [{ job, readiness }, practice] = await Promise.all([
+  // The layout has already looked the plan up.
+  const premium = (await parent()).usage.plan.premium;
+  const [{ job, readiness }, practice, bank, bankAnswersLeft] = await Promise.all([
     getJobWithReadiness(userId, params.id),
-    listInterviews(userId, { targetId: params.id, pageSize: 20 })
+    listInterviews(userId, { targetId: params.id, pageSize: 20 }),
+    listBank(userId, params.id, premium),
+    freeBankAnswersLeft(userId, premium)
   ]);
   return {
     // The CV's text stays on the server; the page only needs its name.
@@ -28,9 +41,18 @@ export const load: PageServerLoad = async ({ locals, params }) => {
     },
     readiness,
     interviews: practice.items,
-    moreInterviews: practice.total > practice.items.length
+    moreInterviews: practice.total > practice.items.length,
+    bank,
+    bankAnswersLeft,
+    /** Best answers already kept as stories ("answer:<id>"). */
+    keptStories: await keptSources(
+      userId,
+      bank.questions.flatMap((q) => (q.best ? [`answer:${q.best.id}`] : []))
+    )
   };
 };
+
+const OwnQuestion = z.string().trim().min(10, 'Write the question out in full').max(300);
 
 const Details = z.object({
   title: z.string().trim().min(1, 'Give the job a title').max(90),
@@ -77,6 +99,35 @@ export const actions: Actions = {
       .update(jobTargets)
       .set({ cvText: cv.text, cvName: cv.name, fit })
       .where(mine(user.id, job.id));
+    return { ok: true };
+  },
+
+  /** Build the question bank, or build it again. Answered questions are kept. */
+  bank: async ({ locals, params }) => {
+    const job = await getJobOwned(locals.user!.id, params.id);
+    await buildBank(locals.user!.id, job);
+    return { ok: true };
+  },
+
+  addQuestion: async ({ request, locals, params }) => {
+    const parsed = OwnQuestion.safeParse((await request.formData()).get('question'));
+    if (!parsed.success)
+      return fail(400, { bankError: parsed.error.issues[0]?.message ?? 'Check the question' });
+    const job = await getJobOwned(locals.user!.id, params.id);
+    const problem = await addOwnQuestion(locals.user!.id, job, parsed.data);
+    if (problem) return fail(400, { bankError: problem });
+    return { ok: true };
+  },
+
+  removeQuestion: async ({ request, locals, params }) => {
+    const id = z
+      .string()
+      .min(1)
+      .max(40)
+      .safeParse((await request.formData()).get('id'));
+    if (!id.success) return fail(400, { bankError: 'That question could not be found.' });
+    await getJobOwned(locals.user!.id, params.id);
+    await removeQuestion(locals.user!.id, params.id, id.data);
     return { ok: true };
   },
 
