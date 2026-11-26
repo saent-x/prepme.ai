@@ -263,7 +263,7 @@ export const isEmptyUsage = (u: VoiceUsage) =>
 // The cost report
 // ---------------------------------------------------------------------------
 
-export type UsageKindName = 'voice' | 'transcription' | 'scoring' | 'chat' | 'fit';
+export type UsageKindName = 'voice' | 'transcription' | 'scoring' | 'chat' | 'fit' | 'redo';
 
 /** The columns of a stored usage row that the report needs. */
 export type UsageRow = Tokens & {
@@ -339,18 +339,19 @@ export function buildCostReport(rows: UsageRow[]) {
     transcription: 0,
     scoring: 0,
     chat: 0,
-    fit: 0
+    fit: 0,
+    redo: 0
   };
   const unpriced = new Set<string>();
   let input = 0;
   let cached = 0;
-  /** Spend that belongs to no interview (fit checks for a job). */
+  /** Spend that is not part of what an interview itself cost: fit checks for a job, and answer redos afterwards. */
   let outside = 0;
 
   for (const r of rows) {
-    if (r.kind === 'fit') {
+    if (r.kind === 'fit' || r.kind === 'redo') {
       if (r.costMicros == null) unpriced.add(r.model);
-      split.fit += r.costMicros ?? 0;
+      split[r.kind] += r.costMicros ?? 0;
       outside += r.costMicros ?? 0;
       continue;
     }
@@ -457,7 +458,8 @@ export function buildCostReport(rows: UsageRow[]) {
       { key: 'transcription', label: 'Live transcript', micros: split.transcription },
       { key: 'scoring', label: 'Scoring', micros: split.scoring },
       { key: 'chat', label: 'Coach chat', micros: split.chat },
-      { key: 'fit', label: 'Fit checks', micros: split.fit }
+      { key: 'fit', label: 'Fit checks', micros: split.fit },
+      { key: 'redo', label: 'Answer redos', micros: split.redo }
     ].sort((a, b) => b.micros - a.micros),
     buckets: LENGTH_BUCKETS.map((b) => ({
       label: b.label,

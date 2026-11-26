@@ -25,8 +25,8 @@ export function openai() {
   return textClient;
 }
 
-/** Direct client for minting realtime keys; the live audio itself never touches our server. */
-function openaiDirect() {
+/** Direct client for minting realtime keys (the live audio itself never touches our server) and for audio uploads. */
+export function openaiDirect() {
   directClient ??= new OpenAI({ apiKey: apiKey(), maxRetries: 2 });
   return directClient;
 }

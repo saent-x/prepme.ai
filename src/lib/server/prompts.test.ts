@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildRealtimeInstructions, formatTranscript } from './prompts';
+import { buildRealtimeInstructions, buildRedoPrompt, formatTranscript } from './prompts';
 import { normaliseScorecard } from './openai';
 import type { Scorecard } from '$lib/interview-types';
 
@@ -88,5 +88,41 @@ describe('CV in prompts', () => {
       transcript: []
     });
     expect(user).toContain(cvText);
+  });
+});
+
+describe('buildRedoPrompt', () => {
+  const question = {
+    question: 'Tell me about a time you cut costs.',
+    answer_summary: 'You described moving to a cheaper model.',
+    score: 2,
+    feedback: 'No numbers, and the result was missing.'
+  };
+  const base = {
+    interview: { name: 'Juro technical', jobDescription: 'Senior AI Engineer at Juro', cvText: null },
+    question,
+    answer: 'I cut our model bill by 40 percent by caching prompts.'
+  };
+
+  it('gives the model the question, the first score out of 100 and the new answer', () => {
+    const { system, user } = buildRedoPrompt({ ...base, spoken: true });
+    expect(system).toContain('Their first answer scored 40 on this scale');
+    expect(system).toContain('spoken and then transcribed');
+    expect(user).toContain('Question: Tell me about a time you cut costs.');
+    expect(user).toContain("First answer's score: 40 out of 100");
+    expect(user).toContain('No numbers, and the result was missing.');
+    expect(user).toContain('I cut our model bill by 40 percent');
+    expect(user).toContain('Senior AI Engineer at Juro');
+  });
+
+  it('does not judge delivery when the answer was typed', () => {
+    const { system } = buildRedoPrompt({ ...base, spoken: false });
+    expect(system).toContain('typed');
+    expect(system).not.toContain('transcribed');
+  });
+
+  it('names the round when the interview was for a saved job', () => {
+    const { user } = buildRedoPrompt({ ...base, spoken: true, round: { name: 'Hiring manager', focus: 'ownership' } });
+    expect(user).toContain('Round: Hiring manager (tests: ownership)');
   });
 });

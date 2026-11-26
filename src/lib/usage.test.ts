@@ -320,6 +320,21 @@ describe('the cost report', () => {
     expect(withFit.split.find((s) => s.key === 'fit')?.micros).toBe(500);
   });
 
+  it('counts answer redos in the spend without adding them to the interview they follow', () => {
+    const id = rows[0].interviewId;
+    const before = report.interviews.find((i) => i.interviewId === id)!.total;
+    const withRedo = buildCostReport([
+      ...rows,
+      row({ interviewId: id, kind: 'redo', model: 'gpt-6-luna', session: null, costMicros: 300 }),
+      row({ interviewId: id, kind: 'redo', model: 'gpt-4o-mini-transcribe', session: null, costMicros: 6000 })
+    ]);
+    expect(withRedo.interviews).toHaveLength(2);
+    expect(withRedo.interviews.find((i) => i.interviewId === id)!.total).toBe(before);
+    expect(withRedo.totals.total).toBe(report.totals.total + 6300);
+    expect(withRedo.totals.perVoiceMinute).toBe(report.totals.perVoiceMinute);
+    expect(withRedo.split.find((s) => s.key === 'redo')?.micros).toBe(6300);
+  });
+
   it('keeps the split equal to what was stored, even after a price change', () => {
     // Stored at half of what today's prices would give.
     const voice = row({ inputAudio: 1000, outputAudio: 1000, costMicros: 15_000 });

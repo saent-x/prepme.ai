@@ -6,12 +6,17 @@ import { db } from '$lib/db/index.server';
 import { interviews, jobTargets } from '$lib/db/schema';
 import { getInterviewOwned, listMessages } from '$lib/server/repo';
 import { limitMessage } from '$lib/server/billing';
+import { freeRedosLeft, listRedos } from '$lib/server/redo';
 
-export const load: PageServerLoad = async ({ locals, params, depends }) => {
+export const load: PageServerLoad = async ({ locals, params, depends, parent }) => {
   depends('app:interview');
   const interview = await getInterviewOwned(locals.user!.id, params.id);
-  const [messages, [job]] = await Promise.all([
+  const scored = interview.status === 'completed' && !!interview.scorecard;
+  const [messages, redos, redosLeft, [job]] = await Promise.all([
     interview.status === 'completed' ? listMessages(interview.id) : [],
+    scored ? listRedos(interview.id) : [],
+    // The layout has already looked the plan up.
+    scored ? parent().then((p) => freeRedosLeft(locals.user!.id, p.usage.plan.premium)) : null,
     // The job this was practice for, to link back to it.
     interview.targetId
       ? db
@@ -23,6 +28,8 @@ export const load: PageServerLoad = async ({ locals, params, depends }) => {
   return {
     interview,
     job: job ?? null,
+    redos,
+    redosLeft,
     messages: messages.map((m) => ({ id: m.id, role: m.role, content: m.content }))
   };
 };
