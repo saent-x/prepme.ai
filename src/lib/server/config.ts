@@ -15,8 +15,10 @@ export const config = {
      */
     realtimeContextTokens: () => {
       const n = Math.floor(Number(env.OPENAI_REALTIME_CONTEXT_TOKENS));
-      // Under 4000 the interviewer would forget what was said a couple of minutes ago.
-      return Number.isFinite(n) && n > 0 ? Math.max(4000, n) : 0;
+      // Under 4000 the interviewer would forget what was said a couple of minutes ago. OpenAI
+      // refuses a limit above the model's window less its reply allowance, which would stop
+      // every call from starting, so the top is capped too (a limit that high barely trims).
+      return Number.isFinite(n) && n > 0 ? Math.min(28_000, Math.max(4000, n)) : 0;
     },
     transcribeModel: () => env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe',
     analysisModel: () => env.OPENAI_ANALYSIS_MODEL || 'gpt-6-luna',

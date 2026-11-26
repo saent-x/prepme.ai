@@ -66,7 +66,8 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
     voice: interview.agent.voice
   });
 
-  await db
+  // The session number comes from the update itself, so two starts at once get different numbers.
+  const [claimed] = await db
     .update(interviews)
     .set({
       status: 'active',
@@ -75,7 +76,10 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
       realtimeModel: secret.model,
       analysisError: null
     })
-    .where(eq(interviews.id, interview.id));
+    .where(eq(interviews.id, interview.id))
+    .returning({ session: interviews.sessionCount });
+  // Deleted while the key was being made.
+  if (!claimed) error(404, { message: 'Interview not found' });
 
   const startedAt = interview.startedAt ?? new Date();
   return {
@@ -87,7 +91,7 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
     resumed: previous.length > 0,
     transcript: previous,
     /** Which live session of this interview the key is for; the browser tags its usage report with it. */
-    session: interview.sessionCount + 1,
+    session: claimed.session,
     /** Old turns are being trimmed on this call, so the browser keeps the interviewer's list of asked questions fresh. */
     trimming: secret.contextTokens > 0
   };
@@ -201,15 +205,16 @@ export async function analyse(user: { id: string; name: string }, interviewId: s
   }
 
   try {
-    const { scorecard, summary, usage } = await analyseInterview({
+    const { scorecard, summary } = await analyseInterview({
       agent: interview.agent,
       interview,
       candidateName: user.name.split(' ')[0] || user.name,
-      transcript
+      transcript,
+      onUsage: (usage) =>
+        quietly('scoring usage', () =>
+          recordTextUsage({ userId: user.id, interviewId, kind: 'scoring', ...usage })
+        )
     });
-    await quietly('scoring usage', () =>
-      recordTextUsage({ userId: user.id, interviewId, kind: 'scoring', ...usage })
-    );
     await db
       .update(interviews)
       .set({

@@ -76,6 +76,14 @@ describe('reading usage from OpenAI', () => {
     ).toEqual(zeroTokens());
   });
 
+  it('keeps the totals when OpenAI leaves the text and audio split out', () => {
+    expect(tokensFromRealtime({ input_tokens: 5000, output_tokens: 300 })).toEqual({
+      ...zeroTokens(),
+      inputAudio: 5000,
+      outputAudio: 300
+    });
+  });
+
   it('reads scoring and chat replies', () => {
     expect(
       tokensFromResponse({
@@ -96,6 +104,15 @@ describe('reading usage from OpenAI', () => {
         input_token_details: { audio_tokens: 120, text_tokens: 10 }
       })
     ).toEqual({ inputText: 10, inputAudio: 120, outputText: 40, seconds: 0 });
+    // No text count: it is the rest of the total.
+    expect(
+      transcriptionFromEvent({
+        type: 'tokens',
+        input_tokens: 130,
+        output_tokens: 40,
+        input_token_details: { audio_tokens: 120 }
+      })
+    ).toMatchObject({ inputText: 10, inputAudio: 120 });
     expect(transcriptionFromEvent({ type: 'duration', seconds: 12.4 })).toEqual({
       inputText: 0,
       inputAudio: 0,
@@ -117,6 +134,11 @@ describe('cost', () => {
     expect(costMicros('gpt-realtime-2.1-mini', tokensFromRealtime(realtimeUsage))).toBe(
       Math.round(parts.freshInput + parts.cachedInput + parts.output)
     );
+  });
+
+  it('never goes negative when a report claims more cached tokens than input', () => {
+    const t = { ...zeroTokens(), inputAudio: 100, cachedAudio: 200 };
+    expect(costMicros('gpt-realtime-2.1-mini', t)).toBe(Math.round(100 * 0.3));
   });
 
   it('is in millionths of a dollar: a million output audio tokens on mini cost $20', () => {
@@ -285,6 +307,29 @@ describe('the cost report', () => {
     expect(split.scoring).toBe(2000);
     expect(split.chat).toBe(200);
     expect(report.split[0].key).toBe('voiceOutput');
+  });
+
+  it('keeps the split equal to what was stored, even after a price change', () => {
+    // Stored at half of what today's prices would give.
+    const voice = row({ inputAudio: 1000, outputAudio: 1000, costMicros: 15_000 });
+    const r = buildCostReport([voice]);
+    const parts = Object.fromEntries(r.split.map((s) => [s.key, s.micros]));
+    expect(parts.voiceOutput + parts.voiceFresh + parts.voiceCached).toBeCloseTo(15_000);
+    expect(parts.voiceOutput).toBeCloseTo(10_000);
+  });
+
+  it('leaves calls with no price out of the per-minute rate', () => {
+    const r = buildCostReport([
+      row({ seconds: 600, costMicros: 60_000 }),
+      row({ interviewId: 'c', model: 'mystery', seconds: 600, costMicros: null })
+    ]);
+    expect(r.interviews.find((i) => i.interviewId === 'c')?.priced).toBe(false);
+    expect(r.totals.perVoiceMinute).toBeCloseTo(6000);
+    // Only unpriced calls: no rate at all, rather than a rate of zero.
+    expect(
+      buildCostReport([row({ model: 'mystery', seconds: 600, costMicros: null })]).totals
+        .perVoiceMinute
+    ).toBeNull();
   });
 
   it('names models it has no price for, and copes with nothing at all', () => {
