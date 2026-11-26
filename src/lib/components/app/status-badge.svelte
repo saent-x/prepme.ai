@@ -3,7 +3,7 @@
   import type { InterviewStatus } from '$lib/db/schema';
   let { status }: { status: InterviewStatus } = $props();
   const map = {
-    upcoming: { label: 'Ready', variant: 'outline' },
+    upcoming: { label: 'Ready', variant: 'ready' },
     active: { label: 'In progress', variant: 'signal' },
     processing: { label: 'Scoring', variant: 'warning' },
     completed: { label: 'Scored', variant: 'success' },
