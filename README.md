@@ -55,12 +55,28 @@ bun run dev
 
 `bun run dev` runs Vite with Wrangler's local bindings, so D1 is a local SQLite file under `.wrangler/state`. Model names and other non-secret settings are `vars` in [wrangler.jsonc](./wrangler.jsonc); secrets go in `.dev.vars` locally and in the Worker's settings in production.
 
+### Job targets
+
+A job target is a job someone is preparing for: the advert, their CV and the interview date. The logic lives in [src/lib/jobs.ts](./src/lib/jobs.ts), the screens under `/dashboard/jobs`.
+
+- **Fit check.** Adding a job compares the CV with the advert: what is covered, the gaps to practise and the interview rounds to expect. The chat model reads it (30 checks a day per person); without an API key, or past that limit, a rule-based reader stands in so adding a job never fails.
+- **Rounds.** A practice interview started from a job uses its advert and CV, and the interviewer is told which round is being practised.
+- **Readiness.** A 0 to 100 score from the latest practice scores for the job (newest weighted most), held back until every round has been practised. 75 is the pass mark.
+
 ### Deploying
 
 1. Set secrets once: `bunx wrangler secret put BETTER_AUTH_SECRET`, then `OPENAI_API_KEY`, and optionally `POLAR_ACCESS_TOKEN` and the social sign-in secrets.
 2. `bun run deploy` builds, applies any new D1 migrations, and deploys the Worker.
 
 Or connect the repository in the Cloudflare dashboard (Workers Builds) with build command `bun run build` and deploy command `bunx wrangler d1 migrations apply prepme --remote && bunx wrangler deploy`, so every push to `main` deploys and branches get preview URLs.
+
+### What interviews cost
+
+Every interview records what it used at OpenAI (voice, live transcript, scoring and coach chat) in the `usage_events` table, priced with the table in [src/lib/usage.ts](./src/lib/usage.ts). The voice figures are read from OpenAI's own events in the browser, so they are for working out costs, not for billing.
+
+- **Cost page.** `/dashboard/costs` shows the cost per interview and per voice minute, where the money goes, and what the planned plans would cost. Only the accounts listed in the `ADMIN_EMAILS` secret can open it: `bunx wrangler secret put ADMIN_EMAILS` (comma-separated sign-in emails). List only addresses that already have an account here: sign-up does not check that an email is real, so an unused address could be claimed by whoever signs up with it first.
+- **Trimming long calls.** `OPENAI_REALTIME_CONTEXT_TOKENS` in `wrangler.jsonc` is `"0"` (off). Set it to a number such as `"8000"` and OpenAI drops the oldest half of a call once it passes that many tokens, while the app reminds the interviewer which questions it already asked. Each drop makes OpenAI re-read the rest of the call at full price once, so trimming is not always cheaper: the cost page compares trimmed calls with untrimmed ones.
+- **Prices.** When OpenAI changes a price or a model is swapped, update `MODEL_PRICES`. Usage for a model with no price is stored without a cost, and the cost page says so. `USD_PER_GBP` (default 1.27) sets the rate the page uses to show pounds.
 
 ### Scripts
 

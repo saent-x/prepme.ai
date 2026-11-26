@@ -1,13 +1,15 @@
 import { error } from '@sveltejs/kit';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { db } from '$lib/db/index.server';
-import { interviews } from '$lib/db/schema';
+import { interviews, jobTargets } from '$lib/db/schema';
 import type { TranscriptEntry } from '$lib/interview-types';
 import { getInterviewOwned } from './repo';
 import { analyseInterview, createRealtimeClientSecret } from './openai';
 import { buildRealtimeInstructions } from './prompts';
 import { getPlan } from './billing';
 import { callMinutes } from './config';
+import { quietly, recordTextUsage, recordVoiceUsage } from './usage';
+import type { VoiceUsage } from '$lib/usage';
 
 /** Interviews in these states can (re)start a live session. */
 const JOINABLE = ['upcoming', 'active'] as const;
@@ -50,6 +52,7 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
 
   const previous = interview.transcript ?? [];
   const instructions = buildRealtimeInstructions({
+    round: await practisedRound(interview),
     agent: interview.agent,
     interview: { ...interview, durationMinutes },
     candidateName: user.name.split(' ')[0] || user.name,
@@ -64,7 +67,8 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
     voice: interview.agent.voice
   });
 
-  await db
+  // The session number comes from the update itself, so two starts at once get different numbers.
+  const [claimed] = await db
     .update(interviews)
     .set({
       status: 'active',
@@ -73,7 +77,10 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
       realtimeModel: secret.model,
       analysisError: null
     })
-    .where(eq(interviews.id, interview.id));
+    .where(eq(interviews.id, interview.id))
+    .returning({ session: interviews.sessionCount });
+  // Deleted while the key was being made.
+  if (!claimed) error(404, { message: 'Interview not found' });
 
   const startedAt = interview.startedAt ?? new Date();
   return {
@@ -83,15 +90,35 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
     durationMinutes,
     startedAt: startedAt.toISOString(),
     resumed: previous.length > 0,
-    transcript: previous
+    transcript: previous,
+    /** Which live session of this interview the key is for; the browser tags its usage report with it. */
+    session: claimed.session,
+    /** Old turns are being trimmed on this call, so the browser keeps the interviewer's list of asked questions fresh. */
+    trimming: secret.contextTokens > 0
   };
+}
+
+/** The round of a saved job that this interview practises, if it is for one. */
+async function practisedRound(interview: { targetId: string | null; roundId: string | null }) {
+  if (!interview.targetId || !interview.roundId) return null;
+  const [job] = await db
+    .select({ rounds: jobTargets.rounds })
+    .from(jobTargets)
+    .where(eq(jobTargets.id, interview.targetId));
+  return job?.rounds.find((r) => r.id === interview.roundId) ?? null;
 }
 
 /**
  * Save the live transcript. The browser sends the whole list each time, so this
- * is idempotent and a lost request is simply covered by the next one.
+ * is idempotent and a lost request is simply covered by the next one. The usage
+ * so far rides along now and then, so a call that is never ended is still costed.
  */
-export async function saveTranscript(userId: string, interviewId: string, transcript: TranscriptEntry[]) {
+export async function saveTranscript(
+  userId: string,
+  interviewId: string,
+  transcript: TranscriptEntry[],
+  usage: VoiceUsage[] | null = null
+) {
   const [row] = await db
     .update(interviews)
     .set({ transcript })
@@ -102,17 +129,45 @@ export async function saveTranscript(userId: string, interviewId: string, transc
         inArray(interviews.status, ['active', 'upcoming'])
       )
     )
-    .returning({ id: interviews.id });
+    .returning({
+      id: interviews.id,
+      realtimeModel: interviews.realtimeModel,
+      sessionCount: interviews.sessionCount
+    });
   if (!row) error(409, { message: 'This interview is no longer accepting transcript updates.' });
+  if (usage?.length) {
+    await quietly('voice usage', () =>
+      recordVoiceUsage({
+        userId,
+        interviewId,
+        model: row.realtimeModel,
+        sessions: row.sessionCount,
+        reports: usage
+      })
+    );
+  }
 }
 
 /** End the call: store the final transcript, then score it. */
 export async function completeInterview(
   user: { id: string; name: string },
   interviewId: string,
-  transcript: TranscriptEntry[] | null
+  transcript: TranscriptEntry[] | null,
+  usage: VoiceUsage[] | null = null
 ) {
   const interview = await getInterviewOwned(user.id, interviewId);
+  // Before anything can turn the request away: the call happened, so its cost counts.
+  if (usage?.length) {
+    await quietly('voice usage', () =>
+      recordVoiceUsage({
+        userId: user.id,
+        interviewId,
+        model: interview.realtimeModel,
+        sessions: interview.sessionCount,
+        reports: usage
+      })
+    );
+  }
   if (interview.status === 'completed') return { status: 'completed' as const };
   if (interview.status === 'cancelled') error(409, { message: 'This interview was cancelled.' });
 
@@ -165,7 +220,11 @@ export async function analyse(user: { id: string; name: string }, interviewId: s
       agent: interview.agent,
       interview,
       candidateName: user.name.split(' ')[0] || user.name,
-      transcript
+      transcript,
+      onUsage: (usage) =>
+        quietly('scoring usage', () =>
+          recordTextUsage({ userId: user.id, interviewId, kind: 'scoring', ...usage })
+        )
     });
     await db
       .update(interviews)

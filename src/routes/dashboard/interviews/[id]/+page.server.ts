@@ -3,16 +3,26 @@ import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '$lib/db/index.server';
-import { interviews } from '$lib/db/schema';
+import { interviews, jobTargets } from '$lib/db/schema';
 import { getInterviewOwned, listMessages } from '$lib/server/repo';
 import { limitMessage } from '$lib/server/billing';
 
 export const load: PageServerLoad = async ({ locals, params, depends }) => {
   depends('app:interview');
   const interview = await getInterviewOwned(locals.user!.id, params.id);
-  const messages = interview.status === 'completed' ? await listMessages(interview.id) : [];
+  const [messages, [job]] = await Promise.all([
+    interview.status === 'completed' ? listMessages(interview.id) : [],
+    // The job this was practice for, to link back to it.
+    interview.targetId
+      ? db
+          .select({ id: jobTargets.id, title: jobTargets.title, company: jobTargets.company })
+          .from(jobTargets)
+          .where(and(eq(jobTargets.id, interview.targetId), eq(jobTargets.userId, locals.user!.id)))
+      : []
+  ]);
   return {
     interview,
+    job: job ?? null,
     messages: messages.map((m) => ({ id: m.id, role: m.role, content: m.content }))
   };
 };
@@ -48,6 +58,9 @@ export const actions: Actions = {
         agentId: prev.agentId,
         name: prev.name.replace(/ · retry$/, '') + ' · retry',
         jobDescription: prev.jobDescription,
+        // A retry of a practice for a saved job counts towards the same job and round.
+        targetId: prev.targetId,
+        roundId: prev.roundId,
         cvText: prev.cvText,
         cvName: prev.cvName,
         focus: weak ? `Last time I needed to work on: ${weak}` : prev.focus,

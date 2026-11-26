@@ -14,6 +14,7 @@
   import { formatDuration, scoreTone } from '$lib/utils';
   import ScoreRing from '$lib/components/viz/score-ring.svelte';
   import { COMPETENCY_LABELS } from '$lib/interview-types';
+  import { jobName } from '$lib/jobs';
   import { Check, ChevronDown, ChevronRight, Ellipsis, Mic, Pencil, RotateCcw, Target, Trash2 } from '$lib/icons';
 
   let { data, form } = $props();
@@ -46,6 +47,7 @@
           </a>
           <span>·</span><span>{format(i.startedAt ?? i.createdAt, 'd MMM')}</span>
           {#if i.duration}<span>·</span><span>{formatDuration(i.duration)}</span>{/if}
+          {#if data.job}<span>·</span><a href="/dashboard/jobs/{data.job.id}" class="link font-normal">{jobName(data.job)}</a>{/if}
           {#if i.status !== 'completed'}<StatusBadge status={i.status} />{/if}
         </p>
       </div>

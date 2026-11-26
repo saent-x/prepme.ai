@@ -32,6 +32,14 @@ describe('realtime instructions', () => {
     const late = buildRealtimeInstructions({ agent, interview, candidateName: 'Tor', previousTranscript, minutesLeft: 1 });
     expect(late).toContain('Time is nearly up');
   });
+  it('names the round being practised for a saved job', () => {
+    const round = { name: 'Hiring manager', focus: 'Ownership and trade-offs' };
+    const s = buildRealtimeInstructions({ agent, interview, candidateName: 'Tor', round });
+    expect(s).toContain('# The round being practised');
+    expect(s).toContain('"Hiring manager" round');
+    expect(s).toContain('It tests: Ownership and trade-offs.');
+    expect(buildRealtimeInstructions({ agent, interview, candidateName: 'Tor' })).not.toContain('round being practised');
+  });
   it('skips blank lines in transcripts', () => {
     expect(formatTranscript([{ id: '1', speaker: 'interviewer', text: '  ', at: 0 }])).toBe('');
   });

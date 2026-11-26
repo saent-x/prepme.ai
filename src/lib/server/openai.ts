@@ -39,6 +39,7 @@ function openaiDirect() {
  */
 export async function createRealtimeClientSecret(opts: { instructions: string; voice: string }) {
   const model = config.openai.realtimeModel();
+  const contextTokens = config.openai.realtimeContextTokens();
   const client = openaiDirect();
   let secret;
   try {
@@ -50,6 +51,16 @@ export async function createRealtimeClientSecret(opts: { instructions: string; v
         model,
         instructions: opts.instructions,
         output_modalities: ['audio'],
+        // Off unless OPENAI_REALTIME_CONTEXT_TOKENS is set. Dropping half at a time (not a
+        // little on every turn) matters: each drop makes OpenAI re-read what is left at
+        // the full price once, so fewer, bigger drops cost less.
+        ...(contextTokens > 0 && {
+          truncation: {
+            type: 'retention_ratio' as const,
+            retention_ratio: 0.5,
+            token_limits: { post_instructions: contextTokens }
+          }
+        }),
         audio: {
           input: {
             noise_reduction: { type: 'near_field' },
@@ -75,8 +86,11 @@ export async function createRealtimeClientSecret(opts: { instructions: string; v
             : 'Could not reach the interviewer service. Check your connection and try again.'
     });
   }
-  return { value: secret.value, expiresAt: secret.expires_at, model };
+  return { value: secret.value, expiresAt: secret.expires_at, model, contextTokens };
 }
+
+/** What one scoring or chat reply used, for the cost records. */
+export type TextUsage = { model: string; responseId: string; usage: unknown };
 
 /** Produce the structured scorecard plus a short markdown summary. */
 export async function analyseInterview(opts: {
@@ -84,14 +98,19 @@ export async function analyseInterview(opts: {
   interview: Pick<Interview, 'name' | 'jobDescription' | 'focus' | 'cvText'>;
   candidateName: string;
   transcript: TranscriptEntry[];
+  /** Told what the request used as soon as it returns, so a reply with no scorecard is still costed. */
+  onUsage?: (usage: TextUsage) => Promise<void>;
 }): Promise<{ scorecard: Scorecard; summary: string }> {
   const { system, user } = buildAnalysisPrompt(opts);
+  const model = config.openai.analysisModel();
   const response = await openai().responses.parse({
-    model: config.openai.analysisModel(),
+    model,
     instructions: system,
     input: user,
     text: { format: zodTextFormat(ScorecardSchema, 'interview_scorecard') }
   });
+
+  await opts.onUsage?.({ model, responseId: response.id, usage: response.usage });
 
   const scorecard = response.output_parsed;
   if (!scorecard) throw new Error('The analysis model returned no scorecard.');

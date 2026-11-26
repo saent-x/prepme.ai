@@ -16,3 +16,7 @@ MICROSOFT_CLIENT_SECRET=
 # Optional billing
 POLAR_ACCESS_TOKEN=
 POLAR_SERVER="sandbox"
+# Optional: who may open the AI cost page (/dashboard/costs). Comma-separated sign-in emails.
+# In production set it as a secret (`wrangler secret put ADMIN_EMAILS`), never in wrangler.jsonc.
+# List only addresses that already have an account: sign-up does not verify email.
+ADMIN_EMAILS=

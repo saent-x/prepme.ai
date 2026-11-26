@@ -4,10 +4,13 @@
  */
 export { default as ArrowRight } from 'phosphor-svelte/lib/ArrowRight';
 export { default as Banknote } from 'phosphor-svelte/lib/Money';
+export { default as Briefcase } from 'phosphor-svelte/lib/Briefcase';
 export { default as Building2 } from 'phosphor-svelte/lib/Buildings';
+export { default as CalendarCheck } from 'phosphor-svelte/lib/CalendarCheck';
 export { default as Captions } from 'phosphor-svelte/lib/ChatCenteredText';
 export { default as CaptionsOff } from 'phosphor-svelte/lib/ChatCenteredSlash';
 export { default as Check } from 'phosphor-svelte/lib/Check';
+export { default as CheckCircle } from 'phosphor-svelte/lib/CheckCircle';
 export { default as ChevronDown } from 'phosphor-svelte/lib/CaretDown';
 export { default as ChevronRight } from 'phosphor-svelte/lib/CaretRight';
 export { default as Clock } from 'phosphor-svelte/lib/Clock';
@@ -15,7 +18,9 @@ export { default as CreditCard } from 'phosphor-svelte/lib/CreditCard';
 export { default as Download } from 'phosphor-svelte/lib/DownloadSimple';
 export { default as Ellipsis } from 'phosphor-svelte/lib/DotsThree';
 export { default as FileText } from 'phosphor-svelte/lib/FileText';
+export { default as FlagCheckered } from 'phosphor-svelte/lib/FlagCheckered';
 export { default as House } from 'phosphor-svelte/lib/House';
+export { default as Lightbulb } from 'phosphor-svelte/lib/Lightbulb';
 export { default as List } from 'phosphor-svelte/lib/ListBullets';
 export { default as LoaderCircle } from 'phosphor-svelte/lib/CircleNotch';
 export { default as LogOut } from 'phosphor-svelte/lib/SignOut';
