@@ -26,11 +26,6 @@ export const FREE_LIMITS = {
 
 export { PLAN_MINUTES, callMinutes } from '$lib/plans';
 
-/**
- * A call can be rejoined after a drop, but not long after its time ran out.
- * Without this a dropped call could be resumed (and billed) indefinitely.
- */
-export const RESUME_GRACE_MINUTES = 5;
 
 /** Social providers whose credentials are configured. The sign-in page only shows these. */
 export function configuredSocialProviders() {
