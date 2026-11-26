@@ -39,6 +39,14 @@ describe('buildRecapNote', () => {
     expect(note).toContain('Do not ask these again');
   });
 
+  it('keeps every question from a turn that asks more than one', () => {
+    const note = buildRecapNote([
+      say('interviewer', 'I see. What failed? How did you recover?', 1)
+    ])!;
+    expect(note).toContain('1. What failed?');
+    expect(note).toContain('2. How did you recover?');
+  });
+
   it('keeps only the most recent questions and clips very long ones', () => {
     const many = Array.from({ length: 40 }, (_, i) =>
       say('interviewer', `Question number ${i + 1}?`, i)

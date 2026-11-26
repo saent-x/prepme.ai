@@ -98,7 +98,9 @@ export async function analyseInterview(opts: {
   interview: Pick<Interview, 'name' | 'jobDescription' | 'focus' | 'cvText'>;
   candidateName: string;
   transcript: TranscriptEntry[];
-}): Promise<{ scorecard: Scorecard; summary: string; usage: TextUsage }> {
+  /** Told what the request used as soon as it returns, so a reply with no scorecard is still costed. */
+  onUsage?: (usage: TextUsage) => Promise<void>;
+}): Promise<{ scorecard: Scorecard; summary: string }> {
   const { system, user } = buildAnalysisPrompt(opts);
   const model = config.openai.analysisModel();
   const response = await openai().responses.parse({
@@ -108,15 +110,13 @@ export async function analyseInterview(opts: {
     text: { format: zodTextFormat(ScorecardSchema, 'interview_scorecard') }
   });
 
+  await opts.onUsage?.({ model, responseId: response.id, usage: response.usage });
+
   const scorecard = response.output_parsed;
   if (!scorecard) throw new Error('The analysis model returned no scorecard.');
 
   const summary = scorecardToMarkdown(scorecard);
-  return {
-    scorecard: normaliseScorecard(scorecard),
-    summary,
-    usage: { model, responseId: response.id, usage: response.usage }
-  };
+  return { scorecard: normaliseScorecard(scorecard), summary };
 }
 
 /** Clamp numbers and make sure every competency appears exactly once. */

@@ -20,11 +20,10 @@ export function contextWasTrimmed(previousInputTokens: number, inputTokens: numb
 
 const clip = (s: string, max: number) => (s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s);
 
-/** The question in an interviewer turn: its last sentence that ends in a question mark. */
-function questionIn(text: string) {
+/** The questions in an interviewer turn: each sentence that ends in a question mark, in order. */
+function questionsIn(text: string) {
   const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [];
-  const question = sentences.findLast((s) => s.trim().endsWith('?'));
-  return question ? clip(question.trim(), 200) : null;
+  return sentences.filter((s) => s.trim().endsWith('?')).map((s) => clip(s.trim(), 200));
 }
 
 /**
@@ -34,8 +33,7 @@ function questionIn(text: string) {
 export function buildRecapNote(transcript: TranscriptEntry[], maxQuestions = 25) {
   const questions = transcript
     .filter((t) => t.speaker === 'interviewer')
-    .map((t) => questionIn(t.text))
-    .filter((q): q is string => q !== null);
+    .flatMap((t) => questionsIn(t.text));
   if (!questions.length) return null;
   const recent = questions.slice(-maxQuestions);
   return [

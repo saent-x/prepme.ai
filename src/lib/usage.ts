@@ -109,7 +109,8 @@ export function tokensFromRealtime(usage: unknown): Tokens {
   const output = obj(u?.output_token_details);
 
   const inputText = n(input?.text_tokens);
-  const inputAudio = n(input?.audio_tokens);
+  // With no split at all, the total counts as audio: most of a voice call is, and the cost is not understated.
+  const inputAudio = input ? n(input.audio_tokens) : n(u?.input_tokens);
   let cachedText = n(cached?.text_tokens);
   let cachedAudio = n(cached?.audio_tokens);
   // Only a cached total, no split: share it out the way the input itself splits.
@@ -123,7 +124,7 @@ export function tokensFromRealtime(usage: unknown): Tokens {
     cachedText: Math.min(cachedText, inputText),
     cachedAudio: Math.min(cachedAudio, inputAudio),
     outputText: n(output?.text_tokens),
-    outputAudio: n(output?.audio_tokens)
+    outputAudio: output ? n(output.audio_tokens) : n(u?.output_tokens)
   };
 }
 
@@ -146,7 +147,11 @@ export function transcriptionFromEvent(usage: unknown): Transcription {
     return { inputText: 0, inputAudio: 0, outputText: 0, seconds: n(u.seconds) };
   const details = obj(u?.input_token_details);
   const inputAudio = n(details?.audio_tokens);
-  const inputText = details ? n(details.text_tokens) : Math.max(0, n(u?.input_tokens) - inputAudio);
+  // No text count given: it is whatever the total holds beyond the audio.
+  const inputText =
+    details?.text_tokens != null
+      ? n(details.text_tokens)
+      : Math.max(0, n(u?.input_tokens) - inputAudio);
   return { inputText, inputAudio, outputText: n(u?.output_tokens), seconds: 0 };
 }
 
@@ -164,9 +169,12 @@ export function costParts(model: string, t: Tokens, seconds = 0) {
   const audioIn = p.inputAudio ?? p.inputText;
   const audioCached = p.cachedAudio ?? p.cachedText;
   const audioOut = p.outputAudio ?? p.outputText;
+  // Cached tokens are part of the input, so a report claiming more cached than input cannot go negative.
+  const cachedText = Math.min(t.cachedText, t.inputText);
+  const cachedAudio = Math.min(t.cachedAudio, t.inputAudio);
   const freshInput =
-    (t.inputText - t.cachedText) * p.inputText + (t.inputAudio - t.cachedAudio) * audioIn;
-  const cachedInput = t.cachedText * p.cachedText + t.cachedAudio * audioCached;
+    (t.inputText - cachedText) * p.inputText + (t.inputAudio - cachedAudio) * audioIn;
+  const cachedInput = cachedText * p.cachedText + cachedAudio * audioCached;
   const output = t.outputText * p.outputText + t.outputAudio * audioOut;
   const byLength = (seconds / 60) * (p.perMinute ?? 0) * 1_000_000;
   return { freshInput, cachedInput, output: output + byLength };
@@ -278,6 +286,8 @@ export type InterviewCost = {
   sessions: number;
   responses: number;
   trimmed: boolean;
+  /** False when some of its voice or transcription has no price here, so its cost is not the whole cost. */
+  priced: boolean;
   /** Share of the voice input that was re-read at the cheap cached rate (0..1). */
   cachedShare: number | null;
   voice: number;
@@ -307,7 +317,8 @@ export function minuteRate(interviews: InterviewCost[], fromMinutes = 0, toMinut
   const g: Group = { interviews: 0, minutes: 0, micros: 0 };
   for (const i of interviews) {
     const minutes = i.voiceSeconds / 60;
-    if (minutes <= 0 || minutes < fromMinutes || minutes >= toMinutes) continue;
+    // A call with unpriced usage would drag the rate down, so it is left out rather than counted as free.
+    if (!i.priced || minutes <= 0 || minutes < fromMinutes || minutes >= toMinutes) continue;
     g.interviews += 1;
     g.minutes += minutes;
     g.micros += i.voice + i.transcription;
@@ -353,6 +364,7 @@ export function buildCostReport(rows: UsageRow[]) {
         sessions: 0,
         responses: 0,
         trimmed: false,
+        priced: true,
         cachedShare: null,
         voice: 0,
         transcription: 0,
@@ -366,7 +378,10 @@ export function buildCostReport(rows: UsageRow[]) {
       byInterview.set(id, i);
     }
     if (r.createdAt < i.at) i.at = r.createdAt;
-    if (r.costMicros == null) unpriced.add(r.model);
+    if (r.costMicros == null) {
+      unpriced.add(r.model);
+      if (r.kind === 'voice' || r.kind === 'transcription') i.priced = false;
+    }
     const cost = r.costMicros ?? 0;
     i[r.kind] += cost;
     i.total += cost;
@@ -380,11 +395,15 @@ export function buildCostReport(rows: UsageRow[]) {
       i.cached += r.cachedText + r.cachedAudio;
       input += r.inputText + r.inputAudio;
       cached += r.cachedText + r.cachedAudio;
+      // Today's prices give the shares; the amount is what was stored when the call happened,
+      // so the parts still add up to the total after a price change.
       const parts = costParts(r.model, r);
-      if (parts) {
-        split.voiceOutput += parts.output;
-        split.voiceFresh += parts.freshInput;
-        split.voiceCached += parts.cachedInput;
+      const now = parts ? parts.output + parts.freshInput + parts.cachedInput : 0;
+      if (parts && now > 0) {
+        const scale = cost / now;
+        split.voiceOutput += parts.output * scale;
+        split.voiceFresh += parts.freshInput * scale;
+        split.voiceCached += parts.cachedInput * scale;
       }
     } else {
       split[r.kind] += cost;
