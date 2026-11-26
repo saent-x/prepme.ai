@@ -7,7 +7,7 @@
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
   import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
   import { agentBlurb, agentRole, agentStyle } from '$lib/interviewer-brief';
-  import { ChevronRight, Plus } from '@lucide/svelte';
+  import { ChevronRight, Plus } from '$lib/icons';
 
   let { data } = $props();
   let creating = $state(false);
@@ -29,7 +29,7 @@
 <svelte:head><title>Agents · PrepMe</title></svelte:head>
 
 <div class="flex h-10 items-center justify-between gap-4">
-  <h1 class="text-[28px] leading-none font-extrabold tracking-[-0.02em]">Agents</h1>
+  <h1 class="page-title">Agents</h1>
   <Button onclick={() => (creating = true)}><Plus /> New agent</Button>
 </div>
 
@@ -48,18 +48,18 @@
           </span>
           <span class="hidden truncate text-muted-foreground md:block">{agentRole(i.instructions) ?? agentBlurb(i.instructions)}</span>
           <span class="hidden md:block">
-            {#if style}<span class="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-xs font-semibold group-hover:bg-card">{style}</span>{/if}
+            {#if style}<span class="text-sm text-muted-foreground">{style}</span>{/if}
           </span>
           <span class="tabular hidden text-muted-foreground md:block">{i.interviewCount}</span>
-          <ChevronRight class="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" strokeWidth={1.6} />
+          <ChevronRight class="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         </a>
       {/each}
     </div>
   </div>
 {:else}
-  <div class="mt-8 grid place-items-center rounded-[10px] bg-muted px-6 py-12 text-center">
-    <InterviewerAvatar name="Lea" class="size-16" />
-    <h2 class="mt-3 text-base font-extrabold">No agents yet</h2>
+  <div class="mt-8 grid place-items-center py-10 text-center">
+    <InterviewerAvatar name="Lea" class="size-14" />
+    <h2 class="section-title mt-3">No agents yet</h2>
     <p class="mt-1 max-w-sm text-sm text-muted-foreground">Make one for the job you're going for. It takes a minute.</p>
     <Button class="mt-4" onclick={() => (creating = true)}><Plus /> New agent</Button>
   </div>

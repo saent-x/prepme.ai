@@ -1,4 +1,5 @@
 <script lang="ts">
+  import EmptyState from '$lib/components/app/empty-state.svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { Button } from '$lib/components/ui/button';
@@ -7,7 +8,7 @@
   import { Segmented } from '$lib/components/ui/segmented';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
   import InterviewHead from '$lib/components/app/interview-head.svelte';
-  import { Plus, Search } from '@lucide/svelte';
+  import { Plus, Search } from '$lib/icons';
   import { untrack } from 'svelte';
 
   let { data } = $props();
@@ -48,13 +49,13 @@
 <svelte:head><title>Interviews · PrepMe</title></svelte:head>
 
 <div class="flex h-10 items-center justify-between gap-4">
-  <h1 class="text-[28px] leading-none font-extrabold tracking-[-0.02em]">Interviews</h1>
+  <h1 class="page-title">Interviews</h1>
   <Button href="/dashboard/interviews/new"><Plus /> New interview</Button>
 </div>
 
 <div class="mt-8 flex flex-wrap items-center gap-2">
   <div class="relative w-full sm:w-64">
-    <Search class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth={1.6} />
+    <Search class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
     <Input placeholder="Search by name" class="pl-9" bind:value={q} oninput={onSearch} aria-label="Search interviews" />
   </div>
   <Segmented
@@ -80,15 +81,13 @@
     <InterviewHead />
     {#each data.result.items as row (row.id)}<InterviewRow {row} />{/each}
   {:else}
-    <div class="grid place-items-center rounded-[10px] bg-muted px-6 py-12 text-center">
-      <h2 class="font-bold">{data.filters.q || data.filters.status ? 'Nothing matches' : 'No interviews yet'}</h2>
-      <p class="mt-1 max-w-sm text-sm text-muted-foreground">
-        {data.filters.q || data.filters.status ? 'Try a different search or filter.' : 'Your first one takes under a minute to set up.'}
-      </p>
-      {#if !data.filters.q && !data.filters.status}
-        <Button href="/dashboard/interviews/new" class="mt-4"><Plus /> New interview</Button>
-      {/if}
-    </div>
+    {@const filtered = !!(data.filters.q || data.filters.status)}
+    <EmptyState title={filtered ? 'Nothing matches' : 'No interviews yet'}>
+      {filtered ? 'Try a different search or filter.' : 'Your first one takes under a minute to set up.'}
+      {#snippet action()}
+        {#if !filtered}<Button href="/dashboard/interviews/new"><Plus /> New interview</Button>{/if}
+      {/snippet}
+    </EmptyState>
   {/if}
 </section>
 

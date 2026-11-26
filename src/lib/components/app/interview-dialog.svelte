@@ -8,7 +8,7 @@
   import * as Select from '$lib/components/ui/select';
   import InterviewerAvatar from './interviewer-avatar.svelte';
     import { hasJobSummary, MIN_JOB_TEXT, type JobSummary } from '$lib/job-parse';
-  import { Building2, ChevronRight, FileText, LoaderCircle, MapPin, Paperclip, Pencil, Plus, User, X } from '@lucide/svelte';
+  import { Building2, ChevronRight, FileText, LoaderCircle, MapPin, Paperclip, Pencil, Plus, User, X } from '$lib/icons';
   import { untrack } from 'svelte';
   import { PLAN_MINUTES } from '$lib/plans';
 
@@ -147,7 +147,7 @@
             <Label for="ni-jd" class="text-xs font-bold">Job description</Label>
             {#if job && !editing}
               <button type="button" class="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground" onclick={() => (editing = true)}>
-                <Pencil class="size-3.5" strokeWidth={1.6} /> Edit
+                <Pencil class="size-3.5" /> Edit
               </button>
             {/if}
           </div>
@@ -180,7 +180,7 @@
             <div class="stagger flex flex-wrap gap-2">
               {#each [{ icon: User, text: job.title }, { icon: Building2, text: job.company }, { icon: MapPin, text: job.location }].filter((c) => c.text) as c}
                 <span class="inline-flex h-7 items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium">
-                  <c.icon class="size-4 text-muted-foreground" strokeWidth={1.6} />{c.text}
+                  <c.icon class="size-4 text-muted-foreground" />{c.text}
                 </span>
               {/each}
             </div>
@@ -229,7 +229,7 @@
             </Select.Root>
           {/if}
           <a href="/dashboard/interviewers?new=1" class="flex w-fit items-center gap-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground" onclick={() => (open = false)}>
-            <Plus class="size-4" strokeWidth={1.6} /> New agent
+            <Plus class="size-4" /> New agent
           </a>
         </div>
 
@@ -243,11 +243,11 @@
             <span class="inline-flex h-7 w-fit items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium"><LoaderCircle class="size-4 animate-spin" /> Reading your CV</span>
           {:else if cv}
             <span class="inline-flex h-7 w-fit max-w-full animate-pop items-center gap-1.5 rounded-full bg-muted pr-1 pl-2.5 text-[13px] font-medium">
-              <FileText class="size-4 shrink-0 text-muted-foreground" strokeWidth={1.6} />
+              <FileText class="size-4 shrink-0 text-muted-foreground" />
               <span class="truncate">{cv.name}</span>
               <span class="shrink-0 text-muted-foreground">{cv.words ? `· ${cv.words.toLocaleString()} words` : '· last used'}</span>
               <button type="button" class="grid size-5 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-card hover:text-foreground" aria-label="Remove CV" onclick={() => (cv = null)}>
-                <X class="size-3.5" strokeWidth={2} />
+                <X class="size-3.5" />
               </button>
             </span>
           {:else}
@@ -260,7 +260,7 @@
                 uploadCv(e.dataTransfer?.files?.[0]);
               }}
             >
-              <Paperclip class="size-4 shrink-0" strokeWidth={1.6} /><span class="shrink-0 font-semibold">Add your CV</span><span class="truncate text-xs">PDF, Word or text. The interviewer asks about your experience.</span>
+              <Paperclip class="size-4 shrink-0" /><span class="shrink-0 font-semibold">Add your CV</span><span class="truncate text-xs">PDF, Word or text. The interviewer asks about your experience.</span>
             </label>
           {/if}
           {#if cvError}<p class="text-xs text-destructive">{cvError}</p>{/if}
@@ -273,7 +273,7 @@
 
         <details class="group">
           <summary class="flex w-fit cursor-pointer list-none items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
-            <ChevronRight class="size-4 transition-transform group-open:rotate-90" strokeWidth={1.6} /> More options
+            <ChevronRight class="size-4 transition-transform group-open:rotate-90" /> More options
           </summary>
           <div class="mt-3 grid gap-4 sm:grid-cols-2">
             <div class="grid gap-2">

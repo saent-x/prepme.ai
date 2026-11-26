@@ -1,12 +1,13 @@
 <script lang="ts">
     import { Button } from '$lib/components/ui/button';
   import InterviewerAvatar from '$lib/components/app/interviewer-avatar.svelte';
+  import UserAvatar from '$lib/components/app/user-avatar.svelte';
   import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
   import InterviewHead from '$lib/components/app/interview-head.svelte';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
   import { TABLE_HEAD, TABLE_ROW } from '$lib/components/app/table';
   import { cn } from '$lib/utils';
-  import { Plus } from '@lucide/svelte';
+  import { Plus } from '$lib/icons';
 
   let { data } = $props();
   let creating = $state(false);
@@ -63,17 +64,20 @@
 
 <svelte:head><title>Home · PrepMe</title></svelte:head>
 
-<div class="flex h-10 items-center justify-between gap-4">
-  <h1 class="text-[28px] leading-none font-extrabold tracking-[-0.02em]">{greeting}, {first}</h1>
-  <Button href="/dashboard/interviews/new"><Plus /> New interview</Button>
+<div class="flex items-center justify-between gap-4">
+  <div class="flex min-w-0 items-center gap-3">
+    <UserAvatar name={data.user.name} image={data.user.image} class="size-10 sm:size-11" />
+    <h1 class="page-title truncate">{greeting}, {first}</h1>
+  </div>
+  <Button href="/dashboard/interviews/new" aria-label="New interview" class="max-sm:size-8 max-sm:px-0"><Plus /><span class="max-sm:hidden">New interview</span></Button>
 </div>
 
 <!-- The one next step. -->
-<section class="mt-8 flex min-h-24 flex-wrap items-center gap-x-6 gap-y-3 rounded-[10px] bg-muted px-6 py-6" aria-label="Next step">
-  <InterviewerAvatar name={next.face} class="size-12" />
+<section class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-y py-4" aria-label="Next step">
+  <InterviewerAvatar name={next.face} class="size-10" />
   <div class="min-w-0 sm:w-[260px]">
     <div class="text-xs font-semibold text-muted-foreground">{next.label}</div>
-    <div class="truncate text-base font-extrabold">{next.title}</div>
+    <div class="truncate text-[15px] font-bold">{next.title}</div>
   </div>
   <div class="hidden min-w-0 flex-1 truncate text-sm text-muted-foreground md:block">{next.meta}</div>
   <div class="ml-auto flex gap-2">
@@ -86,11 +90,11 @@
   </div>
 </section>
 
-<div class="mt-8 grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
+<div class="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
   <section aria-label="Recent interviews" class="min-w-0">
     <div class="flex h-8 items-center justify-between">
-      <h2 class="text-base font-bold">Recent interviews</h2>
-      <a href="/dashboard/interviews" class="text-sm font-semibold text-muted-foreground hover:text-foreground">View all</a>
+      <h2 class="section-title">Recent interviews</h2>
+      <a href="/dashboard/interviews" class="link text-xs">View all</a>
     </div>
     <div class="mt-2">
       {#if data.recent.length}
@@ -106,8 +110,8 @@
 
   <section aria-label="Agents" class="min-w-0">
     <div class="flex h-8 items-center justify-between">
-      <h2 class="text-base font-bold">Agents</h2>
-      <a href="/dashboard/interviewers" class="text-sm font-semibold text-muted-foreground hover:text-foreground">Manage</a>
+      <h2 class="section-title">Agents</h2>
+      <a href="/dashboard/interviewers" class="link text-xs">Manage</a>
     </div>
     <div class={cn(TABLE_HEAD, 'mt-2 flex justify-between')}><span>Agent</span><span>Style</span></div>
     <div class="stagger">
@@ -123,7 +127,7 @@
         </a>
       {/each}
       <button type="button" class={cn(TABLE_ROW, 'flex w-full gap-3 text-muted-foreground hover:text-foreground')} onclick={() => (creating = true)}>
-        <span class="grid size-7 place-items-center rounded-full border border-input"><Plus class="size-4" strokeWidth={1.6} /></span>
+        <span class="grid size-7 place-items-center rounded-full border border-input"><Plus class="size-4" /></span>
         New agent
       </button>
     </div>

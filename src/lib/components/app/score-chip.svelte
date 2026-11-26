@@ -8,10 +8,10 @@
   <span class="text-[13px] text-faint">—</span>
 {:else}
   <span
-    class="tabular inline-flex h-6 min-w-10 items-center justify-center rounded-full px-2 text-xs font-bold {tone === 'good'
-      ? 'bg-success-soft text-success'
+    class="tabular inline-flex h-6 items-center text-sm font-bold {tone === 'good'
+      ? 'text-success-text'
       : tone === 'ok'
-        ? 'bg-warning-soft text-warning-text'
-        : 'bg-destructive-soft text-destructive'}">{score}</span
+        ? 'text-warning-text'
+        : 'text-destructive'}">{score}</span
   >
 {/if}

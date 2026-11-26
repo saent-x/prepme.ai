@@ -11,7 +11,7 @@
   import { voiceOptions } from '$lib/templates';
   import { interviewerFace } from '$lib/avatars';
   import { composeBrief, FOCUS_AREAS, STYLES, type FocusId, type StyleId } from '$lib/interviewer-brief';
-  import { ChevronRight, LoaderCircle } from '@lucide/svelte';
+  import { ChevronRight, LoaderCircle } from '$lib/icons';
   import { untrack } from 'svelte';
 
   let { open = $bindable(false), job: presetJob = '' }: { open?: boolean; job?: string } = $props();
@@ -101,7 +101,7 @@
 
         <details class="group">
           <summary class="flex w-fit cursor-pointer list-none items-center gap-1 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
-            <ChevronRight class="size-4 transition-transform group-open:rotate-90" strokeWidth={1.6} /> More options
+            <ChevronRight class="size-4 transition-transform group-open:rotate-90" /> More options
           </summary>
           <div class="mt-3 grid gap-4">
             {#if !own}

@@ -3,7 +3,7 @@
   import { Input } from '$lib/components/ui/input';
   import { Button } from '$lib/components/ui/button';
   import { formatClock } from '$lib/utils';
-  import { Download, Search } from '@lucide/svelte';
+  import { Download, Search } from '$lib/icons';
 
   let {
     transcript,

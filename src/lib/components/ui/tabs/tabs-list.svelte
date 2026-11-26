@@ -8,4 +8,4 @@
   let { class: className, ...rest }: Props = $props();
 </script>
 
-<TabsList class={cn('flex w-full gap-5 border-b', className)} {...rest} />
+<TabsList class={cn('inline-flex w-max max-w-full gap-0.5 self-start overflow-x-auto rounded-full border-0 bg-muted p-[3px] [scrollbar-width:none]', className)} {...rest} />

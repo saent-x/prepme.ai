@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { JobSummary } from '$lib/job-parse';
-  import { Banknote, Building2, Check, Clock, MapPin, Pencil } from '@lucide/svelte';
+  import { Banknote, Building2, Check, Clock, MapPin, Pencil } from '$lib/icons';
 
   let { job, onedit }: { job: JobSummary; onedit?: () => void } = $props();
 
@@ -19,7 +19,7 @@
       <div class="truncate text-[15px] font-bold">{job.title}</div>
       {#if job.company}
         <div class="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">
-          <Building2 class="size-3.5 shrink-0" strokeWidth={1.8} /><span class="truncate">{job.company}</span>
+          <Building2 class="size-3.5 shrink-0" /><span class="truncate">{job.company}</span>
         </div>
       {/if}
     </div>
@@ -33,7 +33,7 @@
   {#if facts.length}
     <div class="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 px-3.5 text-[13px]">
       {#each facts as f}
-        <span class="flex items-center gap-1.5"><f.icon class="size-3.5 shrink-0 text-faint" strokeWidth={1.8} />{f.text}</span>
+        <span class="flex items-center gap-1.5"><f.icon class="size-3.5 shrink-0 text-faint" />{f.text}</span>
       {/each}
     </div>
   {/if}
@@ -54,7 +54,7 @@
             <div class="eyebrow">{col.label}</div>
             <ul class="mt-1.5 grid gap-1.5 text-[13px] leading-snug">
               {#each col.items as item}
-                <li class="flex gap-1.5"><Check class="mt-0.5 size-3.5 shrink-0 text-success" strokeWidth={2.2} />{item}</li>
+                <li class="flex gap-1.5"><Check class="mt-0.5 size-3.5 shrink-0 text-success" />{item}</li>
               {/each}
             </ul>
           </div>

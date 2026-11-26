@@ -12,7 +12,6 @@
   const s = $derived(map[status]);
 </script>
 
-<Badge variant={s.variant}>
-  {#if status === 'active'}<span class="size-1.5 animate-onair rounded-full bg-signal"></span>{/if}
+<Badge variant={s.variant} class={status === 'active' ? 'before:animate-onair' : ''}>
   {s.label}
 </Badge>

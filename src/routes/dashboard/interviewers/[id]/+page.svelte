@@ -10,7 +10,7 @@
   import { agentBlurb, agentRole, agentStyle } from '$lib/interviewer-brief';
   import { VOICES } from '$lib/templates';
   import { interviewerFace } from '$lib/avatars';
-  import { Mic, Pencil, Trash2 } from '@lucide/svelte';
+  import { Mic, Pencil, Trash2 } from '$lib/icons';
 
   let { data, form } = $props();
   let confirmDelete = $state(false);
@@ -38,7 +38,7 @@
   <div class="flex min-w-0 items-center gap-4">
     <InterviewerAvatar name={a.name} class="size-16 animate-pop" />
     <div class="min-w-0">
-      <h1 class="truncate text-[28px] leading-tight font-extrabold tracking-[-0.02em]">{a.name}</h1>
+      <h1 class="page-title truncate">{a.name}</h1>
       <p class="mt-0.5 truncate text-sm text-muted-foreground">
         {[role, style, `${data.total} interview${data.total === 1 ? '' : 's'}`].filter(Boolean).join(' · ')}
       </p>
@@ -53,7 +53,7 @@
       class="text-destructive hover:border-destructive/40 hover:bg-destructive-soft hover:text-destructive"
       aria-label="Delete agent"
       title="Delete agent"
-      onclick={() => (confirmDelete = true)}><Trash2 strokeWidth={1.6} /></Button
+      onclick={() => (confirmDelete = true)}><Trash2 /></Button
     >
   </div>
 </header>
@@ -73,12 +73,12 @@
 {:else}
   <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
     <section aria-label="Brief" class="min-w-0">
-      <h2 class="text-base font-bold">Brief</h2>
+      <h2 class="section-title">Brief</h2>
       <p class="mt-3 max-w-[72ch] text-sm leading-normal whitespace-pre-line">{a.instructions}</p>
       <p class="mt-3 text-xs text-muted-foreground">Pacing, one question at a time and the wrap-up are handled for you.</p>
     </section>
     <aside aria-label="Details">
-      <h2 class="text-base font-bold">Details</h2>
+      <h2 class="section-title">Details</h2>
       <dl class="mt-2 border-t text-sm">
         <div class="flex h-12 items-center justify-between gap-4 border-b px-3">
           <dt class="text-muted-foreground">Voice</dt>
@@ -90,7 +90,7 @@
         {#if style}
           <div class="flex h-12 items-center justify-between gap-4 border-b px-3">
             <dt class="text-muted-foreground">Style</dt>
-            <dd><span class="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-xs font-semibold">{style}</span></dd>
+            <dd>{style}</dd>
           </div>
         {/if}
         <div class="flex h-12 items-center justify-between gap-4 border-b px-3">
@@ -103,7 +103,7 @@
 {/if}
 
 <section class="mt-10" aria-label="Interviews with {a.name}">
-  <h2 class="text-base font-bold">Interviews with {a.name}</h2>
+  <h2 class="section-title">Interviews with {a.name}</h2>
   <div class="mt-2">
     {#if data.recent.length}
       <InterviewHead cols="agent" />

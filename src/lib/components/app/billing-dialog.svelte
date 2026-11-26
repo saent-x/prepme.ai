@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/ui/button';
   import { toast } from '$lib/components/ui/toast';
   import { authClient } from '$lib/auth-client';
-  import { Check, LoaderCircle } from '@lucide/svelte';
+  import { Check, LoaderCircle } from '$lib/icons';
 
   interface Product {
     id: string;
@@ -110,7 +110,7 @@
             <article class="flex min-h-[360px] flex-col rounded-[10px] p-6 {i === 0 ? 'border-[1.5px] border-foreground' : 'border'}">
               <div class="flex items-center justify-between">
                 <h3 class="text-base font-extrabold">{p.name}</h3>
-                {#if i === 0 && products.length > 1}<span class="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-xs font-semibold">Most picked</span>{/if}
+                {#if i === 0 && products.length > 1}<span class="inline-flex h-6 items-center gap-1.5 text-xs font-bold text-spark-ink before:size-1.5 before:rounded-full before:bg-spark">Most picked</span>{/if}
               </div>
               <div class="mt-2"><span class="tabular text-[28px] font-extrabold">{fmt(p.amount, p.currency)}</span> <span class="text-xs text-muted-foreground">{p.interval === 'one_time' ? 'one-off' : `per ${p.interval}`}</span></div>
               <div class="my-4 border-t"></div>
@@ -125,7 +125,7 @@
             <article class="flex min-h-[360px] flex-col rounded-[10px] p-6 {i === 0 ? 'border-[1.5px] border-foreground' : 'border'}">
               <div class="flex items-center justify-between">
                 <h3 class="text-base font-extrabold">{p.name}</h3>
-                {#if i === 0}<span class="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-xs font-semibold">Most picked</span>{/if}
+                {#if i === 0}<span class="inline-flex h-6 items-center gap-1.5 text-xs font-bold text-spark-ink before:size-1.5 before:rounded-full before:bg-spark">Most picked</span>{/if}
               </div>
               <div class="mt-2"><span class="tabular text-[28px] font-extrabold">£—</span> <span class="text-xs text-muted-foreground">{p.period}</span></div>
               <div class="my-4 border-t"></div>
@@ -145,7 +145,7 @@
 {#snippet checks(items: string[])}
   <ul class="grid gap-3 text-sm">
     {#each items as b (b)}
-      <li class="flex items-start gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2} />{b}</li>
+      <li class="flex items-start gap-2"><Check class="mt-0.5 size-4 shrink-0 text-success" />{b}</li>
     {/each}
   </ul>
 {/snippet}

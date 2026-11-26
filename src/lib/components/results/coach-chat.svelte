@@ -2,7 +2,7 @@
   import Markdown from 'svelte-exmarkdown';
   import { gfmPlugin } from 'svelte-exmarkdown/gfm';
     import { Textarea } from '$lib/components/ui/textarea';
-  import { Send, Sparkles } from '@lucide/svelte';
+  import { Send, Sparkles } from '$lib/icons';
   import { tick, untrack } from 'svelte';
 
   type Msg = { id: string; role: 'user' | 'assistant'; content: string };
@@ -62,10 +62,10 @@
   }
 </script>
 
-<div class="flex h-full min-h-[480px] flex-col overflow-hidden rounded-[10px] bg-muted">
+<div class="flex h-full min-h-[480px] flex-col overflow-hidden rounded-[10px] border bg-card">
   <div class="flex h-16 shrink-0 items-center gap-2 border-b px-6">
-    <Sparkles class="size-5" strokeWidth={1.6} />
-    <h2 class="text-base font-extrabold">Coach</h2>
+    <Sparkles class="size-5" />
+    <h2 class="section-title">Coach</h2>
   </div>
   <div bind:this={list} class="flex-1 space-y-5 overflow-y-auto px-6 py-5" aria-live="polite">
     {#if !messages.length}
@@ -85,7 +85,7 @@
               <span class="grid size-6 place-items-center rounded-full bg-track text-[11px] font-bold">Y</span>
               <span class="text-xs font-bold">You</span>
             {:else}
-              <span class="grid size-6 place-items-center rounded-full bg-foreground text-background"><Sparkles class="size-3.5" strokeWidth={1.8} /></span>
+              <span class="grid size-6 place-items-center rounded-full bg-foreground text-background"><Sparkles class="size-3.5" /></span>
               <span class="text-xs font-bold">Coach</span>
             {/if}
           </div>
@@ -127,7 +127,7 @@
         type="submit"
         class="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-[6px] text-muted-foreground hover:text-foreground disabled:opacity-40"
         disabled={busy || !draft.trim()}
-        aria-label="Send"><Send class="size-4" strokeWidth={1.6} /></button
+        aria-label="Send"><Send class="size-4" /></button
       >
     </div>
   </form>

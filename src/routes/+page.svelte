@@ -5,7 +5,7 @@
   import ScoreRing from '$lib/components/viz/score-ring.svelte';
   import { faceColour } from '$lib/avatars';
   import { reveal } from '$lib/actions/reveal';
-  import { Building2, Check, ChevronDown, MapPin, Mic, Target, User } from '@lucide/svelte';
+  import { Building2, Check, ChevronDown, MapPin, Mic, Target, User } from '$lib/icons';
 
   let { data } = $props();
 
@@ -94,7 +94,7 @@
             {@render face('Maya')}
             <span class="text-sm font-bold">Maya</span>
             <span class="min-w-0 flex-1 truncate text-sm text-muted-foreground">Staff Engineer · tough on trade-offs</span>
-            <ChevronDown class="size-4 rotate-180 text-muted-foreground" strokeWidth={1.6} />
+            <ChevronDown class="size-4 rotate-180 text-muted-foreground" />
           </div>
           <div class="mt-2 rounded-[10px] border bg-card p-1 shadow-pop">
             {#each agents as a, i (a.name)}
@@ -102,7 +102,7 @@
                 {@render face(a.name)}
                 <span class="font-bold">{a.name}</span>
                 <span class="min-w-0 flex-1 truncate text-muted-foreground">{a.blurb}</span>
-                {#if i === 0}<Check class="size-4" strokeWidth={2} />{/if}
+                {#if i === 0}<Check class="size-4" />{/if}
               </div>
             {/each}
           </div>
@@ -124,7 +124,7 @@
           </div>
           <div class="mt-4 flex flex-wrap gap-2">
             {#each [{ icon: User, t: 'Senior AI Engineer' }, { icon: Building2, t: 'Juro' }, { icon: MapPin, t: 'London' }] as c (c.t)}
-              <span class="inline-flex h-7 items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium"><c.icon class="size-4 text-muted-foreground" strokeWidth={1.6} />{c.t}</span>
+              <span class="inline-flex h-7 items-center gap-1.5 rounded-full bg-muted px-2.5 text-[13px] font-medium"><c.icon class="size-4 text-muted-foreground" />{c.t}</span>
             {/each}
           </div>
           <div class="mt-2 flex flex-wrap gap-2">
@@ -190,7 +190,7 @@
             {/each}
           </div>
           <div class="border-t pt-4 sm:col-span-2">
-            <div class="flex items-center gap-2 text-sm font-extrabold"><Target class="size-4" strokeWidth={1.6} /> To improve</div>
+            <div class="flex items-center gap-2 text-sm font-extrabold"><Target class="size-4" /> To improve</div>
             <ul class="mt-2 grid gap-2 text-sm">
               <li class="flex items-start gap-2"><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-warning"></span>Lead with the result, then the method.</li>
               <li class="flex items-start gap-2"><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-warning"></span>Name the trade-off you chose and why.</li>
@@ -225,7 +225,7 @@
 
   <footer class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-[13px] text-muted-foreground xl:px-0">
     <Logo class="text-base" />
-    <span>Free plan: {data.limits.interviews} interviews of {data.minutes.free} minutes · © {new Date().getFullYear()} PrepMe</span>
+    <span>Free plan: {data.limits.interviews} interviews of {data.minutes.free} minutes · <a href="/credits" class="hover:text-foreground">Credits</a> · © {new Date().getFullYear()} PrepMe</span>
   </footer>
 </div>
 

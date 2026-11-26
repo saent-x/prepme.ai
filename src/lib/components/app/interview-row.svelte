@@ -4,7 +4,7 @@
   import StatusBadge from './status-badge.svelte';
   import ScoreChip from './score-chip.svelte';
   import { formatDuration } from '$lib/utils';
-  import { ChevronRight, Mic } from '@lucide/svelte';
+  import { ChevronRight, Mic } from '$lib/icons';
   import { splitTitle } from '$lib/interviewer-brief';
   import { cn } from '$lib/utils';
   import { INTERVIEW_GRID, TABLE_ROW, type InterviewCols } from './table';
@@ -28,7 +28,7 @@
   href="/dashboard/interviews/{row.id}"
   class={cn(TABLE_ROW, 'grid-cols-[20px_minmax(0,1fr)_auto]', INTERVIEW_GRID[cols])}
 >
-  <Mic class="size-5 text-muted-foreground" strokeWidth={1.6} />
+  <Mic class="size-5 text-muted-foreground" />
   <span class="truncate font-bold">{t.role}</span>
   <span class="hidden truncate text-muted-foreground sm:block">{t.company || '—'}</span>
   {#if cols === 'full'}<span class="hidden min-w-0 items-center gap-2 text-muted-foreground sm:flex">
@@ -39,5 +39,5 @@
   <span class="flex">
     {#if row.status === 'completed'}<ScoreChip score={row.overallScore} />{:else}<StatusBadge status={row.status} />{/if}
   </span>
-  <ChevronRight class="hidden size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block" strokeWidth={1.6} />
+  <ChevronRight class="hidden size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block" />
 </a>

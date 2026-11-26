@@ -2,17 +2,17 @@
   import type { Scorecard } from '$lib/interview-types';
   let { questions }: { questions: Scorecard['questions'] } = $props();
   const tone = (s: number) =>
-    s >= 4 ? 'bg-success-soft text-success' : s >= 3 ? 'bg-warning-soft text-warning' : 'bg-destructive/10 text-destructive';
+    s >= 4 ? 'text-success-text' : s >= 3 ? 'text-warning-text' : 'text-destructive';
 </script>
 
 {#if questions.length}
-  <ol class="divide-y rounded-xl border bg-card">
+  <ol class="divide-y border-y">
     {#each questions as q, i}
-      <li class="px-5 py-4">
+      <li class="py-4">
         <div class="flex items-start gap-3">
           <span class="tabular w-6 shrink-0 text-sm font-semibold text-faint">{i + 1}</span>
           <p class="flex-1 font-semibold">{q.question}</p>
-          <span class="tabular shrink-0 rounded-md px-2 py-0.5 text-[13px] font-bold {tone(q.score)}">{q.score}/5</span>
+          <span class="tabular shrink-0 text-[13px] font-bold {tone(q.score)}">{q.score}/5</span>
         </div>
         <div class="mt-3 grid gap-4 pl-9 md:grid-cols-2">
           <div class="text-sm leading-relaxed">
@@ -21,7 +21,7 @@
             <p class="mt-2">{q.feedback}</p>
           </div>
           <div class="border-l-[3px] border-success pl-3.5 text-sm leading-relaxed">
-            <div class="text-xs font-semibold text-success">Try this</div>
+            <div class="text-xs font-semibold text-success-text">Try this</div>
             <p class="mt-0.5">{q.stronger_answer}</p>
           </div>
         </div>
@@ -29,5 +29,5 @@
     {/each}
   </ol>
 {:else}
-  <p class="rounded-xl border bg-card p-5 text-sm text-muted-foreground">No main questions were identified in this interview.</p>
+  <p class="border-y py-4 text-sm text-muted-foreground">No main questions were identified in this interview.</p>
 {/if}

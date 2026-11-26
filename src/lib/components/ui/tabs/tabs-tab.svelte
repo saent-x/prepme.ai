@@ -10,7 +10,7 @@
 
 <TabsTab
   class={cn(
-    'h-9 px-0 text-sm font-semibold text-muted-foreground hover:text-foreground data-selected:border-primary data-selected:text-foreground',
+    'mb-0 h-7 shrink-0 rounded-full border-0 px-3.5 text-[13px] font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground data-selected:bg-card data-selected:text-foreground data-selected:shadow-[0_1px_2px_rgb(0_0_0/0.08),0_0_0_1px_var(--border)]',
     className
   )}
   {...rest}

@@ -8,7 +8,7 @@
   import InterviewerAvatar from './interviewer-avatar.svelte';
   import { interviewerFace } from '$lib/avatars';
   import { voiceOptions } from '$lib/templates';
-  import { LoaderCircle } from '@lucide/svelte';
+  import { LoaderCircle } from '$lib/icons';
   import { untrack } from 'svelte';
 
   type Values = { name: string; instructions: string; voice: string; template: string | null };

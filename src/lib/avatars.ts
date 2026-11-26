@@ -42,7 +42,7 @@ export function interviewerFace(name: string) {
     seed,
     backgroundColor: [faceColour(name).slice(1)],
     // Friendly expressions only: an interviewer should not look sad or sick.
-    eyes: (pin ? [pin.eyes] : ['cute', 'wink', 'wink2', 'plain', 'glasses', 'closed', 'stars', 'shades', 'closed2']) as never,
+    eyes: (pin ? [pin.eyes] : ['cute', 'wink', 'wink2', 'plain', 'glasses', 'closed', 'shades', 'closed2']) as never,
     mouth: (pin ? [pin.mouth] : ['plain', 'lilSmile', 'cute', 'wideSmile', 'smileTeeth', 'smileLol']) as never
   }).toDataUri();
   cache.set('f:' + seed, uri);
@@ -54,7 +54,7 @@ export function personFace(name: string) {
   const seed = name.trim().toLowerCase() || 'you';
   const hit = cache.get('p:' + seed);
   if (hit) return hit;
-  const uri = createAvatar(openPeeps, { seed, backgroundColor: ['ffd5a8', 'd7e3ff', 'dcfaee', 'efe9ff'] }).toDataUri();
+  const uri = createAvatar(openPeeps, { seed, backgroundColor: ['ffe3cc', 'dde6ff', 'dcf5ea', 'f1f1f3'] }).toDataUri();
   cache.set('p:' + seed, uri);
   return uri;
 }
