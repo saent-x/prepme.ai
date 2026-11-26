@@ -32,7 +32,7 @@ export function isAdmin(email: string | null | undefined) {
 type Row = Tokens & {
   key: string;
   userId: string;
-  interviewId: string;
+  interviewId: string | null;
   kind: UsageKind;
   model: string;
   session?: number;
@@ -136,11 +136,11 @@ export async function recordVoiceUsage(opts: {
   await Promise.all(writes);
 }
 
-/** Store what one scoring run or coach chat reply used. */
+/** Store what one scoring run, coach chat reply or fit check used. A fit check has no interview. */
 export async function recordTextUsage(opts: {
   userId: string;
-  interviewId: string;
-  kind: 'scoring' | 'chat';
+  interviewId: string | null;
+  kind: 'scoring' | 'chat' | 'fit';
   model: string;
   responseId: string;
   usage: unknown;
@@ -148,7 +148,7 @@ export async function recordTextUsage(opts: {
   if (!opts.usage) return;
   await upsert({
     ...tokensFromResponse(opts.usage),
-    key: `${opts.interviewId}:${opts.kind}:${opts.responseId}`,
+    key: `${opts.interviewId ?? opts.userId}:${opts.kind}:${opts.responseId}`,
     userId: opts.userId,
     interviewId: opts.interviewId,
     kind: opts.kind,

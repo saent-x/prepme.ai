@@ -42,6 +42,8 @@ export async function listInterviews(
     search?: string | null;
     status?: InterviewStatus | null;
     agentId?: string | null;
+    /** Only the practice interviews for one job. */
+    targetId?: string | null;
     page?: number;
     pageSize?: number;
   } = {}
@@ -52,7 +54,8 @@ export async function listInterviews(
     eq(interviews.userId, userId),
     opts.search ? like(interviews.name, `%${opts.search}%`) : undefined,
     opts.status ? eq(interviews.status, opts.status) : undefined,
-    opts.agentId ? eq(interviews.agentId, opts.agentId) : undefined
+    opts.agentId ? eq(interviews.agentId, opts.agentId) : undefined,
+    opts.targetId ? eq(interviews.targetId, opts.targetId) : undefined
   );
 
   const [items, [total]] = await Promise.all([

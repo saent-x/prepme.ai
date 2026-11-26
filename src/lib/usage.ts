@@ -255,7 +255,7 @@ export const isEmptyUsage = (u: VoiceUsage) =>
 // The cost report
 // ---------------------------------------------------------------------------
 
-export type UsageKindName = 'voice' | 'transcription' | 'scoring' | 'chat';
+export type UsageKindName = 'voice' | 'transcription' | 'scoring' | 'chat' | 'fit';
 
 /** The columns of a stored usage row that the report needs. */
 export type UsageRow = Tokens & {
@@ -327,13 +327,22 @@ export function buildCostReport(rows: UsageRow[]) {
     voiceCached: 0,
     transcription: 0,
     scoring: 0,
-    chat: 0
+    chat: 0,
+    fit: 0
   };
   const unpriced = new Set<string>();
   let input = 0;
   let cached = 0;
+  /** Spend that belongs to no interview (fit checks for a job). */
+  let outside = 0;
 
   for (const r of rows) {
+    if (r.kind === 'fit') {
+      if (r.costMicros == null) unpriced.add(r.model);
+      split.fit += r.costMicros ?? 0;
+      outside += r.costMicros ?? 0;
+      continue;
+    }
     const id = r.interviewId ?? 'unknown';
     let i = byInterview.get(id);
     if (!i) {
@@ -391,7 +400,7 @@ export function buildCostReport(rows: UsageRow[]) {
     .sort((a, b) => b.at.getTime() - a.at.getTime());
 
   const withVoice = interviews.filter((i) => i.voiceSeconds > 0);
-  const total = interviews.reduce((s, i) => s + i.total, 0);
+  const total = interviews.reduce((s, i) => s + i.total, 0) + outside;
   const scored = interviews.filter((i) => i.scoring > 0);
   const overall = minuteRate(interviews);
 
@@ -428,7 +437,8 @@ export function buildCostReport(rows: UsageRow[]) {
       { key: 'voiceCached', label: 'Re-reading the call so far', micros: split.voiceCached },
       { key: 'transcription', label: 'Live transcript', micros: split.transcription },
       { key: 'scoring', label: 'Scoring', micros: split.scoring },
-      { key: 'chat', label: 'Coach chat', micros: split.chat }
+      { key: 'chat', label: 'Coach chat', micros: split.chat },
+      { key: 'fit', label: 'Fit checks', micros: split.fit }
     ].sort((a, b) => b.micros - a.micros),
     buckets: LENGTH_BUCKETS.map((b) => ({
       label: b.label,

@@ -287,6 +287,17 @@ describe('the cost report', () => {
     expect(report.split[0].key).toBe('voiceOutput');
   });
 
+  it('counts fit checks in the spend without treating them as interviews', () => {
+    const withFit = buildCostReport([
+      ...rows,
+      row({ interviewId: null, kind: 'fit', model: 'gpt-6-luna', session: null, costMicros: 500 })
+    ]);
+    expect(withFit.interviews).toHaveLength(2);
+    expect(withFit.totals.total).toBe(report.totals.total + 500);
+    expect(withFit.totals.averagePerInterview).toBe(report.totals.averagePerInterview);
+    expect(withFit.split.find((s) => s.key === 'fit')?.micros).toBe(500);
+  });
+
   it('names models it has no price for, and copes with nothing at all', () => {
     expect(report.unpriced).toEqual([]);
     expect(buildCostReport([row({ model: 'mystery', costMicros: null })]).unpriced).toEqual([

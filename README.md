@@ -55,6 +55,14 @@ bun run dev
 
 `bun run dev` runs Vite with Wrangler's local bindings, so D1 is a local SQLite file under `.wrangler/state`. Model names and other non-secret settings are `vars` in [wrangler.jsonc](./wrangler.jsonc); secrets go in `.dev.vars` locally and in the Worker's settings in production.
 
+### Job targets
+
+A job target is a job someone is preparing for: the advert, their CV and the interview date. The logic lives in [src/lib/jobs.ts](./src/lib/jobs.ts), the screens under `/dashboard/jobs`.
+
+- **Fit check.** Adding a job compares the CV with the advert: what is covered, the gaps to practise and the interview rounds to expect. The chat model reads it (30 checks a day per person); without an API key, or past that limit, a rule-based reader stands in so adding a job never fails.
+- **Rounds.** A practice interview started from a job uses its advert and CV, and the interviewer is told which round is being practised.
+- **Readiness.** A 0 to 100 score from the latest practice scores for the job (newest weighted most), held back until every round has been practised. 75 is the pass mark.
+
 ### Deploying
 
 1. Set secrets once: `bunx wrangler secret put BETTER_AUTH_SECRET`, then `OPENAI_API_KEY`, and optionally `POLAR_ACCESS_TOKEN` and the social sign-in secrets.

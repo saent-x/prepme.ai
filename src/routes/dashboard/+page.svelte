@@ -5,6 +5,8 @@
   import InterviewerDialog from '$lib/components/app/interviewer-dialog.svelte';
   import InterviewHead from '$lib/components/app/interview-head.svelte';
   import InterviewRow from '$lib/components/app/interview-row.svelte';
+  import JobRow from '$lib/components/app/job-row.svelte';
+  import { countdown, daysUntil } from '$lib/jobs';
   import { TABLE_HEAD, TABLE_ROW } from '$lib/components/app/table';
   import { cn } from '$lib/utils';
   import { Plus } from '$lib/icons';
@@ -17,6 +19,8 @@
   const active = $derived(data.active[0]);
   const ready = $derived(data.recent.find((r) => r.status === 'upcoming'));
   const last = $derived(data.recent.find((r) => r.status === 'completed' && r.overallScore != null));
+  // The job with the soonest interview that still has a round to practise.
+  const target = $derived(data.jobs.find((j) => j.readiness.nextRound));
 
   // The single next step, picked from what the user has done so far.
   type Next = { face: string; label: string; title: string; meta: string; cta: string; href: string | null; edit?: string };
@@ -40,6 +44,19 @@
         href: `/call/${ready.id}`,
         edit: `/dashboard/interviews/${ready.id}`
       };
+    if (target) {
+      const { job, readiness } = target;
+      const round = readiness.nextRound!;
+      const soon = job.interviewDate && daysUntil(job.interviewDate) >= 0 ? `Interview ${countdown(job.interviewDate)}` : null;
+      return {
+        face: data.interviewers[0]?.name ?? 'Maya',
+        label: 'Up next',
+        title: `Practise the ${round.name} round${job.company ? ` for ${job.company}` : ''}`,
+        meta: [soon, readiness.score == null ? 'Your first practice sets your readiness' : `Readiness ${readiness.score}`].filter(Boolean).join(' · '),
+        cta: 'Start',
+        href: `/dashboard/interviews/new?job=${job.id}&round=${round.id}`
+      };
+    }
     if (last)
       return {
         face: last.agent.name,
@@ -91,6 +108,23 @@
 </section>
 
 <div class="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
+  <div class="grid min-w-0 content-start gap-8">
+  <section aria-label="Job targets" class="min-w-0">
+    <div class="flex h-8 items-center justify-between">
+      <h2 class="section-title">Job targets</h2>
+      {#if data.jobs.length}
+        <a href="/dashboard/jobs" class="link text-xs">{data.jobCount > data.jobs.length ? `All ${data.jobCount} jobs` : 'All jobs'}</a>
+      {/if}
+    </div>
+    <div class="stagger mt-2 border-t">
+      {#each data.jobs as row (row.job.id)}<JobRow {row} />{/each}
+      <a href="/dashboard/jobs/new" class="flex min-h-12 items-center gap-3 border-b px-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+        <span class="grid size-9 shrink-0 place-items-center rounded-full border border-input"><Plus class="size-4" /></span>
+        {data.jobs.length ? 'Add a job' : 'Add the job you are preparing for. PrepMe checks your fit and plans the rounds.'}
+      </a>
+    </div>
+  </section>
+
   <section aria-label="Recent interviews" class="min-w-0">
     <div class="flex h-8 items-center justify-between">
       <h2 class="section-title">Recent interviews</h2>
@@ -107,6 +141,7 @@
       {/if}
     </div>
   </section>
+  </div>
 
   <section aria-label="Agents" class="min-w-0">
     <div class="flex h-8 items-center justify-between">

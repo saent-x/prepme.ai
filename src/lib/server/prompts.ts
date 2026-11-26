@@ -31,8 +31,10 @@ export function buildRealtimeInstructions(opts: {
   previousTranscript?: TranscriptEntry[];
   /** Whole minutes left on the clock when resuming; the call keeps its original length. */
   minutesLeft?: number;
+  /** The round of the hiring process being practised, when the interview is for a saved job. */
+  round?: { name: string; focus: string } | null;
 }) {
-  const { agent, interview, candidateName, previousTranscript, minutesLeft } = opts;
+  const { agent, interview, candidateName, previousTranscript, minutesLeft, round } = opts;
   const parts: string[] = [];
 
   parts.push(`# Role
@@ -54,6 +56,12 @@ Ask about their real experience: pick projects and claims from the CV and probe 
 """
 ${clip(interview.cvText, 8000)}
 """`);
+  }
+  if (round) {
+    parts.push(`# The round being practised
+This is the "${clip(round.name, 60)}" round of the hiring process for this job.${
+      round.focus.trim() ? ` It tests: ${clip(round.focus, 200)}.` : ''
+    } Ask the questions a real interviewer would ask in this round, at the depth this round calls for.`);
   }
   if (interview.focus?.trim()) {
     parts.push(`# Candidate asked to focus on

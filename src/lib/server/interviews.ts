@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { db } from '$lib/db/index.server';
-import { interviews } from '$lib/db/schema';
+import { interviews, jobTargets } from '$lib/db/schema';
 import type { TranscriptEntry } from '$lib/interview-types';
 import { getInterviewOwned } from './repo';
 import { analyseInterview, createRealtimeClientSecret } from './openai';
@@ -52,6 +52,7 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
 
   const previous = interview.transcript ?? [];
   const instructions = buildRealtimeInstructions({
+    round: await practisedRound(interview),
     agent: interview.agent,
     interview: { ...interview, durationMinutes },
     candidateName: user.name.split(' ')[0] || user.name,
@@ -91,6 +92,16 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
     /** Old turns are being trimmed on this call, so the browser keeps the interviewer's list of asked questions fresh. */
     trimming: secret.contextTokens > 0
   };
+}
+
+/** The round of a saved job that this interview practises, if it is for one. */
+async function practisedRound(interview: { targetId: string | null; roundId: string | null }) {
+  if (!interview.targetId || !interview.roundId) return null;
+  const [job] = await db
+    .select({ rounds: jobTargets.rounds })
+    .from(jobTargets)
+    .where(eq(jobTargets.id, interview.targetId));
+  return job?.rounds.find((r) => r.id === interview.roundId) ?? null;
 }
 
 /**

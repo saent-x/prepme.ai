@@ -7,7 +7,7 @@
   import CommandPalette from '$lib/components/app/command-palette.svelte';
   import { useShortcut, useShortcutHint } from '@ui-sdk/svelte/shortcuts';
   import { toast } from '$lib/components/ui/toast';
-  import { newInterview, openNewInterview } from '$lib/new-interview.svelte';
+  import { newInterview, openNewInterview, type NewInterviewPreset } from '$lib/new-interview.svelte';
   import Logo from '$lib/components/brand/logo.svelte';
   import { Button } from '$lib/components/ui/button';
   import * as Menu from '$lib/components/ui/menu';
@@ -15,6 +15,7 @@
   import UserAvatar from '$lib/components/app/user-avatar.svelte';
   import { toggleMode, mode } from 'mode-watcher';
   import {
+    Briefcase,
     House,
     List,
     Users,
@@ -74,6 +75,7 @@
 
   const nav = [
     { href: '/dashboard', label: 'Home', icon: House, exact: true },
+    { href: '/dashboard/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/dashboard/interviews', label: 'Interviews', icon: List },
     { href: '/dashboard/interviewers', label: 'Agents', icon: Users }
   ];
@@ -87,7 +89,13 @@
 
   // "New interview" is a pop-up. Any link to /dashboard/interviews/new opens it in place.
   let dialogKey = $state(0);
-  function open(preset: { agent?: string | null; focus?: string | null }) {
+  const presetFrom = (q: URLSearchParams): NewInterviewPreset => ({
+    agent: q.get('interviewer'),
+    focus: q.get('focus'),
+    job: q.get('job'),
+    round: q.get('round')
+  });
+  function open(preset: NewInterviewPreset) {
     dialogKey += 1;
     openNewInterview(preset);
   }
@@ -104,13 +112,13 @@
     }
     if (u.pathname !== '/dashboard/interviews/new') return;
     e.preventDefault();
-    open({ agent: u.searchParams.get('interviewer'), focus: u.searchParams.get('focus') });
+    open(presetFrom(u.searchParams));
   }
   // Arriving by URL (an old link, or straight after making an agent) lands on ?new=1.
   $effect(() => {
     const u = page.url;
     if (u.pathname === '/dashboard/interviews' && u.searchParams.get('new') === '1') {
-      const preset = { agent: u.searchParams.get('interviewer'), focus: u.searchParams.get('focus') };
+      const preset = presetFrom(u.searchParams);
       setTimeout(() => {
         replaceState('/dashboard/interviews', {});
         open(preset);
@@ -279,6 +287,7 @@
   bind:open={paletteOpen}
   interviews={data.search.interviews}
   agents={data.search.agents}
+  jobs={data.newInterview.jobs}
   onNewInterview={() => open({})}
   onBilling={() => (billingOpen = true)}
   onToggleSidebar={sidebarKey}
@@ -294,7 +303,10 @@
     minutes={data.newInterview.minutes}
     premium={data.usage.plan.premium}
     lastCv={data.newInterview.lastCv}
+    jobs={data.newInterview.jobs}
     agent={newInterview.agent}
     focus={newInterview.focus}
+    job={newInterview.job}
+    round={newInterview.round}
   />
 {/key}

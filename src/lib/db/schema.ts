@@ -2,6 +2,7 @@ import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import { nanoid } from 'nanoid';
 import type { InferSelectModel } from 'drizzle-orm';
 import type { Scorecard, TranscriptEntry } from '$lib/interview-types';
+import type { Fit, Round } from '$lib/jobs';
 
 /** Timestamps are stored as integer milliseconds since the epoch (D1 / SQLite). */
 const ts = (name: string) => integer(name, { mode: 'timestamp_ms' });
@@ -113,6 +114,45 @@ export const agents = sqliteTable(
   (t) => [index('agents_user_id_idx').on(t.userId)]
 );
 
+/**
+ * A job the user is preparing for: the advert, their CV, the date of the real
+ * interview, how well they fit and the rounds to practise. Interviews link to
+ * one, which is what turns separate practice calls into progress towards a job.
+ */
+export const jobTargets = sqliteTable(
+  'job_targets',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** The role, e.g. "Senior AI Engineer". */
+    title: text('title').notNull(),
+    company: text('company').notNull().default(''),
+    location: text('location').notNull().default(''),
+    /** The advert as pasted. Practice interviews for this job are tailored to it. */
+    advert: text('advert').notNull(),
+    cvText: text('cv_text'),
+    cvName: text('cv_name'),
+    /** Day of the real interview, as YYYY-MM-DD (a calendar day, so no time zone). */
+    interviewDate: text('interview_date'),
+    /** How the CV matches the advert. Null when no CV was given. */
+    fit: text('fit', { mode: 'json' }).$type<Fit>(),
+    /** The rounds to practise, in order. */
+    rounds: text('rounds', { mode: 'json' }).$type<Round[]>().notNull(),
+    createdAt: ts('created_at')
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: ts('updated_at')
+      .notNull()
+      .$defaultFn(() => new Date())
+      .$onUpdate(() => new Date())
+  },
+  (t) => [index('job_targets_user_id_idx').on(t.userId)]
+);
+
 export const INTERVIEW_STATUSES = [
   'upcoming',
   'active',
@@ -134,6 +174,10 @@ export const interviews = sqliteTable(
     agentId: text('agent_id')
       .notNull()
       .references(() => agents.id, { onDelete: 'cascade' }),
+    /** The job this practice is for, if any. Deleting the job keeps the interview. */
+    targetId: text('target_id').references(() => jobTargets.id, { onDelete: 'set null' }),
+    /** Which of the job's rounds this practises (a Round id). */
+    roundId: text('round_id'),
 
     status: text('status', { enum: INTERVIEW_STATUSES }).notNull().default('upcoming'),
 
@@ -177,7 +221,8 @@ export const interviews = sqliteTable(
   },
   (t) => [
     index('interviews_user_id_idx').on(t.userId),
-    index('interviews_agent_id_idx').on(t.agentId)
+    index('interviews_agent_id_idx').on(t.agentId),
+    index('interviews_target_id_idx').on(t.targetId)
   ]
 );
 
@@ -200,11 +245,12 @@ export const interviewMessages = sqliteTable(
   (t) => [index('interview_messages_interview_id_idx').on(t.interviewId)]
 );
 
-export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat'] as const;
+export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat', 'fit'] as const;
 
 /**
  * What each interview cost in AI usage: one row per live voice session, per
- * session's transcription, per scoring run and per coach chat reply.
+ * session's transcription, per scoring run and per coach chat reply. Fit checks
+ * for a job are recorded here too, with no interview.
  *
  * `interviewId` is deliberately not a foreign key: the money was spent even if
  * the interview is deleted later, so the row has to outlive it.
@@ -253,6 +299,7 @@ export const usageEvents = sqliteTable(
 );
 
 export type Agent = InferSelectModel<typeof agents>;
+export type JobTarget = InferSelectModel<typeof jobTargets>;
 export type Interview = InferSelectModel<typeof interviews>;
 export type InterviewMessage = InferSelectModel<typeof interviewMessages>;
 export type UsageEvent = InferSelectModel<typeof usageEvents>;

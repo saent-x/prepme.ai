@@ -17,13 +17,15 @@
   import ScoreChip from './score-chip.svelte';
   import StatusBadge from './status-badge.svelte';
   import { mode } from 'mode-watcher';
-  import { CreditCard, House, List, LogOut, Moon, PanelLeft, Plus, Search, Sun, Users } from '$lib/icons';
+  import { Briefcase, CreditCard, House, List, LogOut, Moon, PanelLeft, Plus, Search, Sun, Users } from '$lib/icons';
   import type { InterviewStatus } from '$lib/db/schema';
+  import { jobName } from '$lib/jobs';
 
   type Props = {
     open: boolean;
     interviews: { id: string; name: string; agent: string; status: InterviewStatus; score: number | null }[];
     agents: { id: string; name: string }[];
+    jobs: { id: string; title: string; company: string }[];
     onNewInterview: () => void;
     onBilling: () => void;
     onToggleSidebar: () => void;
@@ -34,6 +36,7 @@
     open = $bindable(false),
     interviews,
     agents,
+    jobs,
     onNewInterview,
     onBilling,
     onToggleSidebar,
@@ -43,6 +46,7 @@
 
   const actions = $derived([
     { value: 'new', label: 'New interview', icon: Plus, keywords: ['start', 'practise', 'practice'], run: onNewInterview },
+    { value: 'job', label: 'Add a job', icon: Briefcase, keywords: ['advert', 'fit', 'target'], run: () => goto('/dashboard/jobs/new') },
     { value: 'billing', label: 'Plan & billing', icon: CreditCard, keywords: ['upgrade', 'pro', 'subscription'], run: onBilling },
     {
       value: 'theme',
@@ -56,6 +60,7 @@
   ]);
   const pages = [
     { value: 'go:home', label: 'Home', icon: House, href: '/dashboard' },
+    { value: 'go:jobs', label: 'Jobs', icon: Briefcase, href: '/dashboard/jobs' },
     { value: 'go:interviews', label: 'Interviews', icon: List, href: '/dashboard/interviews' },
     { value: 'go:agents', label: 'Agents', icon: Users, href: '/dashboard/interviewers' }
   ];
@@ -67,6 +72,7 @@
     const page = pages.find((p) => p.value === value);
     if (page) return goto(page.href);
     if (value.startsWith('interview:')) return goto(`/dashboard/interviews/${value.slice(10)}`);
+    if (value.startsWith('job:')) return goto(`/dashboard/jobs/${value.slice(4)}`);
     if (value.startsWith('agent:')) return goto(`/dashboard/interviewers/${value.slice(6)}`);
   }
 </script>
@@ -81,8 +87,8 @@
       <div class="flex h-14 items-center gap-3 border-b px-4">
         <Search class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <CommandInput
-          aria-label="Search interviews, agents and actions"
-          placeholder="Search interviews, agents and actions"
+          aria-label="Search interviews, jobs, agents and actions"
+          placeholder="Search interviews, jobs, agents and actions"
           class="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
         />
         <kbd class="hidden rounded-[6px] border px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground sm:inline">Esc</kbd>
@@ -98,6 +104,17 @@
                 <span class="min-w-0 flex-1 truncate"><CommandItemText>{i.name}</CommandItemText></span>
                 <span class="hidden truncate text-xs text-muted-foreground sm:inline">{i.agent}</span>
                 {#if i.status === 'completed'}<ScoreChip score={i.score} />{:else}<StatusBadge status={i.status} />{/if}
+              </CommandItem>
+            {/each}
+          </CommandGroup>
+        {/if}
+        {#if jobs.length}
+          <CommandGroup>
+            <CommandGroupLabel class="group-label">Jobs</CommandGroupLabel>
+            {#each jobs as j (j.id)}
+              <CommandItem value="job:{j.id}" label={jobName(j)} keywords={['job']} class="item">
+                <CommandItemIcon><Briefcase class="size-5 text-muted-foreground" /></CommandItemIcon>
+                <span class="min-w-0 flex-1 truncate"><CommandItemText>{jobName(j)}</CommandItemText></span>
               </CommandItem>
             {/each}
           </CommandGroup>

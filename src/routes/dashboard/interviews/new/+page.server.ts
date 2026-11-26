@@ -8,6 +8,8 @@ import { getInterviewerOwned, listInterviewers } from '$lib/server/repo';
 import { getPlan, limitMessage } from '$lib/server/billing';
 import { callMinutes } from '$lib/server/config';
 import { getTemplate } from '$lib/templates';
+import { getJobOwned } from '$lib/server/jobs';
+import { practiceName } from '$lib/jobs';
 
 // The form is a pop-up (see the dashboard layout). This route keeps old links working and handles the submit.
 export const load: PageServerLoad = async ({ url }) => {
@@ -17,6 +19,10 @@ export const load: PageServerLoad = async ({ url }) => {
   if (agent) q.set('interviewer', agent);
   const focus = url.searchParams.get('focus')?.slice(0, 300);
   if (focus) q.set('focus', focus);
+  for (const key of ['job', 'round']) {
+    const value = url.searchParams.get(key)?.slice(0, 64);
+    if (value) q.set(key, value);
+  }
   redirect(303, `/dashboard/interviews?${q}`);
 };
 
@@ -29,7 +35,11 @@ const Form = z.object({
   cvText: z.string().trim().max(25_000).optional(),
   cvName: z.string().trim().max(120).optional(),
   /** Reuse the CV from one of the user's earlier interviews. */
-  cvFrom: z.string().max(64).optional()
+  cvFrom: z.string().max(64).optional(),
+  /** Practise for one of the user's jobs: its advert and CV are used, and the interview counts towards it. */
+  job: z.string().max(64).optional(),
+  /** Which of that job's rounds this practises. */
+  round: z.string().max(40).optional()
 });
 
 export const actions: Actions = {
@@ -47,6 +57,10 @@ export const actions: Actions = {
     const plan = await getPlan(user.id);
     // The length comes from the plan, not the form.
     const durationMinutes = callMinutes(plan.premium);
+
+    // Ownership check: the job id comes from the client.
+    const job = f.job ? await getJobOwned(user.id, f.job) : null;
+    const round = job?.rounds.find((r) => r.id === f.round) ?? null;
 
     // Resolve the interviewer, creating it from a template on first use.
     let agentId: string;
@@ -77,7 +91,10 @@ export const actions: Actions = {
 
     let cvText = f.cvText || null;
     let cvName = cvText ? f.cvName || 'CV' : null;
-    if (!cvText && f.cvFrom) {
+    if (!cvText && job?.cvText) {
+      cvText = job.cvText;
+      cvName = job.cvName ?? 'CV';
+    } else if (!cvText && f.cvFrom) {
       const [prev] = await db
         .select({ cvText: interviews.cvText, cvName: interviews.cvName })
         .from(interviews)
@@ -91,8 +108,10 @@ export const actions: Actions = {
       .values({
         userId: user.id,
         agentId,
-        name: f.name || `${agentName} practice`,
-        jobDescription: f.jobDescription || null,
+        name: f.name || (job ? practiceName(job, round) : `${agentName} practice`),
+        jobDescription: job ? job.advert.slice(0, 15_000) : f.jobDescription || null,
+        targetId: job?.id ?? null,
+        roundId: round?.id ?? null,
         focus: f.focus || null,
         cvText,
         cvName,

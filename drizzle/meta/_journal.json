@@ -22,6 +22,13 @@
       "when": 1795706066957,
       "tag": "0002_usage_events",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1795723134870,
+      "tag": "0003_job_targets",
+      "breakpoints": true
     }
   ]
 }
