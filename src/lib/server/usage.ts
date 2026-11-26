@@ -7,6 +7,7 @@ import {
   costMicros,
   isEmptyUsage,
   tokensFromResponse,
+  transcriptionFromEvent,
   zeroTokens,
   type Tokens,
   type VoiceUsage
@@ -52,7 +53,9 @@ const larger = (column: SQLiteColumn): SQL =>
  */
 function upsert(row: Row) {
   const seconds = row.seconds ?? 0;
-  const cost = costMicros(row.model, row, row.kind === 'transcription' ? seconds : 0);
+  // Only transcription is ever billed by length; a voice row's seconds are time connected.
+  const billedByLength = row.kind === 'transcription' || row.kind === 'redo';
+  const cost = costMicros(row.model, row, billedByLength ? seconds : 0);
   const u = usageEvents;
   return db
     .insert(u)
@@ -155,6 +158,50 @@ export async function recordTextUsage(opts: {
     model: opts.model,
     responses: 1
   });
+}
+
+/**
+ * Store what one answer redo used: the scoring reply, and the transcription
+ * when the answer was spoken. Both are kind "redo", so the cost page shows
+ * redos as their own line and an interview's own cost stays what the call cost.
+ */
+export async function recordRedoUsage(opts: {
+  userId: string;
+  interviewId: string;
+  redoId: string;
+  scoring: { model: string; usage: unknown };
+  transcription: { model: string; usage: unknown } | null;
+}) {
+  const base = { userId: opts.userId, interviewId: opts.interviewId, kind: 'redo' as const };
+  const writes = [];
+  if (opts.scoring.usage) {
+    writes.push(
+      upsert({
+        ...base,
+        ...tokensFromResponse(opts.scoring.usage),
+        key: `${opts.redoId}:redo:score`,
+        model: opts.scoring.model,
+        responses: 1
+      })
+    );
+  }
+  if (opts.transcription?.usage) {
+    const t = transcriptionFromEvent(opts.transcription.usage);
+    writes.push(
+      upsert({
+        ...base,
+        ...zeroTokens(),
+        inputText: t.inputText,
+        inputAudio: t.inputAudio,
+        outputText: t.outputText,
+        key: `${opts.redoId}:redo:transcribe`,
+        model: opts.transcription.model,
+        seconds: t.seconds,
+        responses: 0
+      })
+    );
+  }
+  await Promise.all(writes);
 }
 
 /** Most rows the cost page reads at once; plenty for months of use at today's volume. */

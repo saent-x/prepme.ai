@@ -99,7 +99,7 @@ export async function startRealtimeSession(user: { id: string; name: string }, i
 }
 
 /** The round of a saved job that this interview practises, if it is for one. */
-async function practisedRound(interview: { targetId: string | null; roundId: string | null }) {
+export async function practisedRound(interview: { targetId: string | null; roundId: string | null }) {
   if (!interview.targetId || !interview.roundId) return null;
   const [job] = await db
     .select({ rounds: jobTargets.rounds })

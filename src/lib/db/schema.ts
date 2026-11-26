@@ -245,12 +245,54 @@ export const interviewMessages = sqliteTable(
   (t) => [index('interview_messages_interview_id_idx').on(t.interviewId)]
 );
 
-export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat', 'fit'] as const;
+/**
+ * One "redo an answer" attempt: the candidate answered a scorecard question
+ * again, and this is what they said and how it scored next to the first time.
+ */
+export const answerRedos = sqliteTable(
+  'answer_redos',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    interviewId: text('interview_id')
+      .notNull()
+      .references(() => interviews.id, { onDelete: 'cascade' }),
+    /** Position of the question in the interview's scorecard. */
+    questionIndex: integer('question_index').notNull(),
+    /** The question as asked, kept so the redo still reads right if the interview is scored again. */
+    question: text('question').notNull(),
+    /** What the candidate said this time. */
+    answer: text('answer').notNull(),
+    /** The scorecard's score for the first answer, out of 100. */
+    previousScore: integer('previous_score').notNull(),
+    /** This attempt's score, out of 100. */
+    score: integer('score').notNull(),
+    feedback: text('feedback').notNull(),
+    tip: text('tip').notNull(),
+    /** True when it was said out loud, false when typed. */
+    spoken: integer('spoken', { mode: 'boolean' }).notNull().default(true),
+    /** Seconds of speaking, 0 when typed. */
+    seconds: integer('seconds').notNull().default(0),
+    createdAt: ts('created_at')
+      .notNull()
+      .$defaultFn(() => new Date())
+  },
+  (t) => [
+    index('answer_redos_interview_id_idx').on(t.interviewId),
+    index('answer_redos_user_id_idx').on(t.userId)
+  ]
+);
+
+export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat', 'fit', 'redo'] as const;
 
 /**
  * What each interview cost in AI usage: one row per live voice session, per
  * session's transcription, per scoring run and per coach chat reply. Fit checks
- * for a job are recorded here too, with no interview.
+ * for a job (no interview) and answer redos are recorded here too.
  *
  * `interviewId` is deliberately not a foreign key: the money was spent even if
  * the interview is deleted later, so the row has to outlive it.
@@ -302,6 +344,7 @@ export type Agent = InferSelectModel<typeof agents>;
 export type JobTarget = InferSelectModel<typeof jobTargets>;
 export type Interview = InferSelectModel<typeof interviews>;
 export type InterviewMessage = InferSelectModel<typeof interviewMessages>;
+export type AnswerRedo = InferSelectModel<typeof answerRedos>;
 export type UsageEvent = InferSelectModel<typeof usageEvents>;
 export type UsageKind = (typeof USAGE_KINDS)[number];
 export type InterviewStatus = (typeof INTERVIEW_STATUSES)[number];

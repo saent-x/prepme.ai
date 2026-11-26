@@ -51,3 +51,6 @@ export { default as X } from 'phosphor-svelte/lib/X';
 export { default as SpeakerHigh } from 'phosphor-svelte/lib/SpeakerHigh';
 export { default as SpeakerSlash } from 'phosphor-svelte/lib/SpeakerSlash';
 export { default as Info } from 'phosphor-svelte/lib/Info';
+export { default as Redo } from 'phosphor-svelte/lib/ArrowClockwise';
+export { default as Keyboard } from 'phosphor-svelte/lib/Keyboard';
+export { default as Stop } from 'phosphor-svelte/lib/Stop';

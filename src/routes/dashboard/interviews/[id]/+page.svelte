@@ -15,7 +15,9 @@
   import ScoreRing from '$lib/components/viz/score-ring.svelte';
   import { COMPETENCY_LABELS } from '$lib/interview-types';
   import { jobName } from '$lib/jobs';
-  import { Check, ChevronDown, ChevronRight, Ellipsis, Mic, Pencil, RotateCcw, Target, Trash2 } from '$lib/icons';
+  import { answerScore, gainLabel, nextToRedo, redosByQuestion } from '$lib/redo';
+  import RedoDialog, { type RedoQuestion } from '$lib/components/results/redo-dialog.svelte';
+  import { Check, ChevronDown, ChevronRight, Ellipsis, Mic, Pencil, Redo, RotateCcw, Target, Trash2 } from '$lib/icons';
 
   let { data, form } = $props();
   const i = $derived(data.interview);
@@ -23,6 +25,18 @@
   let confirmDelete = $state(false);
   let renaming = $state(false);
   const sc = $derived(i.status === 'completed' ? i.scorecard : null);
+
+  // Redo an answer: one question at a time, in a pop-up.
+  const redone = $derived(redosByQuestion(data.redos));
+  const suggested = $derived(sc ? nextToRedo(sc.questions, data.redos) : null);
+  let redoOpen = $state(false);
+  let redoing = $state<RedoQuestion | null>(null);
+  function redo(index: number) {
+    const q = sc?.questions[index];
+    if (!q) return;
+    redoing = { index, question: q.question, score: answerScore(q), feedback: q.feedback };
+    redoOpen = true;
+  }
 </script>
 
 <svelte:head><title>{i.name} · PrepMe</title></svelte:head>
@@ -127,18 +141,33 @@
           </div>
         </section>
 
-        <!-- Key moments: each question, scored -->
+        <!-- Key moments: each question, scored, with a redo -->
         <section class="py-8" aria-label="Key moments">
-          <h3 class="section-title">Key moments</h3>
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h3 class="section-title">Key moments</h3>
+            <p class="text-xs text-muted-foreground">
+              Redo any answer out loud in two minutes and see the new score next to the old one.
+              {#if data.redosLeft != null}<span class="tabular">{data.redosLeft} free {data.redosLeft === 1 ? 'redo' : 'redos'} left.</span>{/if}
+            </p>
+          </div>
           <ul class="mt-3 border-t">
             {#each sc.questions as q, n}
               {@const tag = q.score >= 4 ? { label: 'Strong answer', c: 'text-success-text before:bg-success', bar: 'bg-success' } : q.score === 3 ? { label: 'Could be sharper', c: 'text-warning-text before:bg-warning', bar: 'bg-warning' } : { label: 'Weak answer', c: 'text-destructive before:bg-destructive', bar: 'bg-destructive' }}
-              <li class="border-b">
-                <details class="group">
+              {@const r = redone.get(n)}
+              <li class="flex items-start gap-2 border-b">
+                <details class="group min-w-0 flex-1">
                   <summary class="flex min-h-16 cursor-pointer list-none items-center gap-4 py-3">
                     <span class="h-10 w-[3px] shrink-0 rounded-full {tag.bar}"></span>
                     <span class="w-8 shrink-0 text-xs font-bold text-muted-foreground">Q{n + 1}</span>
-                    <span class="min-w-0 flex-1 text-sm leading-snug">“{q.question}”</span>
+                    <span class="min-w-0 flex-1 text-sm leading-snug">
+                      “{q.question}”
+                      {#if r}
+                        {@const up = r.best.score - r.best.previousScore}
+                        <span class="tabular mt-0.5 block text-xs font-bold {up > 0 ? 'text-success-text' : 'text-muted-foreground'}">
+                          Redo {r.best.score}{#if up !== 0}, {gainLabel(r.best.previousScore, r.best.score)}{/if}
+                        </span>
+                      {/if}
+                    </span>
                     <span class="hidden h-6 shrink-0 items-center gap-1.5 text-xs font-bold before:size-1.5 before:rounded-full sm:inline-flex {tag.c}">{tag.label}</span>
                     <ChevronDown class="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                   </summary>
@@ -146,8 +175,24 @@
                     <p><span class="font-bold">You said:</span> <span class="text-muted-foreground">{q.answer_summary}</span></p>
                     <p><span class="font-bold">Feedback:</span> <span class="text-muted-foreground">{q.feedback}</span></p>
                     <p><span class="font-bold">Stronger:</span> <span class="text-muted-foreground">{q.stronger_answer}</span></p>
+                    {#if r}
+                      <p>
+                        <span class="font-bold">{r.attempts === 1 ? 'Your redo' : `Your best of ${r.attempts} redos`}:</span>
+                        <span class="tabular font-bold">{r.best.previousScore} to {r.best.score}.</span>
+                        <span class="text-muted-foreground">{r.best.feedback} Next time: {r.best.tip}</span>
+                      </p>
+                    {/if}
                   </div>
                 </details>
+                <Button
+                  variant={suggested === n ? 'default' : 'outline'}
+                  size="sm"
+                  class="mt-[18px] shrink-0"
+                  aria-label="Redo your answer to question {n + 1}"
+                  onclick={() => redo(n)}
+                >
+                  <Redo /> <span class="hidden sm:inline">{r ? 'Redo again' : 'Redo'}</span>
+                </Button>
               </li>
             {/each}
           </ul>
@@ -179,6 +224,8 @@
     </aside>
   {/if}
 </div>
+
+<RedoDialog bind:open={redoOpen} interviewId={i.id} question={redoing} left={data.redosLeft} />
 
 <AlertDialog.Root bind:open={confirmDelete}>
   <AlertDialog.Content>

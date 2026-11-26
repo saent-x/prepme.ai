@@ -63,6 +63,14 @@ A job target is a job someone is preparing for: the advert, their CV and the int
 - **Rounds.** A practice interview started from a job uses its advert and CV, and the interviewer is told which round is being practised.
 - **Readiness.** A 0 to 100 score from the latest practice scores for the job (newest weighted most), held back until every round has been practised. 75 is the pass mark.
 
+### Redo an answer
+
+On a scorecard, every question has a Redo button. The candidate answers it again, out loud for up to two minutes (or typed), and sees the new score next to the first one with what changed and one thing to fix next time. The logic lives in [src/lib/redo.ts](./src/lib/redo.ts) and [src/lib/server/redo.ts](./src/lib/server/redo.ts).
+
+- **How it works.** The browser records the answer and posts it to `/api/interviews/:id/redo`. The server transcribes it with the transcription model, scores it with the analysis model against the first answer, and stores the attempt in `answer_redos`. The recording itself is not kept.
+- **Limits.** The free plan includes 3 redos; paid plans have no limit. Anyone is capped at 40 a day so a stuck script cannot run up a bill.
+- **Cost.** Well under a penny each. Redos show as their own line on the cost page and are not added to the cost of the interview they follow.
+
 ### Deploying
 
 1. Set secrets once: `bunx wrangler secret put BETTER_AUTH_SECRET`, then `OPENAI_API_KEY`, and optionally `POLAR_ACCESS_TOKEN` and the social sign-in secrets.
@@ -72,7 +80,7 @@ Or connect the repository in the Cloudflare dashboard (Workers Builds) with buil
 
 ### What interviews cost
 
-Every interview records what it used at OpenAI (voice, live transcript, scoring and coach chat) in the `usage_events` table, priced with the table in [src/lib/usage.ts](./src/lib/usage.ts). The voice figures are read from OpenAI's own events in the browser, so they are for working out costs, not for billing.
+Every interview records what it used at OpenAI (voice, live transcript, scoring and coach chat, plus fit checks and answer redos) in the `usage_events` table, priced with the table in [src/lib/usage.ts](./src/lib/usage.ts). The voice figures are read from OpenAI's own events in the browser, so they are for working out costs, not for billing.
 
 - **Cost page.** `/dashboard/costs` shows the cost per interview and per voice minute, where the money goes, and what the planned plans would cost. Only the accounts listed in the `ADMIN_EMAILS` secret can open it: `bunx wrangler secret put ADMIN_EMAILS` (comma-separated sign-in emails). List only addresses that already have an account here: sign-up does not check that an email is real, so an unused address could be claimed by whoever signs up with it first.
 - **Trimming long calls.** `OPENAI_REALTIME_CONTEXT_TOKENS` in `wrangler.jsonc` is `"0"` (off). Set it to a number such as `"8000"` and OpenAI drops the oldest half of a call once it passes that many tokens, while the app reminds the interviewer which questions it already asked. Each drop makes OpenAI re-read the rest of the call at full price once, so trimming is not always cheaper: the cost page compares trimmed calls with untrimmed ones.
