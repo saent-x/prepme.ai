@@ -1,7 +1,7 @@
 <script lang="ts">
   import CompetencyBars from '$lib/components/viz/competency-bars.svelte';
   import { transcriptStats, type Scorecard, type TranscriptEntry } from '$lib/interview-types';
-  import { ArrowRight, Check } from '@lucide/svelte';
+  import { ArrowRight, Check } from '$lib/icons';
 
   let { scorecard, transcript }: { scorecard: Scorecard; transcript: TranscriptEntry[] } = $props();
   const stats = $derived(transcriptStats(transcript));
@@ -55,7 +55,7 @@
       <h3 class="text-sm font-bold">What went well</h3>
       <ul class="mt-2 grid gap-1.5">
         {#each scorecard.strengths as s}
-          <li class="flex gap-2 text-sm"><Check class="mt-0.5 size-4 shrink-0 text-success" strokeWidth={2.4} />{s}</li>
+          <li class="flex gap-2 text-sm"><Check class="mt-0.5 size-4 shrink-0 text-success" />{s}</li>
         {/each}
       </ul>
     </section>

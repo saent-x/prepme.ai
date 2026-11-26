@@ -1,0 +1,48 @@
+/**
+ * The app's icon set: Phosphor (MIT), drawn in the duotone weight set in the root layout.
+ * Names are what each icon means in PrepMe, so screens never import from the icon library directly.
+ */
+export { default as ArrowRight } from 'phosphor-svelte/lib/ArrowRight';
+export { default as Banknote } from 'phosphor-svelte/lib/Money';
+export { default as Building2 } from 'phosphor-svelte/lib/Buildings';
+export { default as Captions } from 'phosphor-svelte/lib/ChatCenteredText';
+export { default as CaptionsOff } from 'phosphor-svelte/lib/ChatCenteredSlash';
+export { default as Check } from 'phosphor-svelte/lib/Check';
+export { default as ChevronDown } from 'phosphor-svelte/lib/CaretDown';
+export { default as ChevronRight } from 'phosphor-svelte/lib/CaretRight';
+export { default as Clock } from 'phosphor-svelte/lib/Clock';
+export { default as CreditCard } from 'phosphor-svelte/lib/CreditCard';
+export { default as Download } from 'phosphor-svelte/lib/DownloadSimple';
+export { default as Ellipsis } from 'phosphor-svelte/lib/DotsThree';
+export { default as FileText } from 'phosphor-svelte/lib/FileText';
+export { default as House } from 'phosphor-svelte/lib/House';
+export { default as List } from 'phosphor-svelte/lib/ListBullets';
+export { default as LoaderCircle } from 'phosphor-svelte/lib/CircleNotch';
+export { default as LogOut } from 'phosphor-svelte/lib/SignOut';
+export { default as MapPin } from 'phosphor-svelte/lib/MapPin';
+export { default as Menu } from 'phosphor-svelte/lib/List';
+export { default as Mic } from 'phosphor-svelte/lib/Microphone';
+export { default as MicOff } from 'phosphor-svelte/lib/MicrophoneSlash';
+export { default as Moon } from 'phosphor-svelte/lib/Moon';
+export { default as PanelLeft } from 'phosphor-svelte/lib/SidebarSimple';
+export { default as PanelLeftClose } from 'phosphor-svelte/lib/SidebarSimple';
+export { default as PanelLeftOpen } from 'phosphor-svelte/lib/SidebarSimple';
+export { default as Paperclip } from 'phosphor-svelte/lib/Paperclip';
+export { default as Pencil } from 'phosphor-svelte/lib/PencilSimple';
+export { default as PhoneOff } from 'phosphor-svelte/lib/PhoneDisconnect';
+export { default as Plus } from 'phosphor-svelte/lib/Plus';
+export { default as RefreshCw } from 'phosphor-svelte/lib/ArrowsClockwise';
+export { default as RotateCcw } from 'phosphor-svelte/lib/ArrowCounterClockwise';
+export { default as Search } from 'phosphor-svelte/lib/MagnifyingGlass';
+export { default as Send } from 'phosphor-svelte/lib/PaperPlaneRight';
+export { default as Sparkles } from 'phosphor-svelte/lib/Sparkle';
+export { default as Sun } from 'phosphor-svelte/lib/Sun';
+export { default as Target } from 'phosphor-svelte/lib/Target';
+export { default as Trash2 } from 'phosphor-svelte/lib/Trash';
+export { default as TriangleAlert } from 'phosphor-svelte/lib/Warning';
+export { default as User } from 'phosphor-svelte/lib/User';
+export { default as Users } from 'phosphor-svelte/lib/Users';
+export { default as X } from 'phosphor-svelte/lib/X';
+export { default as SpeakerHigh } from 'phosphor-svelte/lib/SpeakerHigh';
+export { default as SpeakerSlash } from 'phosphor-svelte/lib/SpeakerSlash';
+export { default as Info } from 'phosphor-svelte/lib/Info';

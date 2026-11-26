@@ -4,10 +4,8 @@
 </script>
 
 {#if mark}
-  <span
-    class={cn('inline-grid size-8 place-items-center rounded-[8px] bg-foreground text-base leading-none font-extrabold text-background', className)}
-    aria-label="PrepMe">P</span
-  >
+  <!-- No logo mark yet: the collapsed sidebar shows the wordmark's first letter, plain. -->
+  <span class={cn('inline-grid size-8 place-items-center text-lg leading-none font-extrabold tracking-[-0.02em]', className)} aria-label="PrepMe">P</span>
 {:else}
-  <span class={cn('text-xl leading-none font-extrabold tracking-[-0.02em]', className)}>PrepMe</span>
+  <span class={cn('text-[17px] leading-none font-extrabold tracking-[-0.02em]', className)}>PrepMe</span>
 {/if}

@@ -14,6 +14,7 @@
   import LevelMeter from '$lib/components/viz/level-meter.svelte';
   import { IDLE_END_MS, InterviewCall } from '$lib/realtime/interview-call.svelte';
   import { formatClock } from '$lib/utils';
+  import { sound } from '$lib/sound';
   import {
     Captions,
     CaptionsOff,
@@ -29,7 +30,7 @@
     Target,
     TriangleAlert,
     X
-  } from '@lucide/svelte';
+  } from '$lib/icons';
 
   let { data } = $props();
   const call = new InterviewCall(untrack(() => data.interview.id));
@@ -142,6 +143,24 @@
     if (call.phase === 'live' && (call.finished || call.elapsedMs > call.durationMinutes * 60_000 + 90_000)) void hangUp();
   });
 
+  // Sounds (Spark): a short rising chime when the call goes live, a falling one when it ends,
+  // one ping for "still there?", a low tone when something fails. Nothing else makes a sound in a call.
+  let wasLive = false;
+  $effect(() => {
+    const phase = call.phase;
+    untrack(() => {
+      sound.setInCall(phase === 'connecting' || phase === 'live' || phase === 'reconnecting');
+      if (phase === 'live' && !wasLive) sound.play('start');
+      if ((phase === 'ending' || phase === 'ended') && wasLive) sound.play('end');
+      if (phase === 'error') sound.play('error');
+      if (phase === 'live') wasLive = true;
+      if (phase === 'ending' || phase === 'ended') wasLive = false;
+    });
+  });
+  $effect(() => {
+    if (call.idleWarning) untrack(() => sound.play('notify'));
+  });
+
   // Left idle: nobody answered the "still there?" notice, so end and score what was said.
   $effect(() => {
     if (call.phase === 'live' && call.idleExpired) {
@@ -155,6 +174,7 @@
     confirmEnd = false;
     const result = await call.end();
     call.stopMeters();
+    sound.play(result.ok ? 'success' : 'error');
     if (!result.ok && result.message) toast.error(result.message);
     await goto(`/dashboard/interviews/${data.interview.id}`, { invalidateAll: true });
   }
@@ -176,6 +196,7 @@
     stopLobbyMeter();
     if (call.phase !== 'ended' && call.phase !== 'ending') call.dispose();
     call.stopMeters();
+    sound.setInCall(false);
     if (call.phase === 'idle') mic?.getTracks().forEach((t) => t.stop());
   });
 </script>
@@ -191,7 +212,7 @@
         <a href="/dashboard/interviews/{data.interview.id}" aria-label="Back"><Logo /></a>
         <span class="truncate text-sm font-bold">{data.interview.name}</span>
         <a href="/dashboard/interviews/{data.interview.id}" class="grid size-9 place-items-center justify-self-end rounded-[8px] text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Not now">
-          <X class="size-5" strokeWidth={1.6} />
+          <X class="size-5" />
         </a>
       </header>
 
@@ -203,10 +224,10 @@
           <h1 class="mt-6 text-[28px] leading-tight font-extrabold">{data.interviewer.name}</h1>
           {#if data.interviewer.role}<p class="mt-1 text-sm text-muted-foreground">{data.interviewer.role}</p>{/if}
           <div class="mt-4 flex flex-wrap justify-center gap-2">
-            <span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Clock class="size-4 text-muted-foreground" strokeWidth={1.6} />{data.interview.durationMinutes} min</span>
-            {#if data.interview.hasJobDescription}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><FileText class="size-4 text-muted-foreground" strokeWidth={1.6} />Job</span>{/if}
-            {#if data.interview.hasCv}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Paperclip class="size-4 text-muted-foreground" strokeWidth={1.6} />CV</span>{/if}
-            {#if data.interviewer.style}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Target class="size-4 text-muted-foreground" strokeWidth={1.6} />{data.interviewer.style}</span>{/if}
+            <span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Clock class="size-4 text-muted-foreground" />{data.interview.durationMinutes} min</span>
+            {#if data.interview.hasJobDescription}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><FileText class="size-4 text-muted-foreground" />Job</span>{/if}
+            {#if data.interview.hasCv}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Paperclip class="size-4 text-muted-foreground" />CV</span>{/if}
+            {#if data.interviewer.style}<span class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium"><Target class="size-4 text-muted-foreground" />{data.interviewer.style}</span>{/if}
           </div>
         </section>
 
@@ -230,7 +251,7 @@
               {/each}
             </div>
             <p class="mt-2 flex h-5 items-center gap-1.5 text-sm font-semibold {heard ? 'text-success' : 'text-muted-foreground'}">
-              {#if heard}Sounds good <Check class="size-4" strokeWidth={2} />{:else}Say something to test{/if}
+              {#if heard}Sounds good <Check class="size-4" />{:else}Say something to test{/if}
             </p>
             {#if devices.length > 1}
               <div class="mt-5 grid gap-2">
@@ -247,7 +268,7 @@
           {/if}
           <ul class="mt-6 grid gap-2.5 border-t pt-5 text-sm text-muted-foreground">
             {#each ['Quiet room, headphones if you have them', 'Speak as you would to a person', 'Pauses are fine'] as tip}
-              <li class="flex items-center gap-2.5"><Check class="size-4 shrink-0" strokeWidth={1.6} />{tip}</li>
+              <li class="flex items-center gap-2.5"><Check class="size-4 shrink-0" />{tip}</li>
             {/each}
           </ul>
         </section>
@@ -270,11 +291,11 @@
           <div class="flex min-w-0 items-center gap-4">
             <span class="hidden sm:block"><Logo /></span>
             {#if call.phase === 'live'}
-              <span class="inline-flex h-6 items-center gap-1.5 rounded-full bg-destructive-soft px-2.5 text-xs font-semibold text-destructive">
+              <span class="inline-flex h-6 items-center gap-1.5 text-xs font-bold text-destructive">
                 <span class="size-1.5 animate-onair rounded-full bg-destructive"></span> Recording
               </span>
             {:else}
-              <span class="inline-flex h-6 items-center gap-1.5 rounded-full bg-warning-soft px-2.5 text-xs font-semibold text-warning-text">
+              <span class="inline-flex h-6 items-center gap-1.5 text-xs font-bold text-warning-text">
                 <span class="size-1.5 rounded-full bg-warning"></span> {call.phase === 'error' ? 'Paused' : 'Connecting'}
               </span>
             {/if}
@@ -318,7 +339,7 @@
 
           {#if call.idleWarning}
             <div class="mt-6 flex h-12 w-full max-w-[400px] items-center gap-3 rounded-[10px] bg-card pr-2 pl-4 shadow-md" role="alert">
-              <Clock class="size-5 shrink-0 text-warning" strokeWidth={1.6} />
+              <Clock class="size-5 shrink-0 text-warning" />
               <p class="tabular flex-1 text-sm">Still there? Ends in {idleLeft}s.</p>
               <Button size="sm" variant="outline" onclick={() => call.markActive()}>I'm here</Button>
             </div>
@@ -351,7 +372,7 @@
               disabled={call.phase !== 'live'}
               class="size-14 rounded-full border bg-card p-0 text-foreground hover:bg-muted data-disabled:opacity-50 data-pressed:border-foreground data-pressed:bg-foreground data-pressed:text-background"
             >
-              {#if call.muted}<MicOff class="size-6" strokeWidth={1.6} />{:else}<Mic class="size-6" strokeWidth={1.6} />{/if}
+              {#if call.muted}<MicOff class="size-6" />{:else}<Mic class="size-6" />{/if}
             </Toggle>
             {@render control(call.muted ? 'Unmute' : 'Mute')}
           </div>
@@ -362,7 +383,7 @@
               title="Captions (C)"
               class="size-14 rounded-full border bg-card p-0 text-foreground hover:bg-muted data-pressed:bg-card"
             >
-              {#if showCaptions}<Captions class="size-6" strokeWidth={1.6} />{:else}<CaptionsOff class="size-6" strokeWidth={1.6} />{/if}
+              {#if showCaptions}<Captions class="size-6" />{:else}<CaptionsOff class="size-6" />{/if}
             </Toggle>
             {@render control('Captions')}
           </div>
@@ -372,7 +393,7 @@
               aria-label="End interview"
               onclick={() => (confirmEnd = true)}
             >
-              <PhoneOff class="size-6" strokeWidth={1.6} />
+              <PhoneOff class="size-6" />
             </button>
             {@render control('End')}
           </div>

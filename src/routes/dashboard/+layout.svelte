@@ -27,8 +27,12 @@
     Moon,
     Sun,
     Menu as MenuIcon,
-    X
-  } from '@lucide/svelte';
+    X,
+    SpeakerHigh,
+    SpeakerSlash,
+    Info
+  } from '$lib/icons';
+  import { sound } from '$lib/sound';
 
   let { data, children } = $props();
   let mobileOpen = $state(false);
@@ -49,6 +53,15 @@
     } catch {
       /* ignore */
     }
+  }
+
+  // Sound on or off, remembered on this device. Only nine moments ever make a sound (see $lib/sound).
+  let muted = $state(false);
+  onMount(() => (muted = sound.muted));
+  function toggleSound() {
+    muted = !muted;
+    sound.setMuted(muted);
+    if (!muted) sound.play('success');
   }
 
   let paletteOpen = $state(false);
@@ -130,7 +143,7 @@
 
 {#snippet sidebar(mini: boolean)}
   <div class="flex h-full flex-col {mini ? 'items-center px-3' : 'px-4'}">
-    <div class="flex h-[72px] shrink-0 items-center {mini ? 'justify-center' : 'justify-between pl-2'}">
+    <div class="flex h-14 shrink-0 items-center {mini ? 'justify-center' : 'justify-between pl-2'}">
       <a href="/dashboard" aria-label="Home"><Logo mark={mini} /></a>
       {#if !mini}
         <button
@@ -140,7 +153,7 @@
           aria-expanded="true"
           title="Collapse sidebar ({sidebarHint.text})"
           aria-keyshortcuts={sidebarHint.ariaKeyshortcuts}
-          onclick={toggleSidebar}><PanelLeftClose class="size-5" strokeWidth={1.6} /></button
+          onclick={toggleSidebar}><PanelLeftClose class="size-5" /></button
         >
       {/if}
     </div>
@@ -150,11 +163,11 @@
       aria-label={mini ? 'Search' : undefined}
       aria-keyshortcuts={searchHint.ariaKeyshortcuts}
       title={mini ? `Search (${searchHint.text})` : undefined}
-      class="mb-3 flex h-9 items-center gap-3 rounded-[8px] border text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground {mini
+      class="mb-3 flex h-8 items-center gap-2.5 rounded-[8px] border text-[13px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground {mini
         ? 'w-10 justify-center border-transparent'
         : 'w-full px-3'}"
     >
-      <Search class="size-[18px]" strokeWidth={1.6} />
+      <Search class="size-[18px]" />
       {#if !mini}<span class="flex-1 text-left">Search</span><kbd class="text-[11px] font-semibold">{searchHint.text}</kbd>{/if}
     </button>
     <nav class="grid gap-1 {mini ? '' : 'w-full'}" aria-label="Main">
@@ -163,11 +176,11 @@
           href={item.href}
           aria-label={mini ? item.label : undefined}
           aria-current={active(item.href, item.exact) ? 'page' : undefined}
-          class="group/nav relative flex h-9 items-center gap-3 rounded-[8px] text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:text-foreground {mini
+          class="group/nav relative flex h-8 items-center gap-2.5 rounded-[8px] text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:text-foreground {mini
             ? 'w-10 justify-center'
             : 'px-3'}"
         >
-          <item.icon class="size-5" strokeWidth={1.6} />
+          <item.icon class="size-[18px]" />
           {#if !mini}{item.label}{:else}
             <span
               role="tooltip"
@@ -188,7 +201,7 @@
           aria-expanded="false"
           title="Expand sidebar ({sidebarHint.text})"
           aria-keyshortcuts={sidebarHint.ariaKeyshortcuts}
-          onclick={toggleSidebar}><PanelLeftOpen class="size-5" strokeWidth={1.6} /></button
+          onclick={toggleSidebar}><PanelLeftOpen class="size-5" /></button
         >
       {/if}
       <div class="border-t {mini ? '-mx-3 self-stretch' : '-mx-4'}"></div>
@@ -203,7 +216,7 @@
               <span class="truncate text-sm font-bold">{data.user.name.split(' ')[0]}</span>
               <span class="truncate text-xs text-muted-foreground">{free ? 'Free plan' : 'Pro plan'}</span>
             </span>
-            <Ellipsis class="size-5 text-muted-foreground" strokeWidth={1.6} />
+            <Ellipsis class="size-5 text-muted-foreground" />
           {/if}
         </Menu.Trigger>
         <Menu.Content align="start" class="w-56">
@@ -213,6 +226,10 @@
           <Menu.Item onSelect={toggleMode}>
             {#if mode.current === 'dark'}<Sun /> Light mode{:else}<Moon /> Dark mode{/if}
           </Menu.Item>
+          <Menu.Item onSelect={toggleSound}>
+            {#if muted}<SpeakerHigh /> Turn sound on{:else}<SpeakerSlash /> Turn sound off{/if}
+          </Menu.Item>
+          <Menu.Item onSelect={() => goto('/credits')}><Info /> Credits</Menu.Item>
           <Menu.Separator />
           <Menu.Item onSelect={signOut}><LogOut /> Sign out</Menu.Item>
         </Menu.Content>

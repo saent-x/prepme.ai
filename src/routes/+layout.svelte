@@ -5,6 +5,7 @@
   import { ModeWatcher } from 'mode-watcher';
   import { Toaster } from '$lib/components/ui/toast';
   import { onNavigate } from '$app/navigation';
+  import IconContext from 'phosphor-svelte/lib/IconContext';
 
   const { children } = $props();
 
@@ -21,5 +22,8 @@
 </script>
 
 <ModeWatcher defaultMode="light" />
-<Toaster />
-{@render children()}
+<!-- Phosphor duotone everywhere: line work in the text colour, a soft fill layer that can take the accent. -->
+<IconContext values={{ weight: 'duotone', size: 24 }}>
+  <Toaster />
+  {@render children()}
+</IconContext>

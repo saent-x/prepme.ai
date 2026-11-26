@@ -6,7 +6,7 @@
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import { LoaderCircle } from '@lucide/svelte';
+  import { LoaderCircle } from '$lib/icons';
   import { onMount } from 'svelte';
 
   let {

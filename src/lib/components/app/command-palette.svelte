@@ -17,7 +17,7 @@
   import ScoreChip from './score-chip.svelte';
   import StatusBadge from './status-badge.svelte';
   import { mode } from 'mode-watcher';
-  import { CreditCard, House, List, LogOut, Moon, PanelLeft, Plus, Search, Sun, Users } from '@lucide/svelte';
+  import { CreditCard, House, List, LogOut, Moon, PanelLeft, Plus, Search, Sun, Users } from '$lib/icons';
   import type { InterviewStatus } from '$lib/db/schema';
 
   type Props = {
@@ -79,7 +79,7 @@
     <DialogTitle class="sr-only">Search PrepMe</DialogTitle>
     <Command {onAction} loop class="palette flex w-full max-w-none flex-col rounded-none border-0 bg-transparent shadow-none">
       <div class="flex h-14 items-center gap-3 border-b px-4">
-        <Search class="size-5 shrink-0 text-muted-foreground" strokeWidth={1.6} aria-hidden="true" />
+        <Search class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <CommandInput
           aria-label="Search interviews, agents and actions"
           placeholder="Search interviews, agents and actions"
@@ -117,7 +117,7 @@
           <CommandGroupLabel class="group-label">Go to</CommandGroupLabel>
           {#each pages as p (p.value)}
             <CommandItem value={p.value} label={p.label} class="item">
-              <CommandItemIcon><p.icon class="size-5 text-muted-foreground" strokeWidth={1.6} /></CommandItemIcon>
+              <CommandItemIcon><p.icon class="size-5 text-muted-foreground" /></CommandItemIcon>
               <CommandItemText class="flex-1">{p.label}</CommandItemText>
             </CommandItem>
           {/each}
@@ -126,7 +126,7 @@
           <CommandGroupLabel class="group-label">Actions</CommandGroupLabel>
           {#each actions as a (a.value)}
             <CommandItem value={a.value} label={a.label} keywords={a.keywords} class="item">
-              <CommandItemIcon><a.icon class="size-5 text-muted-foreground" strokeWidth={1.6} /></CommandItemIcon>
+              <CommandItemIcon><a.icon class="size-5 text-muted-foreground" /></CommandItemIcon>
               <CommandItemText class="flex-1">{a.label}</CommandItemText>
               {#if a.shortcut}
                 <CommandShortcut shortcut={a.shortcut} class="text-xs font-semibold text-muted-foreground" />

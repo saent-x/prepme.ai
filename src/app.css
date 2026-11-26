@@ -5,54 +5,75 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * PrepMe "Lean" theme.
- * White surfaces and ink text. Colour comes from interviewer avatars; green and amber are only for scores.
+ * PrepMe on Spark (the design system, docs in docs/design/spark.md).
+ * Ink text and ink buttons on white. Cobalt ("spark") only marks links, the active place and progress.
+ * Green, amber and red only mean good, fix and wrong. Gold and flame belong to rewards (XP, streaks).
  */
 :root {
-  --radius: 0.625rem;
+  --radius: 0.625rem; /* 10px. sm 6, md 8, lg 10, xl 14 */
 
-  /* PrepMe Penpot theme (docs/design/penpot/SPEC.md).
-     The UI is greyscale. Colour comes only from agent faces and from scores. */
   --background: #ffffff;
-  --foreground: #111114;
+  --foreground: #111113;
   --card: #ffffff;
-  --card-foreground: #111114;
+  --card-foreground: #111113;
   --popover: #ffffff;
-  --popover-foreground: #111114;
+  --popover-foreground: #111113;
 
-  --primary: #111114;
+  --primary: #111113;
   --primary-foreground: #ffffff;
-  --signal: #111114;
-  --signal-foreground: #ffffff;
-  --signal-soft: #f0f0f3;
 
-  /* surface: grey sections, active nav, side panels, meta chips */
-  --secondary: #f7f7f8;
-  --secondary-foreground: #111114;
-  --muted: #f7f7f8;
-  --muted-foreground: #6b6b76;
-  --faint: #8e8e98;
-  --accent: #f7f7f8;
-  --accent-foreground: #111114;
-  --track: #f0f0f3;
+  /* Spark accent: cobalt. */
+  --spark: #2b59ff;
+  --spark-ink: #1f4ae6;
+  --spark-soft: #eef2ff;
+  --signal: var(--spark);
+  --signal-foreground: #ffffff;
+  --signal-soft: var(--spark-soft);
+
+  --secondary: #f5f5f6;
+  --secondary-foreground: #111113;
+  --muted: #f5f5f6;
+  --muted-foreground: #66666f;
+  --faint: #9a9aa3;
+  --accent: #f5f5f6;
+  --accent-foreground: #111113;
+  --track: #ededf0;
 
   --destructive: #e5484d;
   --destructive-soft: #fde9ea;
-  --success: #22a06b;
-  --success-soft: #e6f6ee;
+  --success: #1fa16b;
+  --success-text: #147a50;
+  --success-soft: #e4f6ee;
   --warning: #e8a317;
-  --warning-text: #9a6a00;
+  --warning-text: #8f6200;
   --warning-soft: #fdf3dc;
 
-  --border: #eaeaee;
-  --input: #eaeaee;
-  --ring: #111114;
+  /* Rewards only. */
+  --gold: #ffc233;
+  --gold-text: #8a5a00;
+  --flame: #ff4f8b;
+  --flame-text: #c4245c;
 
-  --chart-1: #111114;
-  --chart-2: #111114;
-  --chart-3: #22a06b;
+  --border: #ebebee;
+  --input: #e2e2e6;
+  --ring: var(--spark);
+
+  --chart-1: #111113;
+  --chart-2: var(--spark);
+  --chart-3: #1fa16b;
   --chart-4: #e8a317;
-  --chart-5: #3e9bff;
+  --chart-5: #2f8cff;
+
+  /* Illustrations (unDraw) are recoloured through these. */
+  --ill-accent: var(--spark);
+  --ill-ink: #1c1c22;
+  --ill-soft: #eeeef1;
+  --ill-mid: #d6d6dc;
+  --ill-paper: #ffffff;
+
+  /* Phosphor duotone: the soft layer of every icon. Active places set it to the accent. */
+  --icon-tint: currentColor;
+  --icon-tint-opacity: 0.2;
 
   /* ui-sdk's default look (web.css) reads these. They follow the theme above, in light and dark. */
   color-scheme: light;
@@ -72,39 +93,54 @@
   --ui-font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Neutral dark: no purple cast. */
 .dark {
-  --background: #121118;
-  --foreground: #f1f0f5;
-  --card: #1a1822;
-  --card-foreground: #f1f0f5;
-  --popover: #1e1c27;
-  --popover-foreground: #f1f0f5;
+  --background: #111113;
+  --foreground: #f4f4f5;
+  --card: #17171a;
+  --card-foreground: #f4f4f5;
+  --popover: #1c1c20;
+  --popover-foreground: #f4f4f5;
 
-  --primary: #f1f0f5;
-  --primary-foreground: #18161f;
-  --signal: #f1f0f5;
-  --signal-foreground: #18161f;
-  --signal-soft: #2b2836;
+  --primary: #f4f4f5;
+  --primary-foreground: #111113;
 
-  --secondary: #23202d;
-  --secondary-foreground: #f1f0f5;
-  --muted: #211f2a;
-  --muted-foreground: #a9a6b8;
-  --faint: #7d7a8c;
-  --accent: #262330;
-  --accent-foreground: #f1f0f5;
-  --destructive: #f2686c;
-  --success: #3fc76f;
-  --success-soft: #16301f;
-  --warning: #f0a23a;
-  --warning-soft: #3a2a10;
-  --warning-text: #f0b44a;
-  --destructive-soft: #3a1a1c;
-  --track: #2b2836;
+  --spark: #6b8cff;
+  --spark-ink: #9db2ff;
+  --spark-soft: #161d38;
+  --signal-foreground: #0a1030;
 
-  --border: #2b2836;
-  --input: #383446;
-  --ring: #f1f0f5;
+  --secondary: #1c1c20;
+  --secondary-foreground: #f4f4f5;
+  --muted: #1c1c20;
+  --muted-foreground: #a1a1aa;
+  --faint: #71717a;
+  --accent: #222226;
+  --accent-foreground: #f4f4f5;
+  --track: #2a2a2f;
+
+  --destructive: #ff6b6f;
+  --destructive-soft: #331618;
+  --success: #3dd68c;
+  --success-text: #5ee0a0;
+  --success-soft: #13291f;
+  --warning: #f0b43a;
+  --warning-text: #f5c25a;
+  --warning-soft: #2e2410;
+
+  --gold: #ffce52;
+  --gold-text: #ffd46b;
+  --flame: #ff6fa0;
+  --flame-text: #ff8fb6;
+
+  --border: #2a2a2f;
+  --input: #34343a;
+  --chart-1: #f4f4f5;
+  --chart-5: #5aa6ff;
+  --ill-ink: #d9d9de;
+  --ill-soft: #26262b;
+  --ill-mid: #36363c;
+  --ill-paper: #1c1c20;
   color-scheme: dark;
 }
 
@@ -112,11 +148,11 @@
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
 
-  --radius-sm: calc(var(--radius) - 6px);
-  --radius-md: calc(var(--radius) - 3px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 2px);
-  --radius-2xl: calc(var(--radius) + 4px);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 14px;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -129,6 +165,14 @@
   --color-signal: var(--signal);
   --color-signal-foreground: var(--signal-foreground);
   --color-signal-soft: var(--signal-soft);
+  --color-spark: var(--spark);
+  --color-spark-ink: var(--spark-ink);
+  --color-spark-soft: var(--spark-soft);
+  --color-gold: var(--gold);
+  --color-gold-text: var(--gold-text);
+  --color-flame: var(--flame);
+  --color-flame-text: var(--flame-text);
+  --color-success-text: var(--success-text);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -233,7 +277,7 @@
     cursor: pointer;
   }
   ::selection {
-    background: var(--signal-soft);
+    background: var(--spark-soft);
   }
 }
 
@@ -286,6 +330,61 @@
   }
   [data-slot='tabs-panel'] {
     animation: rise 0.3s var(--ease-out) both;
+  }
+  /* Spark type. Page heading 24 (20 on a phone), section heading 14 bold, body 14. */
+  .page-title {
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  @media (min-width: 640px) {
+    .page-title {
+      font-size: 24px;
+      line-height: 30px;
+      letter-spacing: -0.02em;
+    }
+  }
+  .section-title {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 700;
+  }
+  /* A big key number (readiness, score). */
+  .number-xl {
+    font-size: 48px;
+    line-height: 48px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Cobalt is for links, the active place and progress. */
+  .link {
+    color: var(--spark-ink);
+    font-weight: 600;
+    text-underline-offset: 3px;
+  }
+  .link:hover {
+    text-decoration: underline;
+  }
+  /* Phosphor duotone: the fill layer takes --icon-tint (cobalt where a place is active). */
+  svg path[opacity='0.2'] {
+    fill: var(--icon-tint);
+    opacity: var(--icon-tint-opacity);
+  }
+  /* On a solid ink button the soft layer reads as a grey smudge, so only the line work shows there. */
+  :where([class*='bg-primary'], [class*='bg-destructive'], [class*='bg-spark']) svg path[opacity='0.2'] {
+    opacity: 0;
+  }
+  [aria-current='page'],
+  [data-selected],
+  .tint-spark {
+    --icon-tint: var(--spark);
+    --icon-tint-opacity: 0.35;
+  }
+  /* Lists instead of cards: rows split by hairlines. */
+  .hair-list > * + * {
+    border-top: 1px solid var(--border);
   }
   /* Small uppercase label used for section eyebrows and stat captions. */
   .eyebrow {

@@ -2,7 +2,8 @@
   import { invalidate } from '$app/navigation';
   import { Button } from '$lib/components/ui/button';
   import { onMount, untrack } from 'svelte';
-  import { LoaderCircle, RotateCcw } from '@lucide/svelte';
+  import { LoaderCircle, RotateCcw } from '$lib/icons';
+  import { sound } from '$lib/sound';
 
   let { interviewId, error: initialError }: { interviewId: string; error: string | null } = $props();
   let error = $state<string | null>(untrack(() => initialError));
@@ -16,9 +17,11 @@
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         error = body?.message ?? 'Scoring failed.';
-      }
+        sound.play('error');
+      } else sound.play('success');
     } catch {
       error = 'Network error while scoring.';
+      sound.play('error');
     } finally {
       running = false;
       await invalidate('app:interview');
@@ -31,7 +34,7 @@
   });
 </script>
 
-<div class="grid place-items-center rounded-xl border bg-card px-6 py-12 text-center">
+<div class="grid place-items-center border-y py-10 text-center">
   {#if error && !running}
     <h2 class="font-bold">Scoring didn't finish</h2>
     <p class="mt-1 max-w-md text-sm text-muted-foreground">Your transcript is saved. {error}</p>

@@ -1,20 +1,22 @@
 <script lang="ts" module>
 	import { type VariantProps, tv } from "tailwind-variants";
 
+	// Spark chip: coloured text with a small dot. No fill, no border.
 	export const badgeVariants = tv({
-		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-semibold transition-[color,box-shadow] focus-visible:ring-[3px] [&>svg]:pointer-events-none [&>svg]:size-3",
+		base: "inline-flex h-5 w-fit shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-bold before:size-1.5 before:shrink-0 before:rounded-full before:bg-current has-[>svg]:before:hidden [&>svg]:pointer-events-none [&>svg]:size-3.5",
 		variants: {
 			variant: {
-				default:
-					"bg-primary text-primary-foreground [a&]:hover:bg-primary/90 border-transparent",
-				secondary:
-					"bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90 border-transparent",
-				destructive:
-					"bg-destructive [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/70 border-transparent text-white",
-				signal: "bg-signal-soft text-signal border-transparent",
-				success: "bg-success-soft text-success border-transparent",
-				warning: "bg-warning-soft text-warning border-transparent",
-				outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+				default: "text-foreground",
+				secondary: "text-muted-foreground before:bg-faint",
+				outline: "text-muted-foreground before:bg-faint",
+				destructive: "text-destructive",
+				signal: "text-spark-ink before:bg-spark",
+				success: "text-success-text before:bg-success",
+				// Ready to start: neutral text, green dot.
+				ready: "text-muted-foreground before:bg-success",
+				warning: "text-warning-text before:bg-warning",
+				gold: "text-gold-text before:bg-gold",
+				flame: "text-flame-text before:bg-flame",
 			},
 		},
 		defaultVariants: {

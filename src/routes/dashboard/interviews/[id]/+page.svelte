@@ -14,7 +14,7 @@
   import { formatDuration, scoreTone } from '$lib/utils';
   import ScoreRing from '$lib/components/viz/score-ring.svelte';
   import { COMPETENCY_LABELS } from '$lib/interview-types';
-  import { Check, ChevronDown, ChevronRight, Ellipsis, Mic, Pencil, RotateCcw, Target, Trash2 } from '@lucide/svelte';
+  import { Check, ChevronDown, ChevronRight, Ellipsis, Mic, Pencil, RotateCcw, Target, Trash2 } from '$lib/icons';
 
   let { data, form } = $props();
   const i = $derived(data.interview);
@@ -38,7 +38,7 @@
             <Button type="submit">Save</Button>
           </form>
         {:else}
-          <h1 class="truncate text-[28px] leading-tight font-extrabold tracking-[-0.02em]">{i.name}</h1>
+          <h1 class="page-title truncate">{i.name}</h1>
         {/if}
         <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <a href="/dashboard/interviewers/{i.agent.id}" class="inline-flex items-center gap-2 hover:text-foreground">
@@ -74,9 +74,9 @@
 
     <div class="mt-8">
       {#if i.status === 'upcoming' || i.status === 'active'}
-        <div class="grid place-items-center rounded-[10px] bg-muted px-6 py-12 text-center">
-          <InterviewerAvatar name={i.agent.name} class="size-16" />
-          <h2 class="mt-3 text-base font-extrabold">{i.status === 'active' ? 'Still in progress' : 'Ready when you are'}</h2>
+        <div class="grid place-items-center border-y py-10 text-center">
+          <InterviewerAvatar name={i.agent.name} class="size-14" />
+          <h2 class="section-title mt-3">{i.status === 'active' ? 'Still in progress' : 'Ready when you are'}</h2>
           <p class="mt-1 max-w-md text-sm text-muted-foreground">
             {i.status === 'active' ? 'Your answers so far are saved.' : `${i.durationMinutes} min with ${i.agent.name}. Mic check first.`}
           </p>
@@ -85,7 +85,7 @@
       {:else if i.status === 'processing'}
         <ScoringState interviewId={i.id} error={i.analysisError} />
       {:else if i.status === 'cancelled'}
-        <p class="rounded-[10px] bg-muted p-5 text-sm text-muted-foreground">This interview was cancelled.</p>
+        <p class="border-y py-4 text-sm text-muted-foreground">This interview was cancelled.</p>
       {:else if sc}
         <!-- Score + skills -->
         <section class="flex flex-col gap-8 border-b pb-8 sm:flex-row sm:items-center" aria-label="Score">
@@ -108,7 +108,7 @@
         <!-- Strengths / To improve -->
         <section class="grid gap-8 border-b py-8 sm:grid-cols-2">
           <div>
-            <h3 class="flex items-center gap-2 text-base font-extrabold"><Check class="size-5 text-success" strokeWidth={2} /> Strengths</h3>
+            <h3 class="section-title flex items-center gap-2"><Check class="size-5 text-success" /> Strengths</h3>
             <ul class="mt-3 grid gap-2.5">
               {#each sc.strengths as s}
                 <li class="flex items-start gap-2.5 text-sm"><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-success"></span>{s}</li>
@@ -116,7 +116,7 @@
             </ul>
           </div>
           <div>
-            <h3 class="flex items-center gap-2 text-base font-extrabold"><Target class="size-5 text-warning" strokeWidth={1.8} /> To improve</h3>
+            <h3 class="section-title flex items-center gap-2"><Target class="size-5 text-warning" /> To improve</h3>
             <ul class="mt-3 grid gap-2.5">
               {#each sc.improvements as imp}
                 <li class="flex items-start gap-2.5 text-sm" title={imp.detail}><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-warning"></span>{imp.title}</li>
@@ -127,18 +127,18 @@
 
         <!-- Key moments: each question, scored -->
         <section class="py-8" aria-label="Key moments">
-          <h3 class="text-base font-extrabold">Key moments</h3>
+          <h3 class="section-title">Key moments</h3>
           <ul class="mt-3 border-t">
             {#each sc.questions as q, n}
-              {@const tag = q.score >= 4 ? { label: 'Strong answer', c: 'bg-success-soft text-success', bar: 'bg-success' } : q.score === 3 ? { label: 'Could be sharper', c: 'bg-warning-soft text-warning-text', bar: 'bg-warning' } : { label: 'Weak answer', c: 'bg-destructive-soft text-destructive', bar: 'bg-destructive' }}
+              {@const tag = q.score >= 4 ? { label: 'Strong answer', c: 'text-success-text before:bg-success', bar: 'bg-success' } : q.score === 3 ? { label: 'Could be sharper', c: 'text-warning-text before:bg-warning', bar: 'bg-warning' } : { label: 'Weak answer', c: 'text-destructive before:bg-destructive', bar: 'bg-destructive' }}
               <li class="border-b">
                 <details class="group">
                   <summary class="flex min-h-16 cursor-pointer list-none items-center gap-4 py-3">
                     <span class="h-10 w-[3px] shrink-0 rounded-full {tag.bar}"></span>
                     <span class="w-8 shrink-0 text-xs font-bold text-muted-foreground">Q{n + 1}</span>
                     <span class="min-w-0 flex-1 text-sm leading-snug">“{q.question}”</span>
-                    <span class="hidden h-6 shrink-0 items-center rounded-full px-2.5 text-xs font-semibold sm:inline-flex {tag.c}">{tag.label}</span>
-                    <ChevronDown class="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" strokeWidth={1.6} />
+                    <span class="hidden h-6 shrink-0 items-center gap-1.5 text-xs font-bold before:size-1.5 before:rounded-full sm:inline-flex {tag.c}">{tag.label}</span>
+                    <ChevronDown class="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                   </summary>
                   <div class="grid gap-3 pb-4 pl-[60px] text-sm leading-normal">
                     <p><span class="font-bold">You said:</span> <span class="text-muted-foreground">{q.answer_summary}</span></p>
@@ -153,13 +153,13 @@
 
         <details class="group border-t pt-6">
           <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">
-            <ChevronRight class="size-4 transition-transform group-open:rotate-90" strokeWidth={1.6} /> Full transcript
+            <ChevronRight class="size-4 transition-transform group-open:rotate-90" /> Full transcript
           </summary>
           <div class="mt-4"><TranscriptView {transcript} interviewerName={i.agent.name} candidateName="You" title={i.name} /></div>
         </details>
       {:else}
         <!-- Too short to score, or an interview from before v2 (summary only). -->
-        <div class="rounded-[10px] bg-muted p-6">
+        <div class="border-y py-5">
           {#if i.summary}
             <div class="prose-lite max-w-prose"><Markdown md={i.summary} plugins={[gfmPlugin()]} /></div>
           {:else}
