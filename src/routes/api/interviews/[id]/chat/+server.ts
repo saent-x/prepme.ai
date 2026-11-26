@@ -8,6 +8,7 @@ import { interviewMessages } from '$lib/db/schema';
 import { openai } from '$lib/server/openai';
 import { config as appConfig } from '$lib/server/config';
 import { buildChatSystemPrompt, formatTranscript } from '$lib/server/prompts';
+import { quietly, recordTextUsage } from '$lib/server/usage';
 
 
 const Body = z.object({ message: z.string().trim().min(1).max(4000) });
@@ -33,8 +34,9 @@ export const POST: RequestHandler = async (event) => {
     transcriptText: formatTranscript(interview.transcript ?? [], user.name.split(' ')[0])
   });
 
+  const model = appConfig.openai.chatModel();
   const stream = openai().responses.stream({
-    model: appConfig.openai.chatModel(),
+    model,
     instructions,
     input: [
       ...history.slice(-20).map((m) => ({ role: m.role, content: m.content })),
@@ -51,6 +53,11 @@ export const POST: RequestHandler = async (event) => {
           if (ev.type === 'response.output_text.delta') {
             full += ev.delta;
             controller.enqueue(encoder.encode(ev.delta));
+          } else if (ev.type === 'response.completed') {
+            const { id, usage } = ev.response;
+            await quietly('chat usage', () =>
+              recordTextUsage({ userId: user.id, interviewId: interview.id, kind: 'chat', model, responseId: id, usage })
+            );
           }
         }
         if (full.trim()) {

@@ -19,7 +19,7 @@
     }
   ],
   // Non-secret settings. Secrets (OPENAI_API_KEY, BETTER_AUTH_SECRET, POLAR_ACCESS_TOKEN,
-  // social client secrets) are set with `wrangler secret put` or in the dashboard,
+  // ADMIN_EMAILS, social client secrets) are set with `wrangler secret put` or in the dashboard,
   // and in .dev.vars for local development.
   "vars": {
     "BETTER_AUTH_URL": "https://prepme.stbrn.studio",
@@ -27,6 +27,9 @@
     "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
     "OPENAI_ANALYSIS_MODEL": "gpt-6-luna",
     "OPENAI_CHAT_MODEL": "gpt-6-luna",
+    // Trimming for long calls. "0" = off. A number such as "8000" drops the oldest half of a
+    // call once it passes that many tokens. Compare the result on /dashboard/costs before keeping it.
+    "OPENAI_REALTIME_CONTEXT_TOKENS": "0",
     "POLAR_SERVER": "production",
     "UNLIMITED_USAGE": "false"
   },
@@ -41,6 +44,7 @@
       "OPENAI_TRANSCRIBE_MODEL": "gpt-4o-mini-transcribe",
       "OPENAI_ANALYSIS_MODEL": "gpt-6-luna",
       "OPENAI_CHAT_MODEL": "gpt-6-luna",
+      "OPENAI_REALTIME_CONTEXT_TOKENS": "0",
       "POLAR_SERVER": "sandbox",
       "UNLIMITED_USAGE": "false"
     },

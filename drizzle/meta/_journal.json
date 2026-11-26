@@ -15,6 +15,13 @@
       "when": 1795479993177,
       "tag": "0001_interview_cv",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795706066957,
+      "tag": "0002_usage_events",
+      "breakpoints": true
     }
   ]
 }
