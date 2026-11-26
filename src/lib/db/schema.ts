@@ -200,7 +200,61 @@ export const interviewMessages = sqliteTable(
   (t) => [index('interview_messages_interview_id_idx').on(t.interviewId)]
 );
 
+export const USAGE_KINDS = ['voice', 'transcription', 'scoring', 'chat'] as const;
+
+/**
+ * What each interview cost in AI usage: one row per live voice session, per
+ * session's transcription, per scoring run and per coach chat reply.
+ *
+ * `interviewId` is deliberately not a foreign key: the money was spent even if
+ * the interview is deleted later, so the row has to outlive it.
+ */
+export const usageEvents = sqliteTable(
+  'usage_events',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    /** Stable per thing measured (e.g. "<interview>:voice:2"), so repeated reports update one row. */
+    key: text('key').notNull().unique(),
+    userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+    interviewId: text('interview_id'),
+    kind: text('kind', { enum: USAGE_KINDS }).notNull(),
+    model: text('model').notNull(),
+    /** Voice and transcription: which live session of the interview (1 = first, 2+ = reconnects). */
+    session: integer('session'),
+    /** Voice: seconds the session was connected. Transcription: seconds of audio, when billed by length. */
+    seconds: integer('seconds').notNull().default(0),
+    /** Voice: the trimming limit in force (0 = trimming off), to compare trimmed calls with untrimmed ones. */
+    contextLimit: integer('context_limit').notNull().default(0),
+    /** Model replies counted in this row. */
+    responses: integer('responses').notNull().default(0),
+    /** Token counts. Input counts include the cached part; cached counts are the part re-read at the cheaper rate. */
+    inputText: integer('input_text').notNull().default(0),
+    inputAudio: integer('input_audio').notNull().default(0),
+    cachedText: integer('cached_text').notNull().default(0),
+    cachedAudio: integer('cached_audio').notNull().default(0),
+    outputText: integer('output_text').notNull().default(0),
+    outputAudio: integer('output_audio').notNull().default(0),
+    /** Cost in millionths of a US dollar. Null when the model has no price in $lib/usage. */
+    costMicros: integer('cost_micros'),
+    createdAt: ts('created_at')
+      .notNull()
+      .$defaultFn(() => new Date()),
+    updatedAt: ts('updated_at')
+      .notNull()
+      .$defaultFn(() => new Date())
+      .$onUpdate(() => new Date())
+  },
+  (t) => [
+    index('usage_events_interview_id_idx').on(t.interviewId),
+    index('usage_events_created_at_idx').on(t.createdAt)
+  ]
+);
+
 export type Agent = InferSelectModel<typeof agents>;
 export type Interview = InferSelectModel<typeof interviews>;
 export type InterviewMessage = InferSelectModel<typeof interviewMessages>;
+export type UsageEvent = InferSelectModel<typeof usageEvents>;
+export type UsageKind = (typeof USAGE_KINDS)[number];
 export type InterviewStatus = (typeof INTERVIEW_STATUSES)[number];
